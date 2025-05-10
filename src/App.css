@@ -23,7 +23,7 @@
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: #FFFFFF;
+  color: #1A1A1A; /* Dark text for better contrast on light background */
 }
 
 .App-link {
