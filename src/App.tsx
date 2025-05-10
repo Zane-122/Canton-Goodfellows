@@ -12,11 +12,7 @@ import { addSponsor } from './firebase/sponsors';
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <div className="App">
-        <header className="App-header">
-          <HomePage />
-        </header>
-      </div>
+      <HomePage />
     </AuthProvider>
   );
 };
