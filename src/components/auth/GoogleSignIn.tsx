@@ -36,7 +36,7 @@ const GoogleSignIn: React.FC = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
       <Button 
-          color={user ? "#228B22" : "#228B22"}
+          color= "#1EC9F2"
           onClick={user ? handleSignOut : handleSignIn}
         >
           <p>{user ? "Sign out" : "Sign in with Google"}</p>

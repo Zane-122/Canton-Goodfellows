@@ -6,13 +6,11 @@ interface CartoonButtonProps {
   onClick?: () => void;
   className?: string;
   color?: string;
-  inverted?: boolean;
 }
 
 interface ButtonContainerProps {
   isPressed: boolean;
   color: string;
-  inverted: boolean;
 }
 
 const ButtonContainer = styled.button<ButtonContainerProps>`
@@ -20,9 +18,9 @@ const ButtonContainer = styled.button<ButtonContainerProps>`
   padding: 12px 24px;
   font-size: 16px;
   font-weight: 900;
-  color: ${props => props.inverted ? props.color : 'rgb(0, 0, 0)'};
-  background-color: ${props => props.inverted ? 'transparent' : props.color};
-  border: 3px solid ${props => props.inverted ? props.color : '#0f1418'};
+  color: rgb(0, 0, 0);
+  background-color: ${props => props.color};
+  border: 3px solid #0f1418;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.1s ease;
@@ -32,8 +30,7 @@ const ButtonContainer = styled.button<ButtonContainerProps>`
     : '4px 4px 0 0 #0f1418'};
 
   &:hover {
-    background-color: ${props => props.inverted ? props.color : props.color};
-    color: ${props => props.inverted ? props.color : 'rgb(0, 0, 0)'};
+    background-color: ${props => props.color};
     transform: translateY(2px);
     box-shadow: 2px 2px 0 0 #0f1418;
   }
@@ -52,8 +49,7 @@ const CartoonButton: React.FC<CartoonButtonProps> = ({
   children, 
   onClick, 
   className,
-  color = "rgb(0, 0, 0)",
-  inverted = false
+  color = "rgb(0, 0, 0)"
 }) => {
   const [isPressed, setIsPressed] = useState(false);
 
@@ -71,7 +67,6 @@ const CartoonButton: React.FC<CartoonButtonProps> = ({
       onClick={onClick}
       isPressed={isPressed}
       color={color}
-      inverted={inverted}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
