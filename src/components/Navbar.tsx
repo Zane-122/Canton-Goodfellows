@@ -3,7 +3,7 @@ import './Navbar.css';
 import logo from '../images/logo.png';
 import CartoonButton from './buttons/CartoonButton';
 import Container from './containers/CartoonContainer';
-export const Navbar: React.FC = () => {
+const Navbar: React.FC = () => {
   return (
     <Container color="#D84040" className="navbar-container">
       <nav className="navbar">

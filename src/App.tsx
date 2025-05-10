@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { HomePage } from './HomePage';
+import { HomePage } from './pages/HomePage';
+import { SponsorFormPage } from './pages/SponsorFormPage';
 import './App.css';
 import Container from './components/containers/CartoonContainer';
 import Header from './components/headers/CartoonHeader';
@@ -14,7 +15,8 @@ const App: React.FC = () => {
     <AuthProvider>
       <div className="App">
         <header className="App-header">
-          <HomePage />
+          {/* <HomePage /> */}
+          <SponsorFormPage />
         </header>
       </div>
     </AuthProvider>
