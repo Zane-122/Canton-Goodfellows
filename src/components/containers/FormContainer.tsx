@@ -14,27 +14,29 @@ const StyledFormCard = styled(CartoonContainer)`
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  min-width: 100vmin;
+  min-width: 70vw;
   width: fit-content;
   height: fit-content;
-  margin: 80px;
   color: #fff8e7;
+  padding: 2rem;
+  gap: 0.5rem;
 `;
 const StyledFormCardTitle = styled.h1`
   font-size: 50px;
   color: #fff8e7;
   letter-spacing: 0.2vmin;
-  margin: 0vmin;
+  margin: 0;
 `;
 const StyledFormCardInput = styled(CartoonInput)`
   text-align: center;
-  margin: 500vmin;
+  margin: 0;
+  margin-top: 2rem;
 `;
 const StyledFormCardSubtitle = styled.h2`
   font-size: 20px;
   color: #fff8e7;
   letter-spacing: 0.2vmin;
-  margin: 0vmin;
+  margin: 0;
 `;
 
 const FormContainer: React.FC<FormContainerProps> = ({ title, type, subtitle }) => {

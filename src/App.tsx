@@ -13,6 +13,7 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <HomePage />
+      {/* <SponsorFormPage /> */}
     </AuthProvider>
   );
 };
