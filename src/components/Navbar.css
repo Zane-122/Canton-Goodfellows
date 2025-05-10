@@ -1,0 +1,53 @@
+@font-face {
+  font-family: 'Coolvetica';
+  src: url('../fonts/Coolvetica\ Rg.otf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.navbar-container {
+  height: auto;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 32px;
+  height: 100%;
+  color: #ffffff;
+}
+
+.navbar-logo a {
+  font-size: 24px;
+  font-weight: bold;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.navbar-links {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 16px;
+}
+
+.navbar-links li {
+  margin: 0;
+}
+
+.navbar-links li p {
+  color: #fff8e7;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: bold;
+  font-family: 'Coolvetica', sans-serif;
+  letter-spacing: 1px;
+}
+
+.logo-image {
+  height: 50px;
+  width: auto;
+  transition: scale 0.3s ease;
+}

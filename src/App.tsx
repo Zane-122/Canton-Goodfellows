@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+
+import React from 'react';
+import { HomePage } from './HomePage';
 import './App.css';
 import Container from './components/containers/CartoonContainer';
 import Header from './components/headers/CartoonHeader';
@@ -8,12 +10,11 @@ import Input from './components/inputs/CartoonInput';
 import { addSponsor } from './firebase/sponsors';
 
 const App: React.FC = () => {
-  const [name, set] = useState('');
-
   return (
     <AuthProvider>
       <div className="App">
         <header className="App-header">
+          <HomePage />
         </header>
       </div>
     </AuthProvider>
