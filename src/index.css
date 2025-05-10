@@ -6,9 +6,43 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'TT Trick New';
+  src: url('../public/fonts/TT Tricks Trial DemiBold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TT Trick New Italic';
+  src: url('../public/fonts/TT Tricks Trial DemiBold Italic.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TT Trick New Bold';
+  src: url('../public/fonts/TT Tricks Trial Bold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TT Trick New Bold Italic';
+  src: url('../public/fonts/TT Tricks Trial Bold Italic.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Coolvetica Rg', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;

@@ -1,14 +1,22 @@
 @font-face {
-  font-family: 'Coolvetica';
-  src: url('../../public/fonts/Coolvetica\ Rg.otf') format('truetype');
-  font-weight: normal;
+  font-family: 'TT Trick New Bold';
+  src: url('../../public/fonts/TT Tricks Trial ExtraBold.otf') format('opentype');
+  font-weight: 600;
   font-style: normal;
+  font-display: swap;
 }
 
 .navbar-container {
   height: auto;
-  margin: 2vmin;
   margin-bottom: 0;
+  border-radius: 0px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: #FFFFFF;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .navbar {
@@ -40,11 +48,11 @@
 }
 
 .navbar-links li p {
-  color: #fff8e7;
+  color: #000000;
   text-decoration: none;
   font-size: 16px;
   font-weight: bold;
-  font-family: 'Coolvetica', sans-serif;
+  font-family: 'TT Trick New Bold', sans-serif;
   letter-spacing: 1px;
 }
 
