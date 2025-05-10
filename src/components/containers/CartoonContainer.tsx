@@ -13,11 +13,12 @@ interface ContainerProps {
 
 const Container = styled.div<ContainerProps>`
   position: relative;
-  padding: 24px;
+  padding: 2rem;
   background-color: ${props => props.color};
   border: 3px solid #0f1418;
   border-radius: 10px;
   box-shadow: 4px 4px 0 0 #0f1418;
+  max-width: 70vw;
 `;
 
 const CartoonContainer: React.FC<CartoonContainerProps> = ({ 
