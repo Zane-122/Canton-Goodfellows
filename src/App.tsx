@@ -1,23 +1,26 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import CartoonButton from './components/buttons/CartoonButton';
 
 const App: React.FC = () => {
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+          // All of this can be removed i am just testing
+          <CartoonButton color="#FF6B6B">
+            Register for Donations
+          </CartoonButton>
+
+          <CartoonButton color="#4ECDC4">
+            Register to Sponsor
+          </CartoonButton>
+
+          <CartoonButton color="#FFE66D">
+            Donate Now!
+          </CartoonButton>
+        </div>
       </header>
     </div>
   );
