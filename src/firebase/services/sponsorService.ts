@@ -3,10 +3,12 @@ import { db } from '../firebaseConfig';
 
 export interface Sponsor {
   name: string;
+  email: string;
+  contact_number: string;
   timestamp: Date;
 }
 
-export async function addSponsor(name: string): Promise<void> {
+export async function addSponsor(name: string, email: string, contact_number: string): Promise<void> {
   console.log("Starting to add sponsor:", name);
   try {
     console.log("Attempting to add document to Firestore...");
@@ -14,6 +16,8 @@ export async function addSponsor(name: string): Promise<void> {
     
     const docRef: DocumentReference = await addDoc(sponsorsCollection, {
       name: name,
+      email: email,
+      contact_number: contact_number,
       timestamp: new Date()
     });
     console.log("✅ Success! Document written with ID:", docRef.id);
