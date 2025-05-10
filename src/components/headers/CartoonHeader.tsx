@@ -17,6 +17,7 @@ const Title = styled.h1`
   color: #1A1A1A;
   margin: 0;
   padding: 0;
+  font-family: 'Coolvetica Rg', sans-serif;
 `;
 
 const Subtitle = styled.h2`
@@ -25,6 +26,7 @@ const Subtitle = styled.h2`
   color: #4A4A4A;
   margin: 0.5rem 0 0 0;
   padding: 0;
+  font-family: 'Coolvetica Rg', sans-serif;
 `;
 
 const CartoonHeader: React.FC<CartoonHeaderProps> = ({ 

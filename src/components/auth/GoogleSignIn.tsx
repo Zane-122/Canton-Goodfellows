@@ -35,25 +35,12 @@ const GoogleSignIn: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-      {error && (
-        <div style={{ 
-          color: 'red', 
-          backgroundColor: '#ffebee', 
-          padding: '0.5rem 1rem', 
-          borderRadius: '4px',
-          marginTop: '0.5rem'
-        }}>
-          {error}
-        </div>
-      )}
-      {!user && (
-        <Button 
-          color="#F5F5F5"
-          onClick={handleSignIn}
+      <Button 
+          color={user ? "#228B22" : "#228B22"}
+          onClick={user ? handleSignOut : handleSignIn}
         >
-          Sign in with Google
+          <p>{user ? "Sign out" : "Sign in with Google"}</p>
         </Button>
-      )}
     </div>
   );
 };
