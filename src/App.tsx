@@ -7,8 +7,7 @@ const App: React.FC = () => {
     <div className="App">
       <header className="App-header">
         <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-
-          // All of this can be removed i am just testing
+          {/* All of this can be removed i am just testing */}
           <CartoonButton color="#FF6B6B">
             Register for Donations
           </CartoonButton>
