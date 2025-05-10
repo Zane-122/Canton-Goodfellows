@@ -1,7 +1,6 @@
-
 import React from 'react';
-import { HomePage } from './HomePage';
 import './App.css';
+import { HomePage } from './HomePage';
 import Container from './components/containers/CartoonContainer';
 import Header from './components/headers/CartoonHeader';
 import { AuthProvider } from './firebase/contexts/AuthContext';
