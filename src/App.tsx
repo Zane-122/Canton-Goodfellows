@@ -1,6 +1,7 @@
 import React from 'react';
+import { HomePage } from './pages/HomePage';
+import { SponsorFormPage } from './pages/SponsorFormPage';
 import './App.css';
-import { HomePage } from './HomePage';
 import Container from './components/containers/CartoonContainer';
 import Header from './components/headers/CartoonHeader';
 import { AuthProvider } from './firebase/contexts/AuthContext';

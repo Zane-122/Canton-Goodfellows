@@ -5,7 +5,7 @@ import CartoonButton from './buttons/CartoonButton';
 import Container from './containers/CartoonContainer';
 import GoogleSignIn from './auth/GoogleSignIn';
 
-export const Navbar: React.FC = () => {
+const Navbar: React.FC = () => {
   return (
     <Container color="#D84040" className="navbar-container">
       <nav className="navbar">
@@ -31,9 +31,7 @@ export const Navbar: React.FC = () => {
             </CartoonButton>
           </li>
           <li>
-            <GoogleSignIn>
-    
-            </GoogleSignIn>
+            <GoogleSignIn/>
           </li>
         </ul>
       </nav>

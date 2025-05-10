@@ -1,11 +1,11 @@
 import { styled, createGlobalStyle } from "styled-components";
-import { Navbar } from "./components/Navbar";
-import { useAuth } from "./firebase/contexts/AuthContext";
+import Navbar from "../components/Navbar";
+import { useAuth } from "../firebase/contexts/AuthContext";
 
-import Container from "./components/containers/CartoonContainer";
-import Header from "./components/headers/CartoonHeader";
-import Button from "./components/buttons/CartoonButton";
-import Snowfall from "./components/effects/Snowfall";
+import Container from "../components/containers/CartoonContainer";
+import Header from "../components/headers/CartoonHeader";
+import Button from "../components/buttons/CartoonButton";
+import Snowfall from "../components/effects/Snowfall";
 
 const GlobalStyle = createGlobalStyle`
   @font-face {
