@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import CartoonContainer from './CartoonContainer';
 import CartoonInput from '../inputs/CartoonInput';
 import styled, { createGlobalStyle } from 'styled-components';
+import CartoonToggleButton from '../buttons/CartoonToggleButton';
 
 interface FormCardProps {
   title: string;
@@ -43,8 +44,7 @@ const StyledFormCard = styled(CartoonContainer)`
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  min-width: 70vw;
-  width: fit-content;
+  width: 70vw;
   height: fit-content;
   color: #fff8e7;
   padding: 2rem;
@@ -59,17 +59,34 @@ const StyledFormCardTitle = styled.h1`
 const StyledFormCardInput = styled(CartoonInput)`
   text-align: center;
   margin: 0;
-  margin-top: 2rem;
 `;
 const StyledFormCardSubtitle = styled.h2`
   font-size: 20px;
   color: #fff8e7;
-  margin: 0;
+  margin-bottom: 4rem;
+  font-family: 'TT Trick New', serif;
+`;
+
+const ButtonsContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+
+`;
+
+const StyledButton = styled(CartoonToggleButton)`
+  font-size: 25px;
   font-family: 'TT Trick New', serif;
 `;
 
 const FormCard: React.FC<FormCardProps> = ({ title, type, subtitle }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [selectedGender, setSelectedGender] = useState<string | null>(null);
+  const [hasAccommodations, setHasAccommodations] = useState<boolean | null>(null);
+  const [selectedAgeRange, setSelectedAgeRange] = useState<string | null>(null);
+
   const onPhoneNumberChange = (value: string) => {
     const numbers = value.replace(/[^0-9]/g, '');
     let formatted = '';
@@ -89,7 +106,69 @@ const FormCard: React.FC<FormCardProps> = ({ title, type, subtitle }) => {
     <StyledFormCard className="form-card" color="#D84040">
       <StyledFormCardTitle className="form-card-title">{title}</StyledFormCardTitle>
       {subtitle ? <StyledFormCardSubtitle className="form-card-subtitle">{subtitle}</StyledFormCardSubtitle> : null}
+
+      {/* Phone Number Card */}
       {type === "phonenumber" ? <StyledFormCardInput value={phoneNumber} onChange={onPhoneNumberChange} /> : null}
+
+      {/* Gender Preferences Card */}
+      {type === "genderpreferences" ? (
+        <ButtonsContainer>
+          <StyledButton 
+            color="#bdf8ff" 
+            isActive={selectedGender === 'male'}
+            onToggle={(isActive) => setSelectedGender(isActive ? 'male' : null)}
+          >
+            Male
+          </StyledButton>
+          <StyledButton 
+            color="#f7bdff" 
+            isActive={selectedGender === 'female'}
+            onToggle={(isActive) => setSelectedGender(isActive ? 'female' : null)}
+          >
+            Female
+          </StyledButton>
+          <StyledButton 
+            color="#ce96ff" 
+            isActive={selectedGender === 'no-preference'}
+            onToggle={(isActive) => setSelectedGender(isActive ? 'no-preference' : null)}
+          >
+            No Preference
+          </StyledButton>
+        </ButtonsContainer>
+      ) : null}
+
+      {/* Extra Accomodations Card */}
+      {type === "accomodations" ? (
+        <ButtonsContainer>
+          <StyledButton 
+            color="#bdf8ff" 
+            isActive={hasAccommodations === true}
+            onToggle={(isActive) => setHasAccommodations(isActive ? true : null)}
+          >
+            Yes
+          </StyledButton>
+          <StyledButton 
+            color="#f7bdff" 
+            isActive={hasAccommodations === false}
+            onToggle={(isActive) => setHasAccommodations(isActive ? false : null)}
+          >
+            No
+          </StyledButton>
+        </ButtonsContainer>
+      ) : null}
+
+      {/* Age Preferences Card */}
+      {type === "agepreferences" ? (
+        <ButtonsContainer>
+          <StyledButton color="#bdf8ff" isActive={selectedAgeRange === '1-3'} onToggle={(isActive) => setSelectedAgeRange(isActive ? '1-3' : null)}>1-3</StyledButton>
+          <StyledButton color="#bdf8ff" isActive={selectedAgeRange === '4-6'} onToggle={(isActive) => setSelectedAgeRange(isActive ? '4-6' : null)}>4-6</StyledButton>
+          <StyledButton color="#f7bdff" isActive={selectedAgeRange === '7-9'} onToggle={(isActive) => setSelectedAgeRange(isActive ? '7-9' : null)}>7-9</StyledButton>
+          <StyledButton color="#f7bdff" isActive={selectedAgeRange === '10-12'} onToggle={(isActive) => setSelectedAgeRange(isActive ? '10-12' : null)}>10-12</StyledButton>
+          <StyledButton color="#ce96ff" isActive={selectedAgeRange === '13-15'} onToggle={(isActive) => setSelectedAgeRange(isActive ? '13-15' : null)}>13-15</StyledButton>
+          <StyledButton color="#ce96ff" isActive={selectedAgeRange === '16-18'} onToggle={(isActive) => setSelectedAgeRange(isActive ? '16-18' : null)}>16-18</StyledButton>
+        </ButtonsContainer>
+      ) : null}
+
     </StyledFormCard>
   );
 };

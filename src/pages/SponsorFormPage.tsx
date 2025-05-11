@@ -81,12 +81,26 @@ export const SponsorFormPage: React.FC = () => {
           <StyledFormPageTitle>Sponsor Form</StyledFormPageTitle>
         </StyledContainer>
         <FormCardsContainer>
+
           <StyledContainer color="#D84040">
             <FormCard title="Phone Number" type="phonenumber" subtitle="Please enter the primary phone number we can use to reach you." />
           </StyledContainer>
+
           <StyledContainer color="#D84040">
-            <FormCard title="Gender Preferences" type="preferences" subtitle="Do you have a preferred gender to be matched with?" />
+            <FormCard title="Gender Preferences" type="genderpreferences" subtitle="Do you have a preferred gender to be matched with?" />
           </StyledContainer>
+
+          <StyledContainer color="#D84040">
+            <FormCard title="Age Preferences" type="agepreferences" subtitle="Do you have a preferred age of children to sponsor for?" />
+          </StyledContainer>
+
+          <StyledContainer color="#D84040">
+            <FormCard title="Extra Accomodations" type="accomodations" subtitle="Are you willing to accomodate for neurodiverse kids? (Ex. kids with Autism, ADHD, sensory processing issues, etc." />
+          </StyledContainer>
+          
+          
+
+
         </FormCardsContainer>
       </StyledFormPageContainer>
     </>
