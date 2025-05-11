@@ -49,7 +49,7 @@ const StyledFormPageContainer = styled.div`
   align-items: center;
   justify-content: flex-start;
   width: 100%;
-  margin-top: 10vh;
+  margin-top: 15vh;
   margin-bottom: 10vh;
 `;
 
@@ -84,7 +84,10 @@ export const SponsorFormPage: React.FC = () => {
     <>
       <GlobalStyle />
       <Navbar />
-      <Snowfall />
+      <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }}>
+        <Snowfall />
+      </div>
+      
       <StyledFormPageContainer>
         <StyledContainer color="#D84040">
           <StyledFormPageTitle>Sponsor Form</StyledFormPageTitle>

@@ -8,12 +8,16 @@ interface CartoonToggleButtonProps {
   color?: string;
   isActive?: boolean;
   onToggle?: (isActive: boolean) => void;
+  activeBorderColor?: string;
+  inactiveBorderColor?: string;
 }
 
 interface ButtonContainerProps {
   isPressed: boolean;
   color: string;
   isActive: boolean;
+  activeBorderColor: string;
+  inactiveBorderColor: string;
 }
 
 const ButtonContainer = styled.button<ButtonContainerProps>`
@@ -23,14 +27,15 @@ const ButtonContainer = styled.button<ButtonContainerProps>`
   font-weight: 900;
   color: rgb(0, 0, 0);
   background-color: ${props => props.color};
-  border: 3px solid ${props => props.isActive ? '#4CAF50' : '#FF5252'};
+  border: 3px solid ${props => props.isActive ? props.activeBorderColor : props.inactiveBorderColor};
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.1s ease;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
   transform: translateY(${(props: ButtonContainerProps) => (props.isPressed || props.isActive) ? '4px' : '0'});
   box-shadow: ${(props: ButtonContainerProps) => (props.isPressed || props.isActive)
     ? '0 0 0 0 #0f1418' 
     : '4px 4px 0 0 #0f1418'};
+  will-change: transform, box-shadow;
 
   &:hover {
     background-color: ${props => props.color};
@@ -56,7 +61,9 @@ const CartoonToggleButton: React.FC<CartoonToggleButtonProps> = ({
   className,
   color = "rgb(0, 0, 0)",
   isActive = false,
-  onToggle
+  onToggle,
+  activeBorderColor = '#4CAF50',
+  inactiveBorderColor = '#FF5252'
 }) => {
   const [isPressed, setIsPressed] = useState(false);
 
@@ -88,6 +95,8 @@ const CartoonToggleButton: React.FC<CartoonToggleButtonProps> = ({
       isPressed={isPressed}
       color={color}
       isActive={isActive}
+      activeBorderColor={activeBorderColor}
+      inactiveBorderColor={inactiveBorderColor}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}

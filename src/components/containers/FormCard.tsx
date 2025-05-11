@@ -114,7 +114,7 @@ const FormCard: React.FC<FormCardProps> = ({ title, type, subtitle }) => {
       {type === "genderpreferences" ? (
         <ButtonsContainer>
           <StyledButton 
-            color="#bdf8ff" 
+            color="#bdf8ff"
             isActive={selectedGender === 'male'}
             onToggle={(isActive) => setSelectedGender(isActive ? 'male' : null)}
           >
