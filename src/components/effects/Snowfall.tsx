@@ -18,7 +18,7 @@ const Snowflake = styled.div<{ size: number; delay: number; duration: number }>`
   height: ${props => props.size}px;
   background: white;
   border-radius: 50%;
-  opacity: 0.6;
+  opacity: 0.4;
   will-change: transform;
   animation: ${snowfall} ${props => props.duration}s linear infinite;
   animation-delay: ${props => props.delay}s;

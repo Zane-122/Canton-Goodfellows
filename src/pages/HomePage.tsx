@@ -6,7 +6,7 @@ import Container from "../components/containers/CartoonContainer";
 import Header from "../components/headers/CartoonHeader";
 import Button from "../components/buttons/CartoonButton";
 import Snowfall from "../components/effects/Snowfall";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 
 const GlobalStyle = createGlobalStyle`
   @font-face {
@@ -27,17 +27,17 @@ const GlobalStyle = createGlobalStyle`
 
   @font-face {
     font-family: 'TT Trick New';
-    src: url('/fonts/TT Tricks Trial DemiBold.otf') format('opentype');
-    font-weight: 700;
-    font-style: normal;
+    src: url('/fonts/TT Tricks Trial DemiBold Italic.otf') format('opentype');
+    font-weight: 600;
+    font-style: italic;
     font-display: block;
   }
 
   @font-face {
     font-family: 'TT Trick New';
-    src: url('/fonts/TT Tricks Trial DemiBold.otf') format('opentype');
-    font-weight: 600;
-    font-style: italic;
+    src: url('/fonts/TT Tricks Trial Bold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
     font-display: block;
   }
 
@@ -82,6 +82,11 @@ const BigName = styled.h1<BigNameProps>`
   text-align: center;
   margin: 0;
   padding: 0;
+  will-change: opacity, filter;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  
   transition: all 0.3s ease;
   opacity: ${props => props.scrolled > 50 ? "0" : "1"};
   filter: blur(${props => Math.max(0, Math.min((props.scrolled - 35) / 3, 30))}px);
@@ -94,6 +99,10 @@ const EmphasizedName = styled.span`
   font-style: italic;
   color: rgb(255, 255, 255);
   text-decoration: underline;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
 `;
 
 interface ContainerProps {
@@ -130,16 +139,32 @@ const getFirstName = (name: string) => {
 export const HomePage: React.FC = () => {
   const { user, signInWithGoogle, logout } = useAuth();
   const [scrolled, setScrolled] = useState(0);
+  const workerRef = useRef<Worker | null>(null);
 
   useEffect(() => {
+    // Create worker
+    workerRef.current = new Worker(new URL('../workers/scroll.worker.ts', import.meta.url));
+
+    // Handle messages from worker
+    workerRef.current.onmessage = (event) => {
+      if (event.data.type === 'scrollUpdate') {
+        setScrolled(event.data.scrollY);
+      }
+    };
+
+    // Handle scroll events
     const handleScroll = () => {
-      setScrolled(window.scrollY);
+      workerRef.current?.postMessage({
+        type: 'scroll',
+        scrollY: window.scrollY
+      });
     };
 
     window.addEventListener('scroll', handleScroll);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      workerRef.current?.terminate();
     };
   }, []);
 
