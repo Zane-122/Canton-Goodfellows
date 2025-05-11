@@ -11,8 +11,6 @@ import SnowyGround from "../components/effects/SnowyGround";
 import christmasGiftsImage from '../images/Christmas Gifts from Unsplash.jpg';
 import christmasGiftsImage2 from '../images/Kids Gifts Christmas.jpg';
 
-import { debounce } from 'lodash'; // Import debounce from lodash
-
 const GlobalStyle = createGlobalStyle`
   @font-face {
     font-family: 'Coolvetica Rg';
