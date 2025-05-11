@@ -22,7 +22,7 @@ const Snowflake = styled.div<{ size: number; delay: number; duration: number }>`
   will-change: transform;
   animation: ${snowfall} ${props => props.duration}s linear infinite;
   animation-delay: ${props => props.delay}s;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   transform: translateZ(-1);
   backface-visibility: hidden;
@@ -31,13 +31,13 @@ const Snowflake = styled.div<{ size: number; delay: number; duration: number }>`
 `;
 
 const SnowfallContainer = styled.div`
-  position: relative;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
   will-change: transform;
   transform: translateZ(-1);
   backface-visibility: hidden;
