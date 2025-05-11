@@ -142,7 +142,7 @@ export const HomePage: React.FC = () => {
 
             <StyledContainer orientation="right">
               <Header title="Sponsor a Family!" subtitle="Help a family in need buy gifts for the holidays!" />
-              <StyledButton  color="#CA242B">
+              <StyledButton  color="#CA242B" disabled={!user}>
                 <ButtonText>Sponsor Now!</ButtonText>
               </StyledButton>
             </StyledContainer>
@@ -152,7 +152,7 @@ export const HomePage: React.FC = () => {
                 title="Are you a family in need?"
                 subtitle="Register to receive help from the Canton Good Fellows!"
               />
-              <StyledButton color="#CA242B">
+              <StyledButton color="#CA242B" disabled={!user}>
                 <ButtonText>Register Now!</ButtonText>
               </StyledButton>
             </StyledContainer>
