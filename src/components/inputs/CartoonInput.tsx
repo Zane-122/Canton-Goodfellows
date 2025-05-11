@@ -28,7 +28,7 @@ const CartoonInput: React.FC<CartoonInputProps> = ({
         borderRadius: '8px',
         padding: '10px 15px',
         fontSize: '16px',
-        fontFamily: '"Coolvetica Rg", sans-serif',
+        fontFamily: '"TT Trick New", serif',
         fontWeight: 'normal',
         outline: 'none',
         boxShadow: '4px 4px 0 #000',

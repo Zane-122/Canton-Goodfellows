@@ -4,6 +4,7 @@ import logo from '../images/logo.png';
 import CartoonButton from './buttons/CartoonButton';
 import GoogleSignIn from './auth/GoogleSignIn';
 import Container from './containers/CartoonContainer';
+
 const Navbar: React.FC = () => {
   return (
     <Container className="navbar-container">
