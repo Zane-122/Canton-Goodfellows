@@ -344,7 +344,7 @@ const Catalog: React.FC<CatalogProps> = ({familyID}) => {
       <Navbar />
       <MemoizedSnowfall />
       <div style={{ padding: '20px', marginTop: '15vh', minHeight: '100vh', display: "flex", flexDirection: "column", gap: "20px"}}>
-      <CartoonHeader color="#FFFFFF" title={`${childID}'s ${viewWishlist ? "Wishlist" : "Gift Catalog"}`} subtitle={results.length < 1 ? "Search to get started" : `Add items to your wishlist!`}/>
+      <CartoonHeader color="#FFFFFF" title={`${childID}'s ${viewWishlist ? "Wishlist" : "Gift Catalog"}`} subtitle={viewWishlist ? "These are the items on your wishlist" : `Add items to your wishlist!`}/>
         <div style={{
           display: "flex", 
           flexDirection: "row", 
