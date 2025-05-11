@@ -35,7 +35,7 @@ const ButtonContainer = styled.button<ButtonContainerProps>`
 
   &:hover {
     background-color: ${props => props.disabled ? "#808080" : props.color}; 
-    transform: ${(props: ButtonContainerProps) => props.disabled ? "translateY(0px)" : "translateY(2px)"};
+    transform: ${(props: ButtonContainerProps) => props.disabled ? "translateY(4px)" : "translateY(2px)"};
     box-shadow: ${props => props.disabled ? "0 0 0 0 #0f1418" : "2px 2px 0 0 #0f1418"};
   }
 
