@@ -24,4 +24,7 @@ worker.onmessage = (event) => {
     // Send the snowflakes data back to the main thread
     worker.postMessage(snowflakes);
   }
-}; 
+};
+
+// Make this file a module
+export {}; 
