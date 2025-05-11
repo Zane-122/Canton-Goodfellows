@@ -5,25 +5,32 @@ interface CartoonHeaderProps {
   title: string;
   subtitle?: string;
   className?: string;
+  color?: string;
 }
 
 const HeaderContainer = styled.div`
   text-align: center;
 `;
 
-const Title = styled.h1`
+interface TitleProps {
+  color?: string;
+}
+const Title = styled.h1<TitleProps>`
   font-size: 2.5rem;
   font-weight: 900;
-  color: #1A1A1A;
+  color: ${props => props.color || "#1A1A1A"};
   margin: 0;
   padding: 0;
   font-family: 'TT Trick New Bold Italic', serif;
 `;
 
-const Subtitle = styled.h2`
+interface SubtitleProps {
+  color?: string;
+}
+const Subtitle = styled.h2<SubtitleProps>`
   font-size: 1.5rem;
   font-weight: 500;
-  color: #4A4A4A;
+  color: ${props => props.color || "#4A4A4A"};
   margin: 0.5rem 0 0 0;
   padding: 0;
   font-family: 'TT Trick New', serif;
@@ -32,12 +39,13 @@ const Subtitle = styled.h2`
 const CartoonHeader: React.FC<CartoonHeaderProps> = ({ 
   title, 
   subtitle,
-  className 
+  className,
+  color
 }) => {
   return (
     <HeaderContainer className={className}>
-      <Title>{title}</Title>
-      {subtitle && <Subtitle>{subtitle}</Subtitle>}
+      <Title color={color}>{title}</Title>
+      {subtitle && <Subtitle color={color}>{subtitle}</Subtitle>}
     </HeaderContainer>
   );
 };

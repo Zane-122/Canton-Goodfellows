@@ -28,12 +28,13 @@ const ButtonContainer = styled.button<ButtonContainerProps>`
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.1s ease;
-  transform: translateY(${(props: ButtonContainerProps) => props.isPressed ? '4px' : '0'});
+  transform: translateY(${(props: ButtonContainerProps) => props.isPressed || props.disabled ? '4px' : '0'});
   box-shadow: ${(props: ButtonContainerProps) => props.isPressed || props.disabled
     ? '0 0 0 0 #0f1418' 
     : '4px 4px 0 0 #0f1418'};
 
   &:hover {
+    background-color: ${props => props.disabled ? "#808080" : props.color}; 
     transform: ${(props: ButtonContainerProps) => props.disabled ? "translateY(0px)" : "translateY(2px)"};
     box-shadow: ${props => props.disabled ? "0 0 0 0 #0f1418" : "2px 2px 0 0 #0f1418"};
   }

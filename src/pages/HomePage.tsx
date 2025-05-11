@@ -8,6 +8,7 @@ import Header from "../components/headers/CartoonHeader";
 import Button from "../components/buttons/CartoonButton";
 import Snowfall from "../components/effects/Snowfall";
 import SnowyGround from "../components/effects/SnowyGround";
+
 import christmasGiftsImage from '../images/Christmas Gifts from Unsplash.jpg';
 import christmasGiftsImage2 from '../images/Kids Gifts Christmas.jpg';
 
