@@ -4,6 +4,7 @@ import FormCard from '../components/containers/FormCard';
 import Navbar from '../components/Navbar';
 import CartoonContainer from '../components/containers/CartoonContainer';
 import Snowfall from '../components/effects/Snowfall';
+import CartoonButton from '../components/buttons/CartoonButton';
 
 const GlobalStyle = createGlobalStyle`
   @font-face {
@@ -70,6 +71,14 @@ const FormCardsContainer = styled.div`
   gap: 1vh;
 `;
 
+const StyledButton = styled(CartoonButton)`
+  font-size: 5vmin;
+  font-family: "TT Trick New Bold Italic", serif;
+  color: rgb(255, 255, 255);
+  letter-spacing: 0.2vmin;
+  margin: 2vmin;
+  padding: 1vmin;
+`;
 export const SponsorFormPage: React.FC = () => {
   return (
     <>
@@ -95,10 +104,12 @@ export const SponsorFormPage: React.FC = () => {
           </StyledContainer>
 
           <StyledContainer color="#D84040">
-            <FormCard title="Extra Accomodations" type="accomodations" subtitle="Are you willing to accomodate for neurodiverse kids? (Ex. kids with Autism, ADHD, sensory processing issues, etc." />
+            <FormCard title="Extra Accomodations" type="accomodations" subtitle="Are you willing to accomodate for neurodiverse kids? (Ex. kids with Autism, ADHD, sensory processing issues, etc.)" />
           </StyledContainer>
           
-          
+          <StyledButton color="#D84040">
+            Submit
+          </StyledButton>
 
 
         </FormCardsContainer>

@@ -85,7 +85,7 @@ const FormCard: React.FC<FormCardProps> = ({ title, type, subtitle }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [selectedGender, setSelectedGender] = useState<string | null>(null);
   const [hasAccommodations, setHasAccommodations] = useState<boolean | null>(null);
-  const [selectedAgeRange, setSelectedAgeRange] = useState<string | null>(null);
+  const [selectedAgeRanges, setSelectedAgeRanges] = useState<string[]>([]);
 
   const onPhoneNumberChange = (value: string) => {
     const numbers = value.replace(/[^0-9]/g, '');
@@ -159,14 +159,104 @@ const FormCard: React.FC<FormCardProps> = ({ title, type, subtitle }) => {
 
       {/* Age Preferences Card */}
       {type === "agepreferences" ? (
-        <ButtonsContainer>
-          <StyledButton color="#bdf8ff" isActive={selectedAgeRange === '1-3'} onToggle={(isActive) => setSelectedAgeRange(isActive ? '1-3' : null)}>1-3</StyledButton>
-          <StyledButton color="#bdf8ff" isActive={selectedAgeRange === '4-6'} onToggle={(isActive) => setSelectedAgeRange(isActive ? '4-6' : null)}>4-6</StyledButton>
-          <StyledButton color="#f7bdff" isActive={selectedAgeRange === '7-9'} onToggle={(isActive) => setSelectedAgeRange(isActive ? '7-9' : null)}>7-9</StyledButton>
-          <StyledButton color="#f7bdff" isActive={selectedAgeRange === '10-12'} onToggle={(isActive) => setSelectedAgeRange(isActive ? '10-12' : null)}>10-12</StyledButton>
-          <StyledButton color="#ce96ff" isActive={selectedAgeRange === '13-15'} onToggle={(isActive) => setSelectedAgeRange(isActive ? '13-15' : null)}>13-15</StyledButton>
-          <StyledButton color="#ce96ff" isActive={selectedAgeRange === '16-18'} onToggle={(isActive) => setSelectedAgeRange(isActive ? '16-18' : null)}>16-18</StyledButton>
-        </ButtonsContainer>
+        <>
+          <ButtonsContainer>
+            <StyledButton 
+              color="#bdf8ff" 
+              isActive={selectedAgeRanges.includes('1-3')} 
+              onToggle={(isActive) => {
+                if (isActive) {
+                  setSelectedAgeRanges([...selectedAgeRanges, '1-3']);
+                } else {
+                  setSelectedAgeRanges(selectedAgeRanges.filter(range => range !== '1-3'));
+                }
+              }}
+            >
+              1-3
+            </StyledButton>
+            <StyledButton 
+              color="#bdf8ff" 
+              isActive={selectedAgeRanges.includes('4-6')} 
+              onToggle={(isActive) => {
+                if (isActive) {
+                  setSelectedAgeRanges([...selectedAgeRanges, '4-6']);
+                } else {
+                  setSelectedAgeRanges(selectedAgeRanges.filter(range => range !== '4-6'));
+                }
+              }}
+            >
+              4-6
+            </StyledButton>
+            <StyledButton 
+              color="#f7bdff" 
+              isActive={selectedAgeRanges.includes('7-9')} 
+              onToggle={(isActive) => {
+                if (isActive) {
+                  setSelectedAgeRanges([...selectedAgeRanges, '7-9']);
+                } else {
+                  setSelectedAgeRanges(selectedAgeRanges.filter(range => range !== '7-9'));
+                }
+              }}
+            >
+              7-9
+            </StyledButton>
+            <StyledButton 
+              color="#f7bdff" 
+              isActive={selectedAgeRanges.includes('10-12')} 
+              onToggle={(isActive) => {
+                if (isActive) {
+                  setSelectedAgeRanges([...selectedAgeRanges, '10-12']);
+                } else {
+                  setSelectedAgeRanges(selectedAgeRanges.filter(range => range !== '10-12'));
+                }
+              }}
+            >
+              10-12
+            </StyledButton>
+            <StyledButton 
+              color="#ce96ff" 
+              isActive={selectedAgeRanges.includes('13-15')} 
+              onToggle={(isActive) => {
+                if (isActive) {
+                  setSelectedAgeRanges([...selectedAgeRanges, '13-15']);
+                } else {
+                  setSelectedAgeRanges(selectedAgeRanges.filter(range => range !== '13-15'));
+                }
+              }}
+            >
+              13-15
+            </StyledButton>
+            <StyledButton 
+              color="#ce96ff" 
+              isActive={selectedAgeRanges.includes('16-18')} 
+              onToggle={(isActive) => {
+                if (isActive) {
+                  setSelectedAgeRanges([...selectedAgeRanges, '16-18']);
+                } else {
+                  setSelectedAgeRanges(selectedAgeRanges.filter(range => range !== '16-18'));
+                }
+              }}
+            >
+              16-18
+            </StyledButton>
+          </ButtonsContainer>
+          <br />
+          <ButtonsContainer>
+            <StyledButton 
+              color="#6de8cf" 
+              isActive={selectedAgeRanges.length === 0} 
+              onToggle={(isActive) => {
+                if (isActive) {
+                  setSelectedAgeRanges([]);
+                } else {
+                  setSelectedAgeRanges([]);
+                }
+              }}
+            >
+              No Preference
+            </StyledButton>
+          </ButtonsContainer>
+        </>
       ) : null}
 
     </StyledFormCard>
