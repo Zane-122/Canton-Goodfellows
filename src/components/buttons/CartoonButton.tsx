@@ -21,6 +21,7 @@ const ButtonContainer = styled.button<ButtonContainerProps>`
   padding: 12px 24px;
   font-size: 16px;
   font-weight: 900;
+  font-family: 'TT Trick New Bold', serif;
   color: rgb(0, 0, 0);
   background-color: ${props => props.disabled ? "#808080" : props.color};
   border: 3px solid #0f1418;

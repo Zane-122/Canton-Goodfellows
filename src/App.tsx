@@ -28,8 +28,8 @@ const App: React.FC = () => {
   
   return (
     <AuthProvider>
-      <GlobalStyle />
-      <HomePage />
+      {/* <HomePage /> */}
+      <SponsorFormPage />
     </AuthProvider>
   );
 };
