@@ -6,7 +6,7 @@ import GoogleSignIn from './auth/GoogleSignIn';
 import Container from './containers/CartoonContainer';
 const Navbar: React.FC = () => {
   return (
-    <Container className="navbar-container">
+    <Container className="navbar-container" solidBorder={true}>
       <nav className="navbar">
         <div className="navbar-logo">
           <CartoonButton color="#ffffff" onClick={() => window.open('https://cantongoodfellows.org/', '_blank')}>

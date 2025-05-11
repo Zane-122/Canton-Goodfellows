@@ -6,6 +6,7 @@ import Container from "../components/containers/CartoonContainer";
 import Header from "../components/headers/CartoonHeader";
 import Button from "../components/buttons/CartoonButton";
 import Snowfall from "../components/effects/Snowfall";
+import { useEffect, useState, useCallback } from "react";
 
 const GlobalStyle = createGlobalStyle`
   @font-face {
@@ -13,6 +14,7 @@ const GlobalStyle = createGlobalStyle`
     src: url('/fonts/Coolvetica Rg.otf') format('opentype');
     font-weight: normal;
     font-style: normal;
+    font-display: block;
   }
 
   @font-face {
@@ -20,7 +22,7 @@ const GlobalStyle = createGlobalStyle`
     src: url('/fonts/TT Tricks Trial DemiBold.otf') format('opentype');
     font-weight: 600;
     font-style: normal;
-    font-display: swap;
+    font-display: block;
   }
 
   * {
@@ -34,16 +36,37 @@ const GlobalStyle = createGlobalStyle`
     background: radial-gradient(circle at 50% 200%, #87CEEB 50%, #4169E1 70%, #1E3A8A 100%);
     background-attachment: fixed;
   }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  * {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
 `;
 
-const BigName = styled.h1`
+interface BigNameProps {
+  scrolled: number;
+}
+
+const BigName = styled.h1<BigNameProps>`
   font-size: 10vmin;
   font-family: "TT Trick New Italic", serif;
   color: rgb(214, 245, 255);
   letter-spacing: 0.7vmin;
-  align-self: center;
-  margin-top: 2vh;
+  position: fixed;
+  top: 17vh;
+  width: 100%;
+  text-align: center;
+  margin: 0;
+  padding: 0;
   transition: all 0.3s ease;
+  opacity: ${props => props.scrolled > 50 ? "0" : "1"};
+  filter: blur(${props => Math.max(0, Math.min((props.scrolled - 35) / 3, 30))}px);
 `;
 
 const EmphasizedName = styled.span`
@@ -53,11 +76,11 @@ const EmphasizedName = styled.span`
   text-decoration: underline;
 `;
 
-interface ButtonProps {
+interface ContainerProps {
   orientation: "left" | "right";
 }
 
-const StyledContainer = styled(Container)<ButtonProps>`
+const StyledContainer = styled(Container)<ContainerProps>`
   padding: 2vmin;
   margin: 1vmin;
   width: 25vw;
@@ -85,6 +108,19 @@ const getFirstName = (name: string) => {
 
 export const HomePage: React.FC = () => {
   const { user, signInWithGoogle, logout } = useAuth();
+  const [scrolled, setScrolled] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   return (
     <div>
@@ -99,10 +135,10 @@ export const HomePage: React.FC = () => {
           justifyContent: "flex-start",
           minHeight: "100vh",
           paddingTop: "80px",
-          marginTop: "10vh",
+          marginTop: "26vh",
         }}
       >
-        <BigName>
+        <BigName scrolled={scrolled}>
           {user ? (
             <>
               Hello, <EmphasizedName>{getFirstName(user?.displayName || "")}</EmphasizedName>
@@ -130,7 +166,6 @@ export const HomePage: React.FC = () => {
                 subtitle="Donate to the Canton Good Fellows to help families in need throughout the year!"
               />
               <StyledButton
-
                 color="#CA242B"
                 onClick={() => {
                   window.open("https://cantongoodfellows.org/donate/", "_blank");
@@ -140,9 +175,9 @@ export const HomePage: React.FC = () => {
               </StyledButton>
             </StyledContainer>
 
-            <StyledContainer orientation="right">
+            <StyledContainer orientation="left">
               <Header title="Sponsor a Family!" subtitle="Help a family in need buy gifts for the holidays!" />
-              <StyledButton  color="#CA242B">
+              <StyledButton color="#CA242B" disabled={!user}>
                 <ButtonText>Sponsor Now!</ButtonText>
               </StyledButton>
             </StyledContainer>
@@ -152,7 +187,7 @@ export const HomePage: React.FC = () => {
                 title="Are you a family in need?"
                 subtitle="Register to receive help from the Canton Good Fellows!"
               />
-              <StyledButton color="#CA242B">
+              <StyledButton color="#CA242B" disabled={!user}>
                 <ButtonText>Register Now!</ButtonText>
               </StyledButton>
             </StyledContainer>
