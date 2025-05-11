@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar';
 import CartoonContainer from '../components/containers/CartoonContainer';
 import Snowfall from '../components/effects/Snowfall';
 import CartoonButton from '../components/buttons/CartoonButton';
+import SnowyGround from '../components/effects/SnowyGround';
 
 const GlobalStyle = createGlobalStyle`
   @font-face {
@@ -40,17 +41,19 @@ const StyledContainer = styled(CartoonContainer)`
   height: fit-content;
   padding: 2vmin;
   margin: 1vmin;
+  align-self: flex-end;
 `;
 
 const StyledFormPageContainer = styled.div`
   text-align: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
   justify-content: flex-start;
   width: 100%;
   margin-top: 15vh;
   margin-bottom: 10vh;
+  padding-right: 5vw;
 `;
 
 const StyledFormPageTitle = styled.h1`
@@ -65,9 +68,9 @@ const StyledFormPageTitle = styled.h1`
 const FormCardsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
   justify-content: flex-start;
-  width: 90vw;
+  width: 70vw;
   gap: 1vh;
 `;
 
@@ -117,6 +120,7 @@ export const SponsorFormPage: React.FC = () => {
 
         </FormCardsContainer>
       </StyledFormPageContainer>
+      <SnowyGround />
     </>
   );
 };
