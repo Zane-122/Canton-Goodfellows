@@ -13,7 +13,7 @@ import {addFamily, getFamilies, updateFamilySponsoredStatus} from './firebase/fa
 import { Family } from './firebase/families';
 import { Child } from './firebase/families';
 import Button from './components/buttons/CartoonButton';
-
+import Test from './rainforest/test';
 const GlobalStyle = createGlobalStyle`
   body {
     margin: 0;
@@ -29,7 +29,7 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <GlobalStyle />
-      <HomePage />
+      <Test />
     </AuthProvider>
   );
 };

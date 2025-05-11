@@ -8,7 +8,7 @@ import Header from "../components/headers/CartoonHeader";
 import Button from "../components/buttons/CartoonButton";
 import Snowfall from "../components/effects/Snowfall";
 import SnowyGround from "../components/effects/SnowyGround";
-import { debounce } from 'lodash'; // Import debounce from lodash
+
 
 const GlobalStyle = createGlobalStyle`
   @font-face {
