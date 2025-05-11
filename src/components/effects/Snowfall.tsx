@@ -22,27 +22,27 @@ const Snowflake = styled.div<{ size: number; delay: number; duration: number }>`
   will-change: transform;
   animation: ${snowfall} ${props => props.duration}s linear infinite;
   animation-delay: ${props => props.delay}s;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
-  transform: translateZ(0);
+  transform: translateZ(-1);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  -webkit-transform: translateZ(0);
+  -webkit-transform: translateZ(-1);
 `;
 
 const SnowfallContainer = styled.div`
-  position: fixed;
+  position: relative;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;
   will-change: transform;
-  transform: translateZ(0);
+  transform: translateZ(-1);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  -webkit-transform: translateZ(0);
+  -webkit-transform: translateZ(-1);
 `;
 
 interface SnowflakeData {
@@ -54,7 +54,7 @@ interface SnowflakeData {
 
 const Snowfall: React.FC = () => {
   const [snowflakes, setSnowflakes] = useState<SnowflakeData[]>([]);
-
+  const [firstSnowflakes, setFirstSnowflakes] = useState(true);
   useEffect(() => {
     // Create a new Web Worker
     const worker = new Worker(new URL('./snowfall.worker.ts', import.meta.url));
@@ -65,7 +65,7 @@ const Snowfall: React.FC = () => {
     };
 
     // Start the worker
-    worker.postMessage('start');
+    worker.postMessage('start');  
 
     // Cleanup
     return () => {

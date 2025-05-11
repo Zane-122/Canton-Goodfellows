@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useCallback, useMemo, useLayoutEffect, useRef } from "react";
 import { styled, createGlobalStyle } from "styled-components";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../firebase/contexts/AuthContext";
@@ -6,7 +7,7 @@ import Container from "../components/containers/CartoonContainer";
 import Header from "../components/headers/CartoonHeader";
 import Button from "../components/buttons/CartoonButton";
 import Snowfall from "../components/effects/Snowfall";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { debounce } from 'lodash'; // Import debounce from lodash
 
 const GlobalStyle = createGlobalStyle`
   @font-face {
@@ -65,9 +66,13 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
-interface BigNameProps {
-  scrolled: number;
-}
+interface BigNameProps {}
+
+const BigNameContainer = styled.div`
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+`;
 
 const BigName = styled.h1<BigNameProps>`
   font-size: 10vmin;
@@ -76,20 +81,15 @@ const BigName = styled.h1<BigNameProps>`
   font-style: italic;
   color: rgb(214, 245, 255);
   letter-spacing: 0.7vmin;
-  position: fixed;
-  top: 17vh;
   width: 100%;
   text-align: center;
   margin: 0;
   padding: 0;
-  will-change: opacity, filter;
+  will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
-  
-  transition: all 0.3s ease;
-  opacity: ${props => props.scrolled > 50 ? "0" : "1"};
-  filter: blur(${props => Math.max(0, Math.min((props.scrolled - 35) / 3, 30))}px);
+  transform: translateY(calc(var(--scroll) * 0.5));
 `;
 
 const EmphasizedName = styled.span`
@@ -136,108 +136,112 @@ const getFirstName = (name: string) => {
   return name.split(" ")[0];
 };
 
+const ContentContainer = styled.div`
+  position: relative;
+`;
+
 export const HomePage: React.FC = () => {
   const { user, signInWithGoogle, logout } = useAuth();
-  const [scrolled, setScrolled] = useState(0);
-  const workerRef = useRef<Worker | null>(null);
 
   useEffect(() => {
-    // Create worker
-    workerRef.current = new Worker(new URL('../workers/scroll.worker.ts', import.meta.url));
-
-    // Handle messages from worker
-    workerRef.current.onmessage = (event) => {
-      if (event.data.type === 'scrollUpdate') {
-        setScrolled(event.data.scrollY);
-      }
-    };
-
-    // Handle scroll events
     const handleScroll = () => {
-      workerRef.current?.postMessage({
-        type: 'scroll',
-        scrollY: window.scrollY
-      });
+      document.documentElement.style.setProperty('--scroll', window.scrollY + 'px');
     };
 
-    window.addEventListener('scroll', handleScroll);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      workerRef.current?.terminate();
-    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const firstName = useMemo(() =>
+    user ? getFirstName(user.displayName || "") : "",
+    [user]
+  );
+
+  const greetingText = useMemo(() => (
+    user ? (
+      <>
+        Hello, <EmphasizedName>{firstName}</EmphasizedName>
+      </>
+    ) : (
+      <>
+        Please sign in!
+      </>
+    )
+  ), [user, firstName]);
+
+  const containerContent = useMemo(() => (
+    <div style={{ marginTop: "2vh" }}>
+      <StyledContainer orientation="left">
+        <Header
+          title="Donate!"
+          subtitle="Donate to the Canton Good Fellows to help families in need throughout the year!"
+        />
+        <StyledButton
+          color="#CA242B"
+          onClick={() => {
+            window.open("https://cantongoodfellows.org/donate/", "_blank");
+          }}
+        >
+          <ButtonText>Donate Now!</ButtonText>
+        </StyledButton>
+      </StyledContainer>
+
+      <StyledContainer orientation="left">
+        <Header title="Sponsor a Family!" subtitle="Help a family in need buy gifts for the holidays!" />
+        <StyledButton color="#CA242B" disabled={!user}>
+          <ButtonText>Sponsor Now!</ButtonText>
+        </StyledButton>
+      </StyledContainer>
+
+      <StyledContainer orientation="left">
+        <Header
+          title="Are you a family in need?"
+          subtitle="Register to receive help from the Canton Good Fellows!"
+        />
+        <StyledButton color="#CA242B" disabled={!user}>
+          <ButtonText>Register Now!</ButtonText>
+        </StyledButton>
+      </StyledContainer>
+    </div>
+  ), [user]);
   return (
     <div>
       <GlobalStyle />
-      <Snowfall />
-      <Navbar />
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "flex-start",
-          minHeight: "100vh",
-          paddingTop: "80px",
-          marginTop: "26vh",
-        }}
-      >
-        <BigName scrolled={scrolled}>
-          {user ? (
-            <>
-              Hello, <EmphasizedName>{getFirstName(user?.displayName || "")}</EmphasizedName>
-            </>
-          ) : (
-            <>
-              <EmphasizedName>Sign in</EmphasizedName> to continue
-            </>
-          )}
-        </BigName>
-        <div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-              justifyContent: "center",
-              gap: "1vh",
-              width: "90vw",
-            }}
-          >
-            <StyledContainer orientation="left">
-              <Header
-                title="Donate!"
-                subtitle="Donate to the Canton Good Fellows to help families in need throughout the year!"
-              />
-              <StyledButton
-                color="#CA242B"
-                onClick={() => {
-                  window.open("https://cantongoodfellows.org/donate/", "_blank");
-                }}
-              >
-                <ButtonText>Donate Now!</ButtonText>
-              </StyledButton>
-            </StyledContainer>
-
-            <StyledContainer orientation="left">
-              <Header title="Sponsor a Family!" subtitle="Help a family in need buy gifts for the holidays!" />
-              <StyledButton color="#CA242B" disabled={!user}>
-                <ButtonText>Sponsor Now!</ButtonText>
-              </StyledButton>
-            </StyledContainer>
-
-            <StyledContainer orientation="left">
-              <Header
-                title="Are you a family in need?"
-                subtitle="Register to receive help from the Canton Good Fellows!"
-              />
-              <StyledButton color="#CA242B" disabled={!user}>
-                <ButtonText>Register Now!</ButtonText>
-              </StyledButton>
-            </StyledContainer>
-          </div>
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }}>
+        <Snowfall />
+      </div>
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <Navbar />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "flex-start",
+            minHeight: "100vh",
+            paddingTop: "80px",
+            marginTop: "10vh",
+          }}
+        >
+          <BigNameContainer>
+            <BigName>
+              {greetingText}
+            </BigName>
+          </BigNameContainer>
+          <ContentContainer>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                justifyContent: "center",
+                gap: "1vh",
+                width: "90vw",
+              }}
+            >
+              {containerContent}
+            </div>
+          </ContentContainer>
         </div>
       </div>
     </div>

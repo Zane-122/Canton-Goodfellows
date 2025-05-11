@@ -17,8 +17,8 @@ worker.onmessage = (event) => {
     // Create multiple groups of snowflakes with different properties
     const snowflakes = [
       ...createSnowflakeGroup(25, [4, 6], [0, 1], [6, 8]),    // Small, fast snowflakes
-      ...createSnowflakeGroup(25, [6, 8], [1, 2], [8, 10]),    // Medium snowflakes
-      ...createSnowflakeGroup(50, [8, 14], [0, 2], [6, 12]),   // Large, slow snowflakes
+      ...createSnowflakeGroup(25, [6, 8], [0, 1], [8, 10]),    // Medium snowflakes
+      ...createSnowflakeGroup(50, [8, 14], [0, 1], [6, 12]),   // Large, slow snowflakes
     ];
  
     // Send the snowflakes data back to the main thread
