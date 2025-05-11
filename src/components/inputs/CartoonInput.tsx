@@ -5,13 +5,15 @@ interface CartoonInputProps {
   placeholder?: string;
   value: string;
   onChange: (value: string) => void;
+  className?: string;
 }
 
 const CartoonInput: React.FC<CartoonInputProps> = ({ 
   color = '#F5F5F5', 
   placeholder = 'Enter text...',
   value,
-  onChange 
+  onChange,
+  className
 }) => {
   return (
     <input
@@ -19,6 +21,7 @@ const CartoonInput: React.FC<CartoonInputProps> = ({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
+      className={className}
       style={{
         backgroundColor: color,
         border: '3px solid #000',
@@ -30,7 +33,8 @@ const CartoonInput: React.FC<CartoonInputProps> = ({
         outline: 'none',
         boxShadow: '4px 4px 0 #000',
         transition: 'all 0.2s ease',
-        width: '250px'
+        width: '250px',
+        textAlign: 'center'
       }}
     />
   );
