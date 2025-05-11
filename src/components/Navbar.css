@@ -5,6 +5,7 @@
   font-style: normal;
   font-display: swap;
 }
+
 .navbar-container {
   position: fixed;
   top: 0;
@@ -22,7 +23,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 32px;
   height: 100%;
   color: #ffffff;
   width: 100%;

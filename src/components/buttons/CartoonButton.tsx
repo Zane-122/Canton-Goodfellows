@@ -22,7 +22,7 @@ const ButtonContainer = styled.button<ButtonContainerProps>`
   font-size: 16px;
   font-weight: 900;
   color: rgb(0, 0, 0);
-  background-color: ${props => props.disabled ? "rgb(129, 129, 129)" : props.color};
+  background-color: ${props => props.disabled ? "#808080" : props.color};
   border: 3px solid #0f1418;
   border-radius: 10px;
   cursor: pointer;
@@ -35,7 +35,6 @@ const ButtonContainer = styled.button<ButtonContainerProps>`
   &:hover {
     transform: ${(props: ButtonContainerProps) => props.disabled ? "translateY(0px)" : "translateY(2px)"};
     box-shadow: ${props => props.disabled ? "0 0 0 0 #0f1418" : "2px 2px 0 0 #0f1418"};
-    
   }
 
   &:active {
