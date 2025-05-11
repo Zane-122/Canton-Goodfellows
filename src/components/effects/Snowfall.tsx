@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import styled, { keyframes } from 'styled-components';
 
 const snowfall = keyframes`
@@ -35,12 +35,15 @@ const SnowfallContainer = styled.div`
 `;
 
 const Snowfall: React.FC = () => {
-  const snowflakes = Array.from({ length: 100 }, (_, i) => ({
-    id: i,
-    size: Math.random() * 12 + 4, // Random size between 4-16px
-    delay: Math.random() * 5, // Random delay between 0-5s
-    duration: Math.random() * 10 + 10, // Random duration between 10-20s
-  }));
+  const snowflakes = useMemo(() => 
+    Array.from({ length: 100 }, (_, i) => ({
+      id: i,
+      size: Math.random() * 12 + 4,
+      delay: Math.random() * 5,
+      duration: Math.random() * 10 + 10,
+    })), 
+    [] // Empty dependency array means this only runs once
+  );
 
   return (
     <SnowfallContainer>
