@@ -3,8 +3,7 @@ import './Navbar.css';
 import logo from '../images/logo.png';
 import CartoonButton from './buttons/CartoonButton';
 import GoogleSignIn from './auth/GoogleSignIn';
-import styled from 'styled-components';
-
+import Container from './containers/CartoonContainer';
 const Navbar: React.FC = () => {
   return (
     <Container className="navbar-container" solidBorder={true}>
