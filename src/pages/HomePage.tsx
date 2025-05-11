@@ -7,6 +7,8 @@ import Container from "../components/containers/CartoonContainer";
 import Header from "../components/headers/CartoonHeader";
 import Button from "../components/buttons/CartoonButton";
 import Snowfall from "../components/effects/Snowfall";
+import SnowyGround from "../components/effects/SnowyGround";
+
 import { debounce } from 'lodash'; // Import debounce from lodash
 
 const GlobalStyle = createGlobalStyle`
@@ -44,6 +46,25 @@ const GlobalStyle = createGlobalStyle`
 
   * {
     font-family: 'Coolvetica Rg', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: radial-gradient(circle at 50% 200%, #87CEEB 50%, #4169E1 70%, #1E3A8A 100%);
+    background-attachment: fixed;
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  * {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
   }
 `;
 
@@ -225,6 +246,7 @@ export const HomePage: React.FC = () => {
           </ContentContainer>
         </div>
       </div>
+      <SnowyGround />
     </div>
   );
 };
