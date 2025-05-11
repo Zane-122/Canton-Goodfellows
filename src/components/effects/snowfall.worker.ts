@@ -16,8 +16,8 @@ worker.onmessage = (event) => {
   if (event.data === 'start') {
     // Create multiple groups of snowflakes with different properties
     const snowflakes = [
-      ...createSnowflakeGroup(20, [4, 6], [0, 1], [4, 6]),    // Small, fast snowflakes
-      ...createSnowflakeGroup(20, [6, 8], [1, 2], [6, 8]),    // Medium snowflakes
+      ...createSnowflakeGroup(10, [4, 6], [0, 1], [4, 6]),    // Small, fast snowflakes
+      ...createSnowflakeGroup(10, [6, 8], [1, 2], [6, 8]),    // Medium snowflakes
       ...createSnowflakeGroup(25, [8, 14], [0, 2], [4, 6]),   // Large, slow snowflakes
     ];
  

@@ -25,8 +25,24 @@ const GlobalStyle = createGlobalStyle`
     font-display: block;
   }
 
+  @font-face {
+    font-family: 'TT Trick New';
+    src: url('/fonts/TT Tricks Trial DemiBold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: block;
+  }
+
+  @font-face {
+    font-family: 'TT Trick New';
+    src: url('/fonts/TT Tricks Trial DemiBold.otf') format('opentype');
+    font-weight: 600;
+    font-style: italic;
+    font-display: block;
+  }
+
   * {
-    font-family: 'Coolvetica Rg', sans-serif;
+    font-family: 'Coolvetica Rg', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif;
   }
 
   body {
@@ -55,7 +71,9 @@ interface BigNameProps {
 
 const BigName = styled.h1<BigNameProps>`
   font-size: 10vmin;
-  font-family: "TT Trick New Italic", serif;
+  font-family: "TT Trick New", serif;
+  font-weight: 600;
+  font-style: italic;
   color: rgb(214, 245, 255);
   letter-spacing: 0.7vmin;
   position: fixed;
@@ -71,7 +89,9 @@ const BigName = styled.h1<BigNameProps>`
 
 const EmphasizedName = styled.span`
   font-size: 10vmin;
-  font-family: "TT Trick New Bold Italic", serif;
+  font-family: "TT Trick New", serif;
+  font-weight: 700;
+  font-style: italic;
   color: rgb(255, 255, 255);
   text-decoration: underline;
 `;
@@ -99,7 +119,8 @@ const ButtonText = styled.p`
   font-size: 2vmin;
   color: rgb(255, 255, 255);
   margin: 0;
-  font-family: 'TT Trick New Bold', serif;
+  font-family: 'TT Trick New', serif;
+  font-weight: 700;
 `;
 
 const getFirstName = (name: string) => {
