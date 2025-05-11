@@ -43,7 +43,7 @@ export async function signInWithGoogle(): Promise<User> {
         case 'auth/cancelled-popup-request':
           throw new AuthError('Another sign-in attempt is in progress.', 'popup-cancelled');
         default:
-          throw new AuthError('An error occurred during sign in. Please try again.', 'unknown');
+          throw new AuthError(error.code, error.message);
       }
     }
     throw new AuthError('An unexpected error occurred. Please try again.', 'unknown');
