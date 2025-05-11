@@ -63,9 +63,8 @@ const App: React.FC = () => {
 
   return (
     <AuthProvider>
-      <GlobalStyle />
       <HomePage />
-      // <Test familyID="Family 1" /> */
+      {/* <SponsorFormPage /> */}
     </AuthProvider>
   );
 };

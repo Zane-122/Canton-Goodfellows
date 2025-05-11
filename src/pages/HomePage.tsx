@@ -9,6 +9,8 @@ import Button from "../components/buttons/CartoonButton";
 import Snowfall from "../components/effects/Snowfall";
 import SnowyGround from "../components/effects/SnowyGround";
 
+import christmasGiftsImage from '../images/Christmas Gifts from Unsplash.jpg';
+import christmasGiftsImage2 from '../images/Kids Gifts Christmas.jpg';
 
 const GlobalStyle = createGlobalStyle`
   @font-face {
@@ -68,6 +70,10 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 interface BigNameProps {}
+interface StyledSubtitleProps {
+  orientiation: "left" | "center";
+  color?: string;
+}
 
 const BigNameContainer = styled.div`
   position: relative;
@@ -107,14 +113,18 @@ const EmphasizedName = styled.span`
 `;
 
 interface ContainerProps {
-  orientation: "left" | "right";
+  style?: React.CSSProperties;
 }
 
 const StyledContainer = styled(Container)<ContainerProps>`
   padding: 2vmin;
   margin: 1vmin;
-  width: 25vw;
-  align-self: ${props => props.orientation === "left" ? "flex-start" : "flex-end"};
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
 `;
 
 const StyledButton = styled(Button)`
@@ -123,6 +133,7 @@ const StyledButton = styled(Button)`
   display: flex;
   justify-content: center;
   align-items: center;
+  align-self: flex-end;
 `;
 
 const ButtonText = styled.p`
@@ -139,6 +150,20 @@ const getFirstName = (name: string) => {
 
 const ContentContainer = styled.div`
   position: relative;
+`;
+
+const StyledSubtitle = styled.p<StyledSubtitleProps>`
+  margin-top: 2vh;
+  font-size: 3vmin;
+  color: rgb(0, 0, 0);
+  font-family: 'TT Trick New', serif;
+  font-weight: 300;
+  text-align: ${props => props.orientiation === "left" ? "left" : "center"};
+  align-self: ${props => props.orientiation === "left" ? "flex-start" : "center"};
+  margin-bottom: 1vh;
+  ${props => props.color && `
+    color: ${props.color};
+  `}
 `;
 
 export const HomePage: React.FC = () => {
@@ -169,46 +194,144 @@ export const HomePage: React.FC = () => {
       </>
     )
   ), [user, firstName]);
-
   const containerContent = useMemo(() => (
-    <div style={{ marginTop: "2vh" }}>
-      <StyledContainer orientation="left">
-        <Header
-          title="Donate!"
-          subtitle="Donate to the Canton Good Fellows to help families in need throughout the year!"
+    <div style={{ 
+      marginTop: "2vh",
+      width: "100%",
+      display: "flex",
+      flexDirection: "column",
+      gap: "1vh",
+      alignItems: "center"
+    }}>
+      <div style={{ 
+        display: "flex", 
+        flexDirection: "row", 
+        gap: "1vh",
+        width: "100%",
+        justifyContent: "space-between"
+      }}>
+        <StyledContainer>
+          <Header
+            title="Sponsor a Family"
+          />
+          <StyledSubtitle orientiation="center">
+            Are you interested in sponsoring a child or an entire family, by purchasing gifts and clothing gift cards for Christmas?
+          </StyledSubtitle>
+
+          <StyledSubtitle orientiation="center">
+            As you're deciding, here are some things to think about:
+          </StyledSubtitle>
+
+          <StyledSubtitle orientiation="left" color="#CA242B">
+            - Our children are usually all sponsored out by the end of October. If you are interested in sponsoring a child, make sure to contact us in early October, or you might miss out!
+          </StyledSubtitle>
+
+          <StyledSubtitle orientiation="left" color="#CA242B">
+            - Sponsors do not have to purchase all of the child's gifts. You decide how much you can afford to spend on your sponsored child. We fill in what is not supplied.
+          </StyledSubtitle>
+
+          <StyledSubtitle orientiation="left" color="#CA242B">
+            - Anyone can sponsor a child, or several children; you don't need to be a Canton resident.
+          </StyledSubtitle>
+
+          <StyledSubtitle orientiation="center">
+            Child assignments begin in early October! Click the button below to register to sponsor a child.
+          </StyledSubtitle>
+          
+          <StyledButton
+            color="#CA242B"
+            disabled={!user}
+          >
+            <ButtonText>Register to Sponsor</ButtonText>
+          </StyledButton>
+        </StyledContainer>
+        <img 
+          src={christmasGiftsImage} 
+          alt="Christmas Gifts"
+          style={{ 
+            width: "30vw",
+            height: "auto",
+            objectFit: "cover",
+            borderRadius: "10px",
+            border: "3px solid #000000",
+            boxShadow: "0.5vmin 0.5vmin 0 #000000"
+          }}
         />
-        <StyledButton
-          color="#CA242B"
+      </div>
+      
+      <div style={{ 
+        display: "flex", 
+        flexDirection: "row", 
+        gap: "1vh",
+        width: "100%",
+        justifyContent: "space-between"
+      }}>
+        <img 
+          src={christmasGiftsImage2} 
+          alt="Christmas Gifts"
+          style={{ 
+            width: "30vw",
+            height: "auto",
+            objectFit: "cover",
+            borderRadius: "10px",
+            border: "3px solid #000000",
+            boxShadow: "0.5vmin 0.5vmin 0 #000000"
+          }}
+        />
+      
+      <StyledContainer >
+        <Header title="Get Assistance"/>
+
+        <StyledSubtitle orientiation="center">
+        Is your family in need of gift and food assistance for Christmas? And do you have children ages 18 or under? If so, the Canton Goodfellows are here to help.
+        </StyledSubtitle>
+
+        <StyledSubtitle orientiation="center">
+        We supply gifts for children (not adults) and assist only Canton families, without regard to race or religion, who meet the following guidelines:
+        </StyledSubtitle>
+
+        <StyledSubtitle orientiation="left" color="#CA242B">
+        - You must live in Canton.
+        </StyledSubtitle>
+
+        <StyledSubtitle orientiation="left" color="#CA242B">
+        - Your children must live with you.
+        </StyledSubtitle>
+
+        <StyledSubtitle orientiation="left" color="#CA242B">
+        - Your family must meet our income guidelines for a family of your size.
+        </StyledSubtitle>
+
+        <StyledSubtitle orientiation="left" color="#CA242B">
+        - Your application must meet the date deadlines listed above, and be approved by our committee. Applications are reviewed on a first-come, first-served basis.
+        </StyledSubtitle>
+
+          <StyledButton color="#CA242B">
+            <ButtonText>Sponsor Now!</ButtonText>
+          </StyledButton>
+        </StyledContainer>
+      </div>
+
+      <StyledContainer >
+        <Header
+          title="Help us help Canton"
+          subtitle="Please consider donating to help us continue or mission."
+        />
+        <StyledButton color="#CA242B"             
           onClick={() => {
             window.open("https://cantongoodfellows.org/donate/", "_blank");
-          }}
-        >
-          <ButtonText>Donate Now!</ButtonText>
-        </StyledButton>
-      </StyledContainer>
-
-      <StyledContainer orientation="left">
-        <Header title="Sponsor a Family!" subtitle="Help a family in need buy gifts for the holidays!" />
-        <StyledButton color="#CA242B" disabled={!user}>
-          <ButtonText>Sponsor Now!</ButtonText>
-        </StyledButton>
-      </StyledContainer>
-
-      <StyledContainer orientation="left">
-        <Header
-          title="Are you a family in need?"
-          subtitle="Register to receive help from the Canton Good Fellows!"
-        />
-        <StyledButton color="#CA242B" disabled={!user}>
-          <ButtonText>Register Now!</ButtonText>
+          }}>
+          <ButtonText>Donate Now</ButtonText>
         </StyledButton>
       </StyledContainer>
     </div>
   ), [user]);
+
+
   return (
     <div>
       <GlobalStyle />
-      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }}>
         <Snowfall />
       </div>
       <div style={{ position: 'relative', zIndex: 1 }}>
@@ -234,10 +357,8 @@ export const HomePage: React.FC = () => {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "flex-start",
-                justifyContent: "center",
-                gap: "1vh",
                 width: "90vw",
+                position: "relative"
               }}
             >
               {containerContent}

@@ -1,3 +1,4 @@
+import { prependOnceListener } from 'process';
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
@@ -5,8 +6,8 @@ interface CartoonButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
   className?: string;
-  color?: string;
   disabled?: boolean;
+  color?: string;
 }
 
 interface ButtonContainerProps {
@@ -20,6 +21,7 @@ const ButtonContainer = styled.button<ButtonContainerProps>`
   padding: 12px 24px;
   font-size: 16px;
   font-weight: 900;
+  font-family: 'TT Trick New Bold', serif;
   color: rgb(0, 0, 0);
   background-color: ${props => props.disabled ? "#808080" : props.color};
   border: 3px solid #0f1418;
@@ -33,12 +35,12 @@ const ButtonContainer = styled.button<ButtonContainerProps>`
 
   &:hover {
     background-color: ${props => props.disabled ? "#808080" : props.color}; 
-    transform: ${props => props.disabled ? "translateY(4px)" : "translateY(2px)"};
-    box-shadow: ${props => props.disabled ? "0 0 0 0 #0f1418" : "2px 2px 0 0 #0f1418"};  
+    transform: ${(props: ButtonContainerProps) => props.disabled ? "translateY(0px)" : "translateY(2px)"};
+    box-shadow: ${props => props.disabled ? "0 0 0 0 #0f1418" : "2px 2px 0 0 #0f1418"};
   }
 
   &:active {
-    transform: ${props => props.disabled ? "translateY(4px)" : "translateY(4px)"};
+    transform: ${(props: ButtonContainerProps) => props.disabled ? "translateY(0px)" : "translateY(4px)"};
     box-shadow: ${props => props.disabled ? "0 0 0 0 #0f1418" : "0 0 0 0 #0f1418"};
   }
 
