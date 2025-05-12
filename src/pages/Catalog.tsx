@@ -306,10 +306,7 @@ const Catalog: React.FC<CatalogProps> = ({familyID}) => {
       } else {
         // Add to wishlist
         await addChildToy(item, familyID, childID);
-        setWishlistItems(prev => new Set([...prev, item.asin]));
-        
-        // Update wishlistToys state to add the item
-        setWishlistToys(prev => [...prev, item]);
+        await loadWishlist();
         
       }
     } catch (error) {

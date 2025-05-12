@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 interface CartoonHeaderProps {
   title: string;
-  subtitle?: string;
+  subtitle?: string | React.ReactNode;
   className?: string;
   color?: string;
 }
@@ -34,6 +34,7 @@ const Subtitle = styled.h2<SubtitleProps>`
   margin: 0.5rem 0 0 0;
   padding: 0;
   font-family: 'TT Trick New', serif;
+  white-space: pre-line;
 `;
 
 const CartoonHeader: React.FC<CartoonHeaderProps> = ({ 
