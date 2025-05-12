@@ -36,7 +36,13 @@ const Navbar: React.FC = () => {
             </CartoonButton>
           </li>
           <li>
-            <CartoonButton color="#">
+            <CartoonButton color="#" onClick={() => {
+              if (user) {
+                navigate('/catalog');
+              } else {
+                navigate('/login');
+              }
+            }}>
               <p className="navbar-link">Contact</p>
             </CartoonButton>
           </li>
@@ -44,6 +50,7 @@ const Navbar: React.FC = () => {
           <CartoonButton color="#1EC9F2" onClick={() => {
             if (user) {
               logOut();
+              navigate('/');
             } else {
               navigate('/login');
             }

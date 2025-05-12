@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
@@ -11,12 +11,19 @@ import { SignUp } from './pages/SignUp';
 import { AuthProvider } from './firebase/contexts/AuthContext';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-const router = createBrowserRouter([
-  { path: "/", element: <HomePage /> },
-  { path: "/sponsor-registration", element: <SponsorFormPage /> },
-  { path: "/login", element: <LogIn /> },
-  { path: "/signup", element: <SignUp /> },
-]);
+function AppRouter() {
+  const [currentFamilyID, setCurrentFamilyID] = useState("Family 1");
+
+  const router = createBrowserRouter([
+    { path: "/", element: <HomePage /> },
+    { path: "/sponsor-registration", element: <SponsorFormPage /> },
+    { path: "/login", element: <LogIn /> },
+    { path: "/signup", element: <SignUp /> },
+    { path: "/catalog", element: <Catalog familyID={currentFamilyID} /> },
+  ]);
+
+  return <RouterProvider router={router} />;
+}
 
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Failed to find the root element');
@@ -25,7 +32,7 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <AuthProvider>
-      <RouterProvider router={router} />
+      <AppRouter />
     </AuthProvider>
   </React.StrictMode>
 );

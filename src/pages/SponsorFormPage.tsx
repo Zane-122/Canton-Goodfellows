@@ -41,14 +41,14 @@ const StyledContainer = styled(CartoonContainer)`
   height: fit-content;
   padding: 2vmin;
   margin: 1vmin;
-  align-self: flex-end;
+  align-self: center;
 `;
 
 const StyledFormPageContainer = styled.div`
   text-align: center;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   justify-content: flex-start;
   width: 100%;
   margin-top: 15vh;
@@ -68,7 +68,7 @@ const StyledFormPageTitle = styled.h1`
 const FormCardsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   justify-content: flex-start;
   width: 70vw;
   gap: 1vh;

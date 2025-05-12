@@ -6,9 +6,10 @@ import { useNavigate } from 'react-router-dom';
 
 interface GoogleSignInProps {
   text?: string;
+  onError: (error: string) => void;
 }
 
-const GoogleSignIn: React.FC<GoogleSignInProps> = ({ text }) => {
+const GoogleSignIn: React.FC<GoogleSignInProps> = ({ text, onError }) => {
   const { user, signInWithGoogle, logout } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,6 +30,9 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({ text }) => {
     } finally {
       setIsLoading(false);
       navigate("/");
+      if (error != null) {
+        onError(error);
+      }
     }
   };
 

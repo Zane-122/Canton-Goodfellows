@@ -25,7 +25,7 @@ export const LogIn = () => {
                 <StyledContainer>
                     <EmailSignIn onSignIn={() => navigate('/')} />
                     <p> - or - </p>
-                    <GoogleSignIn />
+                    <GoogleSignIn onError={() => {}}/>
                     <p> - if you don't have an account, <Link to="/signup" style={{ color: '#1EC9F2', textDecoration: 'none', cursor: 'pointer' }}>sign up here</Link> - </p>
                 </StyledContainer>
             </div>
