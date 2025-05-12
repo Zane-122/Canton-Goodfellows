@@ -3,13 +3,19 @@ import { useAuth } from '../../firebase/contexts/AuthContext';
 import Button from '../buttons/CartoonButton';
 import { AuthError } from '../../firebase/auth';
 
-const GoogleSignIn: React.FC = () => {
+interface GoogleSignInProps {
+  text?: string;
+}
+
+const GoogleSignIn: React.FC<GoogleSignInProps> = ({ text }) => {
   const { user, signInWithGoogle, logout } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSignIn = async () => {
     try {
       setError(null);
+      setIsLoading(true);
       await signInWithGoogle();
     } catch (err) {
       if (err instanceof AuthError) {
@@ -17,12 +23,15 @@ const GoogleSignIn: React.FC = () => {
       } else {
         setError('An unexpected error occurred. Please try again.');
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSignOut = async () => {
     try {
       setError(null);
+      setIsLoading(true);
       await logout();
     } catch (err) {
       if (err instanceof AuthError) {
@@ -30,17 +39,32 @@ const GoogleSignIn: React.FC = () => {
       } else {
         setError('An unexpected error occurred. Please try again.');
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+      {error && (
+        <div style={{
+          backgroundColor: '#FFE6E6',
+          color: '#D84040',
+          padding: '0.5rem 1rem',
+          borderRadius: '0.5rem',
+          fontSize: '0.875rem',
+          marginBottom: '0.5rem',
+        }}>
+          {error}
+        </div>
+      )}
       <Button 
-          color= "#1EC9F2"
-          onClick={user ? handleSignOut : handleSignIn}
-        >
-          <p>{user ? "Sign out" : "Sign in with Google"}</p>
-        </Button>
+        color="#1EC9F2"
+        onClick={handleSignIn}
+        disabled={isLoading}
+      >
+        {isLoading ? "Loading..." : text || "Log in with Google"}
+      </Button>
     </div>
   );
 };

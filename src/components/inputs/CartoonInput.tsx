@@ -6,6 +6,8 @@ interface CartoonInputProps {
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  type?: string;
+  disabled?: boolean;
 }
 
 const CartoonInput: React.FC<CartoonInputProps> = ({ 
@@ -13,15 +15,18 @@ const CartoonInput: React.FC<CartoonInputProps> = ({
   placeholder = 'Enter text...',
   value,
   onChange,
-  className
+  className,
+  type = 'text',
+  disabled = false
 }) => {
   return (
     <input
-      type="text"
+      type={type}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       className={className}
+      disabled={disabled}
       style={{
         backgroundColor: color,
         border: '3px solid #000',
@@ -34,7 +39,9 @@ const CartoonInput: React.FC<CartoonInputProps> = ({
         boxShadow: '4px 4px 0 #000',
         transition: 'all 0.2s ease',
         width: '250px',
-        textAlign: 'center'
+        textAlign: 'center',
+        opacity: disabled ? 0.7 : 1,
+        cursor: disabled ? 'not-allowed' : 'text'
       }}
     />
   );

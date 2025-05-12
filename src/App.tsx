@@ -14,8 +14,14 @@ import {addFamily, getFamilies, updateFamilySponsoredStatus} from './firebase/fa
 import { Family } from './firebase/families';
 import { Child } from './firebase/families';
 import Button from './components/buttons/CartoonButton';
-import Test from './pages/Catalog';
-import Catalog from './pages/Catalog';
+
+import Test from './rainforest/Catalog';
+import Catalog from './rainforest/Catalog';
+import { EmailSignIn } from './components/auth/EmailSignIn';
+import { EmailSignUp } from './components/auth/EmailSignUp';
+import { LogIn } from './pages/LogIn';
+import { SignOut } from './components/auth/SignOut';
+import {SignUp} from './pages/SignUp';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -65,8 +71,8 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <GlobalStyle />
-      {/* <SponsorFormPage /> */}
-      <Catalog familyID="Family 1" />
+      <HomePage />
+
     </AuthProvider>
   );
 };
