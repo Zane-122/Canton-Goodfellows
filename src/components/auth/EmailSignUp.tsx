@@ -6,6 +6,7 @@ import CartoonButton from '../buttons/CartoonButton';
 import CartoonContainer from '../containers/CartoonContainer';
 import { styled } from 'styled-components';
 import CartoonHeader from '../headers/CartoonHeader';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 const StyledContainer = styled(CartoonContainer)`
     display: flex;
@@ -30,6 +31,7 @@ export const EmailSignUp: React.FC<EmailSignUpProps> = ({ onSignUp }) => {
     const [displayName, setDisplayName] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [verificationSent, setVerificationSent] = useState(false);
     const { user, signInWithGoogle } = useAuth();
     
     const checkEmail = (email: string) => {
@@ -67,7 +69,7 @@ export const EmailSignUp: React.FC<EmailSignUpProps> = ({ onSignUp }) => {
                 return;
             }
 
-            await signUpWithEmail(email, password, displayName);
+            const user = await signUpWithEmail(email, password, displayName);
             await signInWithEmail(email, password);
             onSignUp();
         } catch (error) {
@@ -95,6 +97,18 @@ export const EmailSignUp: React.FC<EmailSignUpProps> = ({ onSignUp }) => {
                         marginBottom: '0.5vmin',
                     }}>
                         {error}
+                    </div>
+                )}
+                {verificationSent && (
+                    <div style={{
+                        backgroundColor: '#E6FFE6',
+                        color: '#40D840',
+                        padding: '0.5vmin 1vmin',
+                        borderRadius: '0.5vmin',
+                        fontSize: '1.5vmin',
+                        marginBottom: '0.5vmin',
+                    }}>
+                        Verification email sent! Please check your inbox.
                     </div>
                 )}
                 <CartoonInput 

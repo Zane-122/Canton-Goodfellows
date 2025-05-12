@@ -102,6 +102,25 @@ export async function addChildToy(toy: Toy, familyID: string, childID: string): 
   }
 }
 
+export async function removeChildToy(toy: Toy, familyID: string, childID: string): Promise<void> {
+  const familyRef = doc(db, "families", familyID);
+  const familyDoc = await getDoc(familyRef);
+  const familyData = familyDoc.data()?.family;
+  const allChildren = familyData.Children;
+  const chosenChild = allChildren.find((child: Child) => child.ChildID === childID);
+  if (chosenChild) {
+    const updatedChildren = allChildren.map((child: Child) => 
+      child.ChildID === childID 
+        ? { ...child, ChildToys: chosenChild.ChildToys.filter((t: Toy) => t.asin !== toy.asin) }
+        : child
+    );
+
+    await updateDoc(familyRef, {
+      "family.Children": updatedChildren
+    });
+  }
+}
+
 export async function getChildren(familyID: string): Promise<Child[]> {
   const familyRef = doc(db, "families", familyID);
   const familyDoc = await getDoc(familyRef);

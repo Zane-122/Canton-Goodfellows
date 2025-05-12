@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import CartoonContainer from '../components/containers/CartoonContainer';
 import CartoonInput from '../components/inputs/CartoonInput';
 import Button from '../components/buttons/CartoonButton';
-import { addChildToy, Toy, getChildren, Child, getWishlist } from '../firebase/families';
+import { addChildToy, Toy, getChildren, Child, getWishlist, removeChildToy } from '../firebase/families';
 import Snowfall from '../components/effects/Snowfall';
 import CartoonHeader from '../components/headers/CartoonHeader';
 import SnowyGround from '../components/effects/SnowyGround';
@@ -12,6 +12,8 @@ import Navbar from '../components/Navbar';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import SelectionField from '../components/inputs/SelectionField';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../firebase/contexts/AuthContext';
 
 interface RainforestResponse {
   search_results?: Toy[];
@@ -245,12 +247,13 @@ const Catalog: React.FC<CatalogProps> = ({familyID}) => {
     loadChildren();
   }, [familyID]);
 
+  const loadWishlist = async () => {
+    const wishlist = await getWishlist(familyID, childID);
+    setWishlistItems(new Set(wishlist.map((toy) => toy.asin)));
+    setWishlistToys(wishlist);
+  };
+
   useEffect(() => {
-    const loadWishlist = async () => {
-      const wishlist = await getWishlist(familyID, childID);
-      setWishlistItems(new Set(wishlist.map((toy) => toy.asin)));
-      setWishlistToys(wishlist);
-    };
     loadWishlist();
   }, [familyID, childID]);
 
@@ -279,18 +282,18 @@ const Catalog: React.FC<CatalogProps> = ({familyID}) => {
   const handleToggleWishlist = async (item: Toy) => {
     setLoadingItems(prev => new Set([...prev, item.asin]));
     try {
-      const familyRef = doc(db, "families", familyID);
-      const familyDoc = await getDoc(familyRef);
-      if (!familyDoc.exists()) {
-        throw new Error("Family document not found");
-      }
+      // const familyRef = doc(db, "families", familyID);
+      // const familyDoc = await getDoc(familyRef);
+      // if (!familyDoc.exists()) {
+      //   throw new Error("Family document not found");
+      // }
 
-      const familyData = familyDoc.data()?.family;
-      if (!familyData || !familyData.Children) {
-        throw new Error("Family data or children not found");
-      }
+      // const familyData = familyDoc.data()?.family;
+      // if (!familyData || !familyData.Children) {
+      //   throw new Error("Family data or children not found");
+      // }
 
-      const allChildren = familyData.Children;
+      const allChildren = await getChildren(familyID);
       const chosenChild = allChildren.find((child: Child) => child.ChildID === childID);
       if (!chosenChild) {
         throw new Error("Child not found");
@@ -298,25 +301,8 @@ const Catalog: React.FC<CatalogProps> = ({familyID}) => {
 
       if (wishlistItems.has(item.asin)) {
         // Remove from wishlist
-        const updatedToys = chosenChild.ChildToys.filter((t: Toy) => t.asin !== item.asin);
-        const updatedChildren = allChildren.map((child: Child) => 
-          child.ChildID === childID 
-            ? { ...child, ChildToys: updatedToys }
-            : child
-        );
-
-        await updateDoc(familyRef, {
-          "family.Children": updatedChildren
-        });
-        
-        setWishlistItems(prev => {
-          const next = new Set(prev);
-          next.delete(item.asin);
-          return next;
-        });
-        
-        // Update wishlistToys state to remove the item
-        setWishlistToys(prev => prev.filter(toy => toy.asin !== item.asin));
+        await removeChildToy(item, familyID, childID);
+        await loadWishlist();
       } else {
         // Add to wishlist
         await addChildToy(item, familyID, childID);
@@ -324,6 +310,7 @@ const Catalog: React.FC<CatalogProps> = ({familyID}) => {
         
         // Update wishlistToys state to add the item
         setWishlistToys(prev => [...prev, item]);
+        
       }
     } catch (error) {
       console.error("Error toggling wishlist:", error);
@@ -339,6 +326,7 @@ const Catalog: React.FC<CatalogProps> = ({familyID}) => {
   const getGenderColor = (childID: string) => {
     return children.find(child => child.ChildID === childID)?.ChildGender === "Boy" ? "#00BCD4" : children.find(child => child.ChildID === childID)?.ChildGender === "Girl" ? "#FF69B4" : "#9C27B0";
   }
+
   return (
     <>
       <Navbar />

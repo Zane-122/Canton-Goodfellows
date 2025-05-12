@@ -11,6 +11,7 @@ export interface Sponsor {
 export async function addSponsor(name: string, email: string, contact_number: string): Promise<void> {
   console.log("Starting to add sponsor:", name);
   try {
+
     console.log("Attempting to add document to Firestore...");
     const sponsorsCollection = collection(db, "sponsors");
     
