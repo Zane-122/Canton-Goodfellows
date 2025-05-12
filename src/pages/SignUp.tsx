@@ -5,7 +5,7 @@ import Navbar from "../components/Navbar";
 import GoogleSignIn from "../components/auth/GoogleSignIn";
 import Button from "../components/buttons/CartoonButton";
 import { EmailSignUp } from "../components/auth/EmailSignUp";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const StyledContainer = styled(CartoonContainer)`
     display: flex;
@@ -18,12 +18,13 @@ const StyledContainer = styled(CartoonContainer)`
 `;
 
 export const SignUp = () => {
+    const navigate = useNavigate();
     return (
         <>
             <Navbar />
             <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh"}}>
                 <StyledContainer>
-                    <EmailSignUp onSignUp={() => {}} />
+                    <EmailSignUp onSignUp={() => navigate('/')} />
                     <p> - or - </p>
                     <GoogleSignIn text="Sign Up with Google"/>
                     <p> - if you already have an account, <Link to="/login" style={{ color: '#1EC9F2', textDecoration: 'none', cursor: 'pointer' }}>log in here</Link> - </p>
