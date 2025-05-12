@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../firebase/contexts/AuthContext';
 import Button from '../buttons/CartoonButton';
 import { AuthError } from '../../firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
 interface GoogleSignInProps {
   text?: string;
@@ -11,6 +12,8 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({ text }) => {
   const { user, signInWithGoogle, logout } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleSignIn = async () => {
     try {
@@ -25,6 +28,7 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({ text }) => {
       }
     } finally {
       setIsLoading(false);
+      navigate("/");
     }
   };
 
@@ -41,6 +45,7 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({ text }) => {
       }
     } finally {
       setIsLoading(false);
+      navigate("/");
     }
   };
 

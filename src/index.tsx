@@ -6,12 +6,16 @@ import reportWebVitals from './reportWebVitals';
 import { HomePage } from './pages/HomePage';
 import { SponsorFormPage } from './pages/SponsorFormPage';
 import Catalog from './pages/Catalog';
+import { LogIn } from './pages/LogIn';
+import { SignUp } from './pages/SignUp';
 import { AuthProvider } from './firebase/contexts/AuthContext';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 const router = createBrowserRouter([
   { path: "/", element: <HomePage /> },
   { path: "/sponsor-registration", element: <SponsorFormPage /> },
+  { path: "/login", element: <LogIn /> },
+  { path: "/signup", element: <SignUp /> },
 ]);
 
 const rootElement = document.getElementById('root');

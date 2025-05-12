@@ -8,11 +8,12 @@ import Container from './containers/CartoonContainer';
 import { useAuth } from '../firebase/contexts/AuthContext';
 import { logOut } from '../firebase/auth';
 
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 
 const Navbar: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   return (
     <Container className="navbar-container" solidBorder={true}>
       <nav className="navbar">
@@ -44,7 +45,7 @@ const Navbar: React.FC = () => {
             if (user) {
               logOut();
             } else {
-              // Put code here to navigate to login page
+              navigate('/login');
             }
           }}>
               <p className="navbar-link">{user ? "Log Out" : "Log In"}</p>
