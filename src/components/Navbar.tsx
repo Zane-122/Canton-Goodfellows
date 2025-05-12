@@ -4,8 +4,11 @@ import logo from '../images/logo.png';
 import CartoonButton from './buttons/CartoonButton';
 import GoogleSignIn from './auth/GoogleSignIn';
 import Container from './containers/CartoonContainer';
+import { useAuth } from '../firebase/contexts/AuthContext';
+import { logOut } from '../firebase/auth';
 
 const Navbar: React.FC = () => {
+  const { user } = useAuth();
   return (
     <Container className="navbar-container" solidBorder={true}>
       <nav className="navbar">
@@ -31,7 +34,15 @@ const Navbar: React.FC = () => {
             </CartoonButton>
           </li>
           <li>
-            <GoogleSignIn/>
+          <CartoonButton color="#1EC9F2" onClick={() => {
+            if (user) {
+              logOut();
+            } else {
+              // Put code here to navigate to login page
+            }
+          }}>
+              <p className="navbar-link">{user ? "Log Out" : "Log In"}</p>
+            </CartoonButton>
           </li>
         </ul>
       </nav>

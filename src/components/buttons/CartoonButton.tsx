@@ -40,7 +40,7 @@ const ButtonContainer = styled.button<ButtonContainerProps>`
   }
 
   &:active {
-    transform: ${(props: ButtonContainerProps) => props.disabled ? "translateY(0px)" : "translateY(4px)"};
+    transform: ${(props: ButtonContainerProps) => props.disabled ? "translateY(4px)" : "translateY(4px)"};
     box-shadow: ${props => props.disabled ? "0 0 0 0 #0f1418" : "0 0 0 0 #0f1418"};
   }
 
