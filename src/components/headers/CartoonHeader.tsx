@@ -28,7 +28,7 @@ interface SubtitleProps {
   color?: string;
 }
 const Subtitle = styled.h2<SubtitleProps>`
-  font-size: 2vmin;
+  font-size: 2.5vmin;
   font-weight: 500;
   color: ${props => props.color || "#4A4A4A"};
   margin: 0.5rem 0 0 0;
