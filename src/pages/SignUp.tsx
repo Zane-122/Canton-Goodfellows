@@ -5,6 +5,8 @@ import Navbar from "../components/Navbar";
 import GoogleSignIn from "../components/auth/GoogleSignIn";
 import Button from "../components/buttons/CartoonButton";
 import { EmailSignUp } from "../components/auth/EmailSignUp";
+import { Link } from 'react-router-dom';
+
 const StyledContainer = styled(CartoonContainer)`
     display: flex;
     flex-direction: column;
@@ -24,7 +26,7 @@ export const SignUp = () => {
                     <EmailSignUp onSignUp={() => {}} />
                     <p> - or - </p>
                     <GoogleSignIn text="Sign Up with Google"/>
-                    <p> - if you already have an account, <a href="/login" style={{ color: '#1EC9F2', textDecoration: 'none', cursor: 'pointer' }}>log in here</a> - </p>
+                    <p> - if you already have an account, <Link to="/login" style={{ color: '#1EC9F2', textDecoration: 'none', cursor: 'pointer' }}>log in here</Link> - </p>
                 </StyledContainer>
             </div>
         </>
