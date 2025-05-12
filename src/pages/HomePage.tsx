@@ -12,6 +12,8 @@ import SnowyGround from "../components/effects/SnowyGround";
 import christmasGiftsImage from '../images/Christmas Gifts from Unsplash.jpg';
 import christmasGiftsImage2 from '../images/Kids Gifts Christmas.jpg';
 
+import { Link } from 'react-router-dom';
+
 const GlobalStyle = createGlobalStyle`
   @font-face {
     font-family: 'Coolvetica Rg';
@@ -166,6 +168,11 @@ const StyledSubtitle = styled.p<StyledSubtitleProps>`
   `}
 `;
 
+const StyledLink = styled(Link)`
+  text-decoration: none;
+  color: inherit;
+`;
+
 export const HomePage: React.FC = () => {
   const { user, signInWithGoogle, logout } = useAuth();
 
@@ -238,12 +245,14 @@ export const HomePage: React.FC = () => {
             Child assignments begin in early October! Click the button below to register to sponsor a child.
           </StyledSubtitle>
           
-          <StyledButton
-            color="#CA242B"
-            disabled={!user}
-          >
-            <ButtonText>Register to Sponsor</ButtonText>
-          </StyledButton>
+          <StyledLink to="/sponsor-registration">
+            <StyledButton
+              color="#CA242B"
+              disabled={!user}
+            >
+              <ButtonText>Register to Sponsor</ButtonText>
+            </StyledButton>
+          </StyledLink>
         </StyledContainer>
         <img 
           src={christmasGiftsImage} 
@@ -307,7 +316,7 @@ export const HomePage: React.FC = () => {
         </StyledSubtitle>
 
           <StyledButton color="#CA242B">
-            <ButtonText>Sponsor Now!</ButtonText>
+            <ButtonText>Apply for Aid</ButtonText>
           </StyledButton>
         </StyledContainer>
       </div>

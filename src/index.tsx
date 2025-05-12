@@ -3,6 +3,16 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { HomePage } from './pages/HomePage';
+import { SponsorFormPage } from './pages/SponsorFormPage';
+import Catalog from './pages/Catalog';
+import { AuthProvider } from './firebase/contexts/AuthContext';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+
+const router = createBrowserRouter([
+  { path: "/", element: <HomePage /> },
+  { path: "/sponsor-registration", element: <SponsorFormPage /> },
+]);
 
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Failed to find the root element');
@@ -10,7 +20,9 @@ if (!rootElement) throw new Error('Failed to find the root element');
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <App />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </React.StrictMode>
 );
 

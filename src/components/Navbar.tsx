@@ -4,8 +4,12 @@ import logo from '../images/logo.png';
 import CartoonButton from './buttons/CartoonButton';
 import GoogleSignIn from './auth/GoogleSignIn';
 import Container from './containers/CartoonContainer';
+
 import { useAuth } from '../firebase/contexts/AuthContext';
 import { logOut } from '../firebase/auth';
+
+import { Link } from 'react-router-dom';
+
 
 const Navbar: React.FC = () => {
   const { user } = useAuth();
@@ -19,12 +23,14 @@ const Navbar: React.FC = () => {
         </div>
         <ul className="navbar-links">
           <li>
-            <CartoonButton color="#">
-              <p className="navbar-link">Home</p>
-            </CartoonButton>
+            <Link to="/">
+              <CartoonButton color="#">
+                <p className="navbar-link">Home</p>
+              </CartoonButton>
+            </Link>
           </li>
           <li>
-            <CartoonButton color="#" onClick={() => window.open('https://cantongoodfellows.org/welcome/about/ ', '_blank')}>
+              <CartoonButton color="#" onClick={() => window.open('https://cantongoodfellows.org/welcome/about/ ', '_blank')}>
               <p className="navbar-link">About</p>
             </CartoonButton>
           </li>
