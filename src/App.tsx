@@ -14,8 +14,8 @@ import {addFamily, getFamilies, updateFamilySponsoredStatus} from './firebase/fa
 import { Family } from './firebase/families';
 import { Child } from './firebase/families';
 import Button from './components/buttons/CartoonButton';
-import Test from './rainforest/Catalog';
-import Catalog from './rainforest/Catalog';
+import Test from './pages/Catalog';
+import Catalog from './pages/Catalog';
 
 const GlobalStyle = createGlobalStyle`
   body {
