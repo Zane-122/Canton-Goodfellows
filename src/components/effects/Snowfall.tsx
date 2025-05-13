@@ -11,85 +11,81 @@ const snowfall = keyframes`
 `;
 
 const Snowflake = styled.div<{ size: number; delay: number; duration: number }>`
-  position: fixed;
-  top: -10px;
-  left: ${props => Math.random() * 100}vw;
-  width: ${props => props.size}px;
-  height: ${props => props.size}px;
-  background: white;
-  border-radius: 50%;
-  opacity: 0.4;
-  will-change: transform;
-  animation: ${snowfall} ${props => props.duration}s linear infinite;
-  animation-delay: ${props => props.delay}s;
-  z-index: -1;
-  pointer-events: none;
-  transform: translateZ(-1);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  -webkit-transform: translateZ(-1);
+    position: fixed;
+    top: -10px;
+    left: ${(props) => Math.random() * 100}vw;
+    width: ${(props) => props.size}px;
+    height: ${(props) => props.size}px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.4;
+    will-change: transform;
+    animation: ${snowfall} ${(props) => props.duration}s linear infinite;
+    animation-delay: ${(props) => props.delay}s;
+    z-index: -1;
+    pointer-events: none;
+    transform: translateZ(-1);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    -webkit-transform: translateZ(-1);
 `;
 
 const SnowfallContainer = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: -1;
-  will-change: transform;
-  transform: translateZ(-1);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  -webkit-transform: translateZ(-1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: -1;
+    will-change: transform;
+    transform: translateZ(-1);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    -webkit-transform: translateZ(-1);
 `;
 
 interface SnowflakeData {
-  id: number;
-  size: number;
-  delay: number;
-  duration: number;
+    id: number;
+    size: number;
+    delay: number;
+    duration: number;
 }
 
 const Snowfall: React.FC = () => {
-  const [snowflakes, setSnowflakes] = useState<SnowflakeData[]>([]);
-  const [firstSnowflakes, setFirstSnowflakes] = useState(true);
-  useEffect(() => {
-    // Create a new Web Worker
-    const worker = new Worker(new URL('./snowfall.worker.ts', import.meta.url));
+    const [snowflakes, setSnowflakes] = useState<SnowflakeData[]>([]);
+    const [firstSnowflakes, setFirstSnowflakes] = useState(true);
+    useEffect(() => {
+        // Create a new Web Worker
+        const worker = new Worker(new URL('./snowfall.worker.ts', import.meta.url));
 
-    // Handle messages from the worker
-    worker.onmessage = (event) => {
-      setSnowflakes(event.data);
-    };
+        // Handle messages from the worker
+        worker.onmessage = (event) => {
+            setSnowflakes(event.data);
+        };
 
-    // Start the worker
-    worker.postMessage('start');  
+        // Start the worker
+        worker.postMessage('start');
 
-    // Cleanup
-    return () => {
-      worker.terminate();
-    };
-  }, []);
+        // Cleanup
+        return () => {
+            worker.terminate();
+        };
+    }, []);
 
-  // Memoize the snowflake elements to prevent unnecessary re-renders
-  const snowflakeElements = useMemo(() => {
-    return snowflakes.map(snowflake => (
-      <Snowflake
-        key={snowflake.id}
-        size={snowflake.size}
-        delay ={snowflake.delay}
-        duration={snowflake.duration}
-      />
-    ));
-  }, [snowflakes]);
+    // Memoize the snowflake elements to prevent unnecessary re-renders
+    const snowflakeElements = useMemo(() => {
+        return snowflakes.map((snowflake) => (
+            <Snowflake
+                key={snowflake.id}
+                size={snowflake.size}
+                delay={snowflake.delay}
+                duration={snowflake.duration}
+            />
+        ));
+    }, [snowflakes]);
 
-  return (
-    <SnowfallContainer>
-      {snowflakeElements}
-    </SnowfallContainer>
-  );
+    return <SnowfallContainer>{snowflakeElements}</SnowfallContainer>;
 };
 
-export default Snowfall; 
+export default Snowfall;

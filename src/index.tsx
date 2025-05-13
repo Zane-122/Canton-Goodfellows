@@ -13,18 +13,18 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Registration } from './pages/Registration';
 
 function AppRouter() {
-  const [currentFamilyID, setCurrentFamilyID] = useState("Family 1");
+    const [currentFamilyID, setCurrentFamilyID] = useState('Family 1');
 
-  const router = createBrowserRouter([
-    { path: "/", element: <HomePage /> },
-    { path: "/sponsor-registration", element: <SponsorFormPage /> },
-    { path: "/login", element: <LogIn /> },
-    { path: "/signup", element: <SignUp /> },
-    { path: "/catalog", element: <Catalog familyID={currentFamilyID} /> },
-    { path: "/registration", element: <Registration /> },
-  ]);
+    const router = createBrowserRouter([
+        { path: '/', element: <HomePage /> },
+        { path: '/sponsor-registration', element: <SponsorFormPage /> },
+        { path: '/login', element: <LogIn /> },
+        { path: '/signup', element: <SignUp /> },
+        { path: '/catalog', element: <Catalog familyID={currentFamilyID} /> },
+        { path: '/registration', element: <Registration /> },
+    ]);
 
-  return <RouterProvider router={router} />;
+    return <RouterProvider router={router} />;
 }
 
 const rootElement = document.getElementById('root');
@@ -32,14 +32,14 @@ if (!rootElement) throw new Error('Failed to find the root element');
 
 const root = ReactDOM.createRoot(rootElement);
 root.render(
-  <React.StrictMode>
-    <AuthProvider>
-      <AppRouter />
-    </AuthProvider>
-  </React.StrictMode>
+    <React.StrictMode>
+        <AuthProvider>
+            <AppRouter />
+        </AuthProvider>
+    </React.StrictMode>
 );
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals(); 
+reportWebVitals();

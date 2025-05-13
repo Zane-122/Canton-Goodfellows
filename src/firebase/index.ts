@@ -1,3 +1,3 @@
 export * from './config';
 export * from './auth';
-export * from './sponsors'; 
+export * from './sponsors';

@@ -10,7 +10,6 @@ import GoogleSignIn from './components/auth/GoogleSignIn';
 import Input from './components/inputs/CartoonInput';
 import { addSponsor } from './firebase/sponsors';
 import styled, { createGlobalStyle } from 'styled-components';
-import {addFamily, getFamilies, updateFamilySponsoredStatus} from './firebase/families';
 import { Family } from './firebase/families';
 import { Child } from './firebase/families';
 import Button from './components/buttons/CartoonButton';
@@ -19,7 +18,7 @@ import { EmailSignIn } from './components/auth/EmailSignIn';
 import { EmailSignUp } from './components/auth/EmailSignUp';
 import { LogIn } from './pages/LogIn';
 import { SignOut } from './components/auth/SignOut';
-import {SignUp} from './pages/SignUp';
+import { SignUp } from './pages/SignUp';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -32,47 +31,19 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 const AddFamilyButton = styled(Button)`
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
 `;
 
 const App: React.FC = () => {
-  const handleAddFamily = async () => {
-    const Children = Array.from({ length: 2 }, (_, i) => ({
-      ChildID: `Child ${String.fromCharCode(65 + i)}`,
-      ChildGender: "Unknown",
-      ChildAge: 0,
-      ChildToys: [],
-      HasDisabilities: false,
-      SchoolName: "Unknown"
-    }));
-
-    try {
-      await addFamily({
-        Parent1Name: "Parent 1",
-        Parent2Name: "Parent 2",
-        StreetAddress: "123 Main St",
-        ZipCode: "48188",
-        PhoneNumber: "555-0123",
-        Children,
-        isSponsored: false,
-        timestamp: new Date()
-      });
-      console.log("Family added successfully!");
-    } catch (error) {
-      console.error("Failed to add family:", error);
-    }
-  };
-
-  return (
-    <AuthProvider>
-      <GlobalStyle />
-      <HomePage />
-
-    </AuthProvider>
-  );
+    return (
+        <AuthProvider>
+            <GlobalStyle />
+            <HomePage />
+        </AuthProvider>
+    );
 };
 
-export default App; 
+export default App;
