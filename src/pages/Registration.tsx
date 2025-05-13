@@ -317,7 +317,7 @@ export const Registration: React.FC = () => {
                             color={accountType === 'sponsor' ? '#1EC9F2' : '#CA242B'}
                             onClick={() =>
                                 accountType === 'sponsor'
-                                    ? navigate('/sponsor-profile')
+                                    ? {}
                                     : handleChangeAccountType('sponsor')
                             }
                             disabled={isLoading}
