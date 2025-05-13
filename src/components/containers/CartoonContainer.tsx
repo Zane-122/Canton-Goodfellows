@@ -6,7 +6,6 @@ interface CartoonContainerProps {
   className?: string;
   color?: string;
   solidBorder?: boolean;
-  style?: React.CSSProperties;
 }
 
 interface ContainerProps {
@@ -32,15 +31,13 @@ const CartoonContainer: React.FC<CartoonContainerProps> = ({
   children, 
   className,
   color = "#FFFFFF",
-  solidBorder = false,
-  style
+  solidBorder = false
 }) => {
   return (
     <Container
       className={className}
       color={color}
       solidBorder={solidBorder}
-      style={style}
     >
       {children}
     </Container>
