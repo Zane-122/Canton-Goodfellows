@@ -169,8 +169,13 @@ export const Registration: React.FC = () => {
     }, [user, navigate]);
 
     const handleChangeAccountType = async (newAccountType: "sponsor" | "family") => {
-        setPendingAccountType(newAccountType);
-        setShowConfirmation(true);
+        if (accountType === null) {
+            setAccountTypeState(newAccountType);
+            await setAccountType(newAccountType);
+        } else {
+            setPendingAccountType(newAccountType);
+            setShowConfirmation(true);
+        }
     };
 
     const handleConfirmChange = async () => {
