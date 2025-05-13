@@ -12,7 +12,7 @@ import SnowyGround from "../components/effects/SnowyGround";
 import christmasGiftsImage from '../images/Christmas Gifts from Unsplash.jpg';
 import christmasGiftsImage2 from '../images/Kids Gifts Christmas.jpg';
 
-import { Link } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import CartoonContainer from "../components/containers/CartoonContainer";
 import CartoonHeader from "../components/headers/CartoonHeader";
 import CartoonImageContainer from "../components/containers/CartoonImageContainer";
@@ -148,6 +148,7 @@ const StyledContainer = styled(CartoonContainer)`
 
 export const HomePage: React.FC = () => {
   const { user, signInWithGoogle, logout } = useAuth();
+  const navigate = useNavigate()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -200,7 +201,7 @@ export const HomePage: React.FC = () => {
               } 
             />
             <p style={{ fontSize: '2vmin', color: 'black' }}> - </p>
-            <CartoonButton color="#CA242B" disabled={!user} onClick={() => {}}> <p>Register</p> </CartoonButton>
+            <CartoonButton color="#CA242B" disabled={!user} onClick={() => {navigate('/registration')}}> <p>Register</p> </CartoonButton>
           </div>
 
           <CartoonImageContainer width="40vmin" height="40vmin">
