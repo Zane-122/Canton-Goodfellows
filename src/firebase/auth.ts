@@ -11,9 +11,6 @@ import {
 import { FirebaseError } from 'firebase/app';
 import { auth } from './config';
 
-import { collection, addDoc, DocumentReference, getDocs, getDoc, doc, setDoc, updateDoc } from "firebase/firestore";
-import { db } from './config';
-
 const googleProvider = new GoogleAuthProvider();
 
 export interface AuthUser {
@@ -21,11 +18,6 @@ export interface AuthUser {
   uid: string;
   displayName: string | null;
   photoURL: string | null;
-}
-
-export interface Account {
-  authUser: AuthUser;
-  accountType: "sponsor" | "family" | null;
 }
 
 export class AuthError extends Error {
@@ -38,14 +30,6 @@ export class AuthError extends Error {
 export async function signInWithGoogle(): Promise<User> {
   try {
     const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
-    const userRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userRef);
-
-    if (!userDoc.exists()) {
-      await setDoc(userRef, { email: user.email, accountType: null });
-    }
-
     return result.user;
   } catch (error: unknown) {
     console.error("Error signing in with Google:", error);
@@ -68,37 +52,11 @@ export async function signInWithGoogle(): Promise<User> {
     throw new AuthError('An unexpected error occurred. Please try again.', 'unknown');
   }
 }
-export async function setAccountType(accountType: "sponsor" | "family"): Promise<void> {
-  const user = auth.currentUser;
-  if (!user) {
-    throw new AuthError('No user is signed in.', 'no-user-signed-in');
-  }
-  const userRef = doc(db, "users", user.uid);
-  await updateDoc(userRef, {email: user.email, accountType: accountType});
-}
-
-export async function getAccountType(): Promise<"sponsor" | "family" | null> {
-  const user = auth.currentUser;
-  if (!user) {
-    throw new AuthError('No user is signed in.', 'no-user-signed-in');
-  }
-  const userRef = doc(db, "users", user.uid);
-  const userDoc = await getDoc(userRef);
-  return userDoc.data()?.accountType;
-}
 
 export async function signInWithEmail(email: string, password: string): Promise<User> {
   try {
     const result = await signInWithEmailAndPassword(auth, email, password);
-    const user = result.user;
-    const userRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userRef);
-
-    if (!userDoc.exists()) {
-      await setDoc(userRef, { email: email, accountType: null });
-    }
     return result.user;
-
   } catch (error) {
     console.error("Error signing in with email:", error);
     if (error instanceof FirebaseError) {

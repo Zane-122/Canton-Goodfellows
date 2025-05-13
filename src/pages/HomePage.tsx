@@ -12,12 +12,7 @@ import SnowyGround from "../components/effects/SnowyGround";
 import christmasGiftsImage from '../images/Christmas Gifts from Unsplash.jpg';
 import christmasGiftsImage2 from '../images/Kids Gifts Christmas.jpg';
 
-import { Link, Navigate, useNavigate } from 'react-router-dom';
-import CartoonContainer from "../components/containers/CartoonContainer";
-import CartoonHeader from "../components/headers/CartoonHeader";
-import CartoonImageContainer from "../components/containers/CartoonImageContainer";
 import { Link } from 'react-router-dom';
-
 
 const GlobalStyle = createGlobalStyle`
   @font-face {
@@ -180,7 +175,6 @@ const StyledLink = styled(Link)`
 
 export const HomePage: React.FC = () => {
   const { user, signInWithGoogle, logout } = useAuth();
-  const navigate = useNavigate()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -273,34 +267,57 @@ export const HomePage: React.FC = () => {
           }}
         />
       </div>
-        <StyledContainer style={{ transform: 'translateX(-5vmin)' }}>
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            padding: '5vmin',
-            gap: '1vmin',
-            maxWidth: '30vmin',
-            maxHeight: '10vmin'
-          }}>
-            <CartoonHeader 
-              title="Register to Sponsor or for Aid" 
-              subtitle={
-                <>
-                  Click here to register!
-                  <br />
-                  (You need an account!)
-                </>
-              } 
-            />
-            <p style={{ fontSize: '2vmin', color: 'black' }}> - </p>
-            <CartoonButton color="#CA242B" disabled={!user} onClick={() => {navigate('/registration')}}> <p>Register</p> </CartoonButton>
-          </div>
+      
+      <div style={{ 
+        display: "flex", 
+        flexDirection: "row", 
+        gap: "1vh",
+        width: "100%",
+        justifyContent: "space-between"
+      }}>
+        <img 
+          src={christmasGiftsImage2} 
+          alt="Christmas Gifts"
+          style={{ 
+            width: "30vw",
+            height: "auto",
+            objectFit: "cover",
+            borderRadius: "10px",
+            border: "3px solid #000000",
+            boxShadow: "0.5vmin 0.5vmin 0 #000000"
+          }}
+        />
+      
+      <StyledContainer >
+        <Header title="Get Assistance"/>
 
-          <CartoonImageContainer width="40vmin" height="40vmin">
-            <img src={img1} alt="Description" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </CartoonImageContainer>
+        <StyledSubtitle orientiation="center">
+        Is your family in need of gift and food assistance for Christmas? And do you have children ages 18 or under? If so, the Canton Goodfellows are here to help.
+        </StyledSubtitle>
+
+        <StyledSubtitle orientiation="center">
+        We supply gifts for children (not adults) and assist only Canton families, without regard to race or religion, who meet the following guidelines:
+        </StyledSubtitle>
+
+        <StyledSubtitle orientiation="left" color="#CA242B">
+        - You must live in Canton.
+        </StyledSubtitle>
+
+        <StyledSubtitle orientiation="left" color="#CA242B">
+        - Your children must live with you.
+        </StyledSubtitle>
+
+        <StyledSubtitle orientiation="left" color="#CA242B">
+        - Your family must meet our income guidelines for a family of your size.
+        </StyledSubtitle>
+
+        <StyledSubtitle orientiation="left" color="#CA242B">
+        - Your application must meet the date deadlines listed above, and be approved by our committee. Applications are reviewed on a first-come, first-served basis.
+        </StyledSubtitle>
+
+          <StyledButton color="#CA242B">
+            <ButtonText>Apply for Aid</ButtonText>
+          </StyledButton>
         </StyledContainer>
       </div>
 
