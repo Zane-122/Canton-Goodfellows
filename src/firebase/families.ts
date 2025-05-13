@@ -9,6 +9,7 @@ import {
     getDoc,
 } from 'firebase/firestore';
 import { db } from './config';
+import { getFamilyDocId } from './auth';
 
 export interface Toy {
     title: string;
@@ -61,12 +62,22 @@ export async function addFamily(): Promise<DocumentReference> {
     }
 }
 
-export async function setFamilyInfo(family: Family, familyDocId: string): Promise<void> {
-    const familyRef = doc(db, 'families', familyDocId);
-    const families = await getFamilies();
-    const familyId = `Family ${families.length}`;
-
-    await setDoc(familyRef, { FamilyID: familyId, family: family });
+export async function setFamilyInfo(family: Family): Promise<void> {
+    try {
+        const id = await getFamilyDocId();
+        console.log(id);
+        const familyRef = doc(db, 'families', id);
+        const familyDoc = await getDoc(familyRef);
+        if (familyDoc.exists()) {
+            await updateDoc(familyRef, {
+                FamilyID: familyDoc.data()?.FamilyID,
+                family,
+            });
+            console.log('Family information updated successfully');
+        }
+    } catch (error) {
+        console.error('Error fetching family document ID:', error);
+    }
 }
 
 export async function getFamilies(): Promise<Family[]> {

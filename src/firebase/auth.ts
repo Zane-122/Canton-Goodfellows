@@ -25,18 +25,20 @@ import {
 } from 'firebase/firestore';
 import { db } from './config';
 import { addFamily } from './families';
+import { addSponsor } from './sponsors';
 
 const googleProvider = new GoogleAuthProvider();
+export const handleAddSponsor = async (): Promise<string> => {
+    try {
+        const docRef = await addSponsor();
+        console.log('Sponsor added successfully!');
+        return docRef.id;
+    } catch (error) {
+        console.error('Failed to add sponsor:', error);
+        throw error;
+    }
+}
 const handleAddFamily = async (): Promise<string> => {
-    const Children = Array.from({ length: 2 }, (_, i) => ({
-        ChildID: `Child ${String.fromCharCode(65 + i)}`,
-        ChildGender: 'Boy',
-        ChildAge: 0,
-        ChildToys: [],
-        HasDisabilities: false,
-        SchoolName: 'Unknown',
-    }));
-
     try {
         const docRef = await addFamily();
         console.log('Family added successfully!');
@@ -132,24 +134,33 @@ export async function setAccountType(accountType: 'sponsor' | 'family'): Promise
     if (!user) {
         throw new AuthError('No user is signed in.', 'no-user-signed-in');
     }
-    let familyDocId: string | undefined;
+    const userRef = doc(db, 'users', user.uid);
+    const userDoc = await getDoc(userRef);
+    const userData = userDoc.data();
 
+    let familyDocId: string | undefined;
+    let sponsorDocId: string | undefined;
+
+    // Delete existing documents if they exist
+    if (userData?.family?.familyDocId) {
+        await deleteDoc(doc(db, 'families', userData.family.familyDocId));
+    }
+    if (userData?.sponsor?.sponsorDocId) {
+        await deleteDoc(doc(db, 'sponsors', userData.sponsor.sponsorDocId));
+    }
+
+    // Create new document based on account type
     if (accountType === 'family') {
         familyDocId = await handleAddFamily();
     } else {
-        const userRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userRef);
-        const familyDocId = userDoc.data()?.family.familyDocId;
-        if (familyDocId) {
-            await deleteDoc(doc(db, 'families', familyDocId));
-        }
+        sponsorDocId = await handleAddSponsor();
     }
 
-    const userRef = doc(db, 'users', user.uid);
+    // Update user document
     await updateDoc(userRef, {
         email: user.email,
         accountType: accountType,
-        ...(accountType === 'sponsor' && { sponsor: {} }),
+        ...(accountType === 'sponsor' && { sponsor: { sponsorDocId } }),
         ...(accountType === 'family' && { family: { familyDocId } }),
         ...(accountType === 'sponsor' && { family: deleteField() }),
         ...(accountType === 'family' && { sponsor: deleteField() }),

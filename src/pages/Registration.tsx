@@ -10,6 +10,10 @@ import CartoonHeader from '../components/headers/CartoonHeader';
 import SnowyGround from '../components/effects/SnowyGround';
 import Snowfall from '../components/effects/Snowfall';
 import { Family, setFamilyInfo } from '../firebase/families';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase/firebaseConfig';
+import { getDoc } from 'firebase/firestore';
+import { setSponsorInfo, Sponsor } from '../firebase/sponsors';
 
 const StyledContainer = styled(CartoonContainer)<{ isSelected?: boolean }>`
     display: flex;
@@ -151,6 +155,25 @@ export const Registration: React.FC = () => {
     const [isConfirmed, setIsConfirmed] = useState(false);
     const [pendingAccountType, setPendingAccountType] = useState<'sponsor' | 'family' | null>(null);
     const [familyDocId, setFamilyDocId] = useState<string>('');
+
+    const defaultFamily: Family = {
+        Parent1Name: user?.displayName || '',
+        Parent2Name: '',
+        StreetAddress: '',
+        ZipCode: '',
+        PhoneNumber: '',
+        Children: [],
+        timestamp: new Date(),
+    };
+
+    const defaultSponsor: Sponsor = {
+        name: user?.displayName || '',
+        email: user?.email || '',
+        contact_number: '',
+        child_sponsored: '',
+        timestamp: new Date(),
+    };
+
     useEffect(() => {
         const fetchFamilyDocId = async () => {
             if (user) {
@@ -192,21 +215,44 @@ export const Registration: React.FC = () => {
     }, [user, navigate]);
 
     const handleChangeAccountType = async (newAccountType: 'sponsor' | 'family') => {
-        setPendingAccountType(newAccountType);
-        setShowConfirmation(true);
+        if (accountType === null) {
+            // For first-time selection, directly set the account type without confirmation
+            setIsLoading(true);
+            try {
+                await setAccountType(newAccountType);
+                setAccountTypeState(newAccountType);
+                if (newAccountType === 'family') {
+                    await setFamilyInfo(defaultFamily);
+                } else if (newAccountType === 'sponsor') {
+                    await setSponsorInfo(defaultSponsor);
+                }
+            } catch (error) {
+                console.error('Error setting account type:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        } else {
+            // For changing existing account type, show confirmation
+            setPendingAccountType(newAccountType);
+            setShowConfirmation(true);
+        }
     };
 
     const handleConfirmChange = async () => {
         if (!isConfirmed || !pendingAccountType) return;
 
         setIsLoading(true);
-
         try {
             await setAccountType(pendingAccountType);
             setAccountTypeState(pendingAccountType);
             setShowConfirmation(false);
             setIsConfirmed(false);
             setPendingAccountType(null);
+            if (pendingAccountType === 'family') {
+                await setFamilyInfo(defaultFamily);
+            } else if (pendingAccountType === 'sponsor') {
+                await setSponsorInfo(defaultSponsor);
+            }
         } catch (error) {
             console.error('Error setting account type:', error);
         } finally {
@@ -217,21 +263,6 @@ export const Registration: React.FC = () => {
     if (!user) {
         return null;
     }
-
-    const handleEditFamily = async () => {
-        const id = await getFamilyDocId();
-        if (id != null) {
-            setFamilyDocId(id);
-        } else {
-            setFamilyDocId('');
-        }
-        if (accountType === 'family' && familyDocId !== '') {
-            console.log('Editing family');
-            setFamilyInfo(testFamily, familyDocId);
-        } else {
-            console.error('No family doc id found' + familyDocId);
-        }
-    };
 
     return (
         <>
@@ -315,7 +346,7 @@ export const Registration: React.FC = () => {
                             color={accountType === 'family' ? '#1EC9F2' : '#CA242B'}
                             onClick={async () =>
                                 accountType === 'family'
-                                    ? handleEditFamily()
+                                    ? {}
                                     : handleChangeAccountType('family')
                             }
                             disabled={isLoading}
