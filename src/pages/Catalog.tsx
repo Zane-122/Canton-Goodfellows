@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react';
-import axios, { get } from 'axios';
+import axios from 'axios';
 import styled from 'styled-components';
 import CartoonContainer from '../components/containers/CartoonContainer';
 import CartoonInput from '../components/inputs/CartoonInput';
@@ -270,7 +270,7 @@ const Catalog: React.FC<CatalogProps> = ({familyID}) => {
       const response = await axios.get<RainforestResponse>('https://api.rainforestapi.com/request', { params });
       setResults([]);
       setTimeout(() => {
-        setResults(response.data.search_results?.filter((item) => item.price?.value < 50).slice(0, 10) || []);
+        setResults(response.data.search_results?.slice(0, 10) || []);
       }, 50);
     } catch (error) {
       console.error("Search failed:", error);
@@ -306,7 +306,10 @@ const Catalog: React.FC<CatalogProps> = ({familyID}) => {
       } else {
         // Add to wishlist
         await addChildToy(item, familyID, childID);
-        await loadWishlist();
+        setWishlistItems(prev => new Set([...prev, item.asin]));
+        
+        // Update wishlistToys state to add the item
+        setWishlistToys(prev => [...prev, item]);
         
       }
     } catch (error) {
@@ -342,16 +345,7 @@ const Catalog: React.FC<CatalogProps> = ({familyID}) => {
           <SelectionField 
             options={children.map(child => ({ label: child.ChildID, value: child.ChildID }))}
             value={childID}
-            onChange={
-              (value) => {
-                getChildren(familyID).then((children) => {
-                  setChildren(children);
-                  setChildID(value);
-                  setViewWishlist(false);
-                });
-                setChildID(value);
-              }
-            }
+            onChange={setChildID}
             backgroundColor="#F5F5F5"
             selectionColor={getGenderColor(childID)}
           />

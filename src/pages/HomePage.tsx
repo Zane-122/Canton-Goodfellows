@@ -16,10 +16,9 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import CartoonContainer from "../components/containers/CartoonContainer";
 import CartoonHeader from "../components/headers/CartoonHeader";
 import CartoonImageContainer from "../components/containers/CartoonImageContainer";
+import { Link } from 'react-router-dom';
 
-import img1 from '../images/Kids Gifts Christmas.jpg'
-import img2 from '../images/Christmas Gifts from Unsplash.jpg'
-import CartoonButton from "../components/buttons/CartoonButton";
+
 const GlobalStyle = createGlobalStyle`
   @font-face {
     font-family: 'Coolvetica Rg';
@@ -105,7 +104,6 @@ const BigName = styled.h1<BigNameProps>`
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
   transform: translateY(calc(var(--scroll) * 0.5));
-  margin-bottom: 3vmin;
 `;
 
 const EmphasizedName = styled.span`
@@ -121,6 +119,38 @@ const EmphasizedName = styled.span`
   -webkit-font-smoothing: antialiased;
 `;
 
+interface ContainerProps {
+  style?: React.CSSProperties;
+}
+
+const StyledContainer = styled(Container)<ContainerProps>`
+  padding: 2vmin;
+  margin: 1vmin;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+`;
+
+const StyledButton = styled(Button)`
+  margin-top: 2vmin;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-self: flex-end;
+`;
+
+const ButtonText = styled.p`
+  font-size: 2vmin;
+  color: rgb(255, 255, 255);
+  margin: 0;
+  font-family: 'TT Trick New', serif;
+  font-weight: 700;
+`;
+
 const getFirstName = (name: string) => {
   return name.split(" ")[0];
 };
@@ -129,21 +159,23 @@ const ContentContainer = styled.div`
   position: relative;
 `;
 
+const StyledSubtitle = styled.p<StyledSubtitleProps>`
+  margin-top: 2vh;
+  font-size: 3vmin;
+  color: rgb(0, 0, 0);
+  font-family: 'TT Trick New', serif;
+  font-weight: 300;
+  text-align: ${props => props.orientiation === "left" ? "left" : "center"};
+  align-self: ${props => props.orientiation === "left" ? "flex-start" : "center"};
+  margin-bottom: 1vh;
+  ${props => props.color && `
+    color: ${props.color};
+  `}
+`;
+
 const StyledLink = styled(Link)`
   text-decoration: none;
   color: inherit;
-`;
-
-const StyledContainer = styled(CartoonContainer)`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  width: fit-content;
-  margin: 5vmin auto;
-  margin-top: 0vh;
-  height: fit-content;
-
 `;
 
 export const HomePage: React.FC = () => {
@@ -171,14 +203,76 @@ export const HomePage: React.FC = () => {
       </>
     ) : (
       <>
-        Please log in!
+        Please sign in!
       </>
     )
   ), [user, firstName]);
-  
-  const content = useMemo(() => (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '5vmin'}}>
-      
+  const containerContent = useMemo(() => (
+    <div style={{ 
+      marginTop: "2vh",
+      width: "100%",
+      display: "flex",
+      flexDirection: "column",
+      gap: "1vh",
+      alignItems: "center"
+    }}>
+      <div style={{ 
+        display: "flex", 
+        flexDirection: "row", 
+        gap: "1vh",
+        width: "100%",
+        justifyContent: "space-between"
+      }}>
+        <StyledContainer>
+          <Header
+            title="Sponsor a Family"
+          />
+          <StyledSubtitle orientiation="center">
+            Are you interested in sponsoring a child or an entire family, by purchasing gifts and clothing gift cards for Christmas?
+          </StyledSubtitle>
+
+          <StyledSubtitle orientiation="center">
+            As you're deciding, here are some things to think about:
+          </StyledSubtitle>
+
+          <StyledSubtitle orientiation="left" color="#CA242B">
+            - Our children are usually all sponsored out by the end of October. If you are interested in sponsoring a child, make sure to contact us in early October, or you might miss out!
+          </StyledSubtitle>
+
+          <StyledSubtitle orientiation="left" color="#CA242B">
+            - Sponsors do not have to purchase all of the child's gifts. You decide how much you can afford to spend on your sponsored child. We fill in what is not supplied.
+          </StyledSubtitle>
+
+          <StyledSubtitle orientiation="left" color="#CA242B">
+            - Anyone can sponsor a child, or several children; you don't need to be a Canton resident.
+          </StyledSubtitle>
+
+          <StyledSubtitle orientiation="center">
+            Child assignments begin in early October! Click the button below to register to sponsor a child.
+          </StyledSubtitle>
+          
+          <StyledLink to="/sponsor-registration">
+            <StyledButton
+              color="#CA242B"
+              disabled={!user}
+            >
+              <ButtonText>Register to Sponsor</ButtonText>
+            </StyledButton>
+          </StyledLink>
+        </StyledContainer>
+        <img 
+          src={christmasGiftsImage} 
+          alt="Christmas Gifts"
+          style={{ 
+            width: "30vw",
+            height: "auto",
+            objectFit: "cover",
+            borderRadius: "10px",
+            border: "3px solid #000000",
+            boxShadow: "0.5vmin 0.5vmin 0 #000000"
+          }}
+        />
+      </div>
         <StyledContainer style={{ transform: 'translateX(-5vmin)' }}>
           <div style={{ 
             display: 'flex', 
@@ -208,29 +302,23 @@ export const HomePage: React.FC = () => {
             <img src={img1} alt="Description" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </CartoonImageContainer>
         </StyledContainer>
+      </div>
 
-        <StyledContainer style={{ transform: 'translateX(5vmin)' }}>
-          <CartoonImageContainer width="40vmin" height="40vmin">
-            <img src={img2} alt="Description" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </CartoonImageContainer>
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            padding: '5vmin',
-            gap: '1vmin',
-            maxWidth: '30vmin',
-            maxHeight: '10vmin'
+      <StyledContainer >
+        <Header
+          title="Help us help Canton"
+          subtitle="Please consider donating to help us continue or mission."
+        />
+        <StyledButton color="#CA242B"             
+          onClick={() => {
+            window.open("https://cantongoodfellows.org/donate/", "_blank");
           }}>
-            <CartoonHeader title="Help us help Canton!" subtitle="Donate to us on our website!" />
-            <p style={{ fontSize: '2vmin', color: 'black' }}> - </p>
-            <CartoonButton color="#CA242B" onClick={() => {window.open('https://cantongoodfellows.org/donate/', '_blank')}}> <p>Donate!</p> </CartoonButton>
-          </div>
-        </StyledContainer>
-      
+          <ButtonText>Donate Now</ButtonText>
+        </StyledButton>
+      </StyledContainer>
     </div>
-  ), []);
+  ), [user]);
+
 
   return (
     <div>
@@ -265,7 +353,7 @@ export const HomePage: React.FC = () => {
                 position: "relative"
               }}
             >
-              {content}
+              {containerContent}
             </div>
           </ContentContainer>
         </div>
