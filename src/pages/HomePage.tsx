@@ -149,6 +149,7 @@ const StyledContainer = styled(CartoonContainer)`
 export const HomePage: React.FC = () => {
   const { user, signInWithGoogle, logout } = useAuth();
   const navigate = useNavigate()
+  const [loggedIn, setLoggedIn] = useState(user !== null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -158,6 +159,14 @@ export const HomePage: React.FC = () => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      setLoggedIn(true);
+    } else {
+      setLoggedIn(false);
+    }
+  }, [user]);
 
   const firstName = useMemo(() =>
     user ? getFirstName(user.displayName || "") : "",
@@ -179,7 +188,7 @@ export const HomePage: React.FC = () => {
   const content = useMemo(() => (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '5vmin'}}>
       
-        <StyledContainer style={{ transform: 'translateX(-5vmin)' }}>
+        <StyledContainer>
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column', 
@@ -209,7 +218,7 @@ export const HomePage: React.FC = () => {
           </CartoonImageContainer>
         </StyledContainer>
 
-        <StyledContainer style={{ transform: 'translateX(5vmin)' }}>
+        <StyledContainer>
           <CartoonImageContainer width="40vmin" height="40vmin">
             <img src={img2} alt="Description" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </CartoonImageContainer>

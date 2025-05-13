@@ -50,7 +50,7 @@ const Navbar: React.FC = () => {
           <CartoonButton color="#1EC9F2" onClick={() => {
             if (user) {
               logOut();
-              navigate('/');
+              navigate(0);
             } else {
               navigate('/login');
             }

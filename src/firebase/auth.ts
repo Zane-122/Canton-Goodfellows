@@ -11,10 +11,30 @@ import {
 import { FirebaseError } from 'firebase/app';
 import { auth } from './config';
 
-import { collection, addDoc, DocumentReference, getDocs, getDoc, doc, setDoc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, DocumentReference, getDocs, getDoc, doc, setDoc, updateDoc, deleteField, deleteDoc } from "firebase/firestore";
 import { db } from './config';
+import { addFamily } from './families';
 
 const googleProvider = new GoogleAuthProvider();
+const handleAddFamily = async (): Promise<string> => {
+  const Children = Array.from({ length: 2 }, (_, i) => ({
+    ChildID: `Child ${String.fromCharCode(65 + i)}`,
+    ChildGender: "Boy",
+    ChildAge: 0,
+    ChildToys: [],
+    HasDisabilities: false,
+    SchoolName: "Unknown"
+  }));
+
+  try {
+    const docRef = await addFamily();
+    console.log("Family added successfully!");
+    return docRef.id;
+  } catch (error) {
+    console.error("Failed to add family:", error);
+    throw error;
+  }
+};
 
 export interface AuthUser {
   email: string | null;
@@ -32,6 +52,21 @@ export class AuthError extends Error {
   constructor(message: string, public code: string) {
     super(message);
     this.name = 'AuthError';
+  }
+}
+export async function getFamilyDocId(): Promise<string | null> {
+  const user = auth.currentUser;
+
+  if (user) {
+    const userRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userRef);
+    if (await getAccountType() === "family") {
+      return userDoc.data()?.family.familyDocId; 
+    }
+    return null;
+  } else {
+    throw new AuthError('No user is signed in.', 'no-user-signed-in');
+    return null;
   }
 }
 
@@ -68,13 +103,34 @@ export async function signInWithGoogle(): Promise<User> {
     throw new AuthError('An unexpected error occurred. Please try again.', 'unknown');
   }
 }
+
 export async function setAccountType(accountType: "sponsor" | "family"): Promise<void> {
   const user = auth.currentUser;
   if (!user) {
     throw new AuthError('No user is signed in.', 'no-user-signed-in');
   }
+  let familyDocId: string | undefined;
+  
+  if (accountType === "family") {
+    familyDocId = await handleAddFamily();
+  } else  {
+    const userRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userRef);
+    const familyDocId = userDoc.data()?.family.familyDocId;
+    if (familyDocId) {
+      await deleteDoc(doc(db, "families", familyDocId));
+    }
+  }
+
   const userRef = doc(db, "users", user.uid);
-  await updateDoc(userRef, {email: user.email, accountType: accountType});
+  await updateDoc(userRef, {
+    email: user.email,
+    accountType: accountType,
+    ...(accountType === "sponsor" && {sponsor: {}}),
+    ...(accountType === "family" && {family: { familyDocId } }),
+    ...(accountType === "sponsor" && {family: deleteField()}),
+    ...(accountType === "family" && {sponsor: deleteField()})
+  });
 }
 
 export async function getAccountType(): Promise<"sponsor" | "family" | null> {

@@ -5,10 +5,11 @@ import Navbar from "../components/Navbar";
 import styled from "styled-components";
 import CartoonContainer from "../components/containers/CartoonContainer";
 import CartoonButton from "../components/buttons/CartoonButton";
-import { getAccountType, setAccountType } from "../firebase/auth";
+import { getAccountType, getFamilyDocId, setAccountType } from "../firebase/auth";
 import CartoonHeader from "../components/headers/CartoonHeader";
 import SnowyGround from "../components/effects/SnowyGround";
 import Snowfall from "../components/effects/Snowfall";
+import { Family, setFamilyInfo } from "../firebase/families";
 
 const StyledContainer = styled(CartoonContainer)<{ isSelected?: boolean }>`
     display: flex;
@@ -149,7 +150,29 @@ export const Registration: React.FC = () => {
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [isConfirmed, setIsConfirmed] = useState(false);
     const [pendingAccountType, setPendingAccountType] = useState<"sponsor" | "family" | null>(null);
-
+    const [familyDocId, setFamilyDocId] = useState<string>("");
+    useEffect(() => {
+        const fetchFamilyDocId = async () => {
+            if (user) {
+                const id = await getFamilyDocId();
+                if (id != null) {
+                    setFamilyDocId(id);
+                } else {
+                    setFamilyDocId("");
+                }
+            }
+        }
+        fetchFamilyDocId();
+    }, [user]);
+    const testFamily: Family = {
+        Parent1Name: "John Doe",
+        Parent2Name: "Jane Doe",
+        StreetAddress: "123 Main St",
+        ZipCode: "12345",
+        PhoneNumber: "1234567890",
+        Children: [],
+        timestamp: new Date()
+    }
     useEffect(() => {
         if (!user) {
             navigate("/");
@@ -177,6 +200,7 @@ export const Registration: React.FC = () => {
         if (!isConfirmed || !pendingAccountType) return;
         
         setIsLoading(true);
+
         try {
             await setAccountType(pendingAccountType);
             setAccountTypeState(pendingAccountType);
@@ -192,6 +216,21 @@ export const Registration: React.FC = () => {
 
     if (!user) {
         return null;
+    }
+
+    const handleEditFamily = async () => {
+        const id = await getFamilyDocId();
+        if (id != null) {
+            setFamilyDocId(id);
+        } else {
+            setFamilyDocId("");
+        }
+        if (accountType === "family" && familyDocId !== "") {
+            console.log("Editing family");
+            setFamilyInfo(testFamily, familyDocId);
+        } else {
+            console.error("No family doc id found" + familyDocId);
+        }
     }
 
     return (
@@ -211,10 +250,10 @@ export const Registration: React.FC = () => {
                             title={accountType === null ? "Register to be a Sponsor" : accountType === "sponsor" ? "Edit your sponsor information" : "Register to be a Sponsor"}
                             subtitle="Register to help families in need on the holidays"
                         />
-                        <text style={{ fontSize: '2vmin', color: 'black' }}> - </text>
+                        <span style={{ fontSize: '2vmin', color: 'black' }}> - </span>
                         <CartoonButton 
                             color={accountType === "sponsor" ? "#1EC9F2" : "#CA242B"}
-                            onClick={() => accountType === "sponsor" ? {} : handleChangeAccountType("sponsor")}
+                            onClick={() => accountType === "sponsor" ? navigate("/sponsor-profile") : handleChangeAccountType("sponsor")}
                             disabled={isLoading}
                         >
                             {isLoading ? "Processing..." : accountType === "sponsor" ? "Edit" : "Sponsor a Family"}
@@ -226,10 +265,10 @@ export const Registration: React.FC = () => {
                             title={accountType === null ? "Register to be a Family" : accountType === "family" ? "Edit your family information" : "Register to be a Family"}
                             subtitle=" Register to receive help from sponsors on the holidays"
                         />
-                        <text style={{ fontSize: '2vmin', color: 'black' }}> - </text>
+                        <span style={{ fontSize: '2vmin', color: 'black' }}> - </span>
                         <CartoonButton 
                             color={accountType === "family" ? "#1EC9F2" : "#CA242B"}
-                            onClick={() => accountType === "family" ? {} : handleChangeAccountType("family")}
+                            onClick={async () => accountType === "family" ? handleEditFamily() : handleChangeAccountType("family")}
                             disabled={isLoading}
                         >
                             {isLoading ? "Processing..." : accountType === "family" ? "Edit" : "Register"}

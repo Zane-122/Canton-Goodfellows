@@ -23,7 +23,6 @@ export interface Child {
 }
 
 export interface Family {
-
   Parent1Name: string;
   Parent2Name: string;
 
@@ -34,23 +33,33 @@ export interface Family {
 
   Children: Child[];
 
-  isSponsored: boolean;
   timestamp: Date;
 }
 
-export async function addFamily(family: Family): Promise<void> {
+export async function addFamily(): Promise<DocumentReference> {
     try {
         console.log("Attempting to add document to Firestore...");
         const families = await getFamilies();
         const familyId = `Family ${families.length + 1}`;
-        const familyRef = doc(db, "families", familyId);
+        const familiesCollection = collection(db, "families");
         
-        await setDoc(familyRef, { family });
-        console.log("✅ Success! Document written with ID:", familyId);
+        const docRef = await addDoc(familiesCollection, {FamilyID: familyId, family: {}});
+        console.log("✅ Success! Document written with ID:", docRef.id);
+        return docRef;
     } catch (e) {
         console.error("❌ Error adding document:", e);
+        throw e;
     }
 }
+
+export async function setFamilyInfo(family: Family, familyDocId: string): Promise<void> {
+  const familyRef = doc(db, "families", familyDocId);
+  const families = await getFamilies();
+  const familyId = `Family ${families.length}`;
+
+  await setDoc(familyRef, {FamilyID: familyId, family: family});
+}
+
 export async function getFamilies(): Promise<Family[]> {
   const familiesCollection = collection(db, "families");
   const querySnapshot = await getDocs(familiesCollection);
@@ -58,18 +67,6 @@ export async function getFamilies(): Promise<Family[]> {
     ...doc.data().family,
     FamilyID: doc.id
   }));
-}
-
-export async function updateFamilySponsoredStatus(familyId: string, isSponsored: boolean): Promise<void> {
-  try {
-    const familyRef = doc(db, "families", familyId);
-    await updateDoc(familyRef, {
-      "family.isSponsored": isSponsored
-    });
-    console.log("✅ Success! Family sponsored status updated");
-  } catch (e) {
-    console.error("❌ Error updating family sponsored status:", e);
-  }
 }
 
 export async function addChildToy(toy: Toy, familyID: string, childID: string): Promise<void> {
