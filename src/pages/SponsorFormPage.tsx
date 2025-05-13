@@ -37,90 +37,110 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 const StyledContainer = styled(CartoonContainer)`
-  width: fit-content;
-  height: fit-content;
-  padding: 2vmin;
-  margin: 1vmin;
-  align-self: center;
+    width: fit-content;
+    height: fit-content;
+    padding: 2vmin;
+    margin: 1vmin;
+    align-self: center;
 `;
 
 const StyledFormPageContainer = styled.div`
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  width: 100%;
-  margin-top: 15vh;
-  margin-bottom: 10vh;
-  padding-right: 5vw;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    margin-top: 15vh;
+    margin-bottom: 10vh;
+    padding-right: 5vw;
 `;
 
 const StyledFormPageTitle = styled.h1`
-  font-size: 10vmin;
-  font-family: "TT Trick New Bold Italic", serif;
-  color: rgb(255, 255, 255);
-  letter-spacing: 0.2vmin;
-  margin: 2vmin;
-  padding: 0;
+    font-size: 10vmin;
+    font-family: 'TT Trick New Bold Italic', serif;
+    color: rgb(255, 255, 255);
+    letter-spacing: 0.2vmin;
+    margin: 2vmin;
+    padding: 0;
 `;
 
 const FormCardsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  width: 70vw;
-  gap: 1vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 70vw;
+    gap: 1vh;
 `;
 
 const StyledButton = styled(CartoonButton)`
-  font-size: 5vmin;
-  font-family: "TT Trick New Bold Italic", serif;
-  color: rgb(255, 255, 255);
-  letter-spacing: 0.2vmin;
-  margin: 2vmin;
-  padding: 1vmin;
+    font-size: 5vmin;
+    font-family: 'TT Trick New Bold Italic', serif;
+    color: rgb(255, 255, 255);
+    letter-spacing: 0.2vmin;
+    margin: 2vmin;
+    padding: 1vmin;
 `;
 export const SponsorFormPage: React.FC = () => {
-  return (
-    <>
-      <GlobalStyle />
-      <Navbar />
-      <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }}>
-        <Snowfall />
-      </div>
-      
-      <StyledFormPageContainer>
-        <StyledContainer color="#D84040">
-          <StyledFormPageTitle>Sponsor Form</StyledFormPageTitle>
-        </StyledContainer>
-        <FormCardsContainer>
+    return (
+        <>
+            <GlobalStyle />
+            <Navbar />
+            <div
+                style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    zIndex: 0,
+                }}
+            >
+                <Snowfall />
+            </div>
 
-          <StyledContainer color="#D84040">
-            <FormCard title="Phone Number" type="phonenumber" subtitle="Please enter the primary phone number we can use to reach you." />
-          </StyledContainer>
+            <StyledFormPageContainer>
+                <StyledContainer color="#D84040">
+                    <StyledFormPageTitle>Sponsor Form</StyledFormPageTitle>
+                </StyledContainer>
+                <FormCardsContainer>
+                    <StyledContainer color="#D84040">
+                        <FormCard
+                            title="Phone Number"
+                            type="phonenumber"
+                            subtitle="Please enter the primary phone number we can use to reach you."
+                        />
+                    </StyledContainer>
 
-          <StyledContainer color="#D84040">
-            <FormCard title="Gender Preferences" type="genderpreferences" subtitle="Do you have a preferred gender to be matched with?" />
-          </StyledContainer>
+                    <StyledContainer color="#D84040">
+                        <FormCard
+                            title="Gender Preferences"
+                            type="genderpreferences"
+                            subtitle="Do you have a preferred gender to be matched with?"
+                        />
+                    </StyledContainer>
 
-          <StyledContainer color="#D84040">
-            <FormCard title="Age Preferences" type="agepreferences" subtitle="Do you have a preferred age of children to sponsor for?" />
-          </StyledContainer>
+                    <StyledContainer color="#D84040">
+                        <FormCard
+                            title="Age Preferences"
+                            type="agepreferences"
+                            subtitle="Do you have a preferred age of children to sponsor for?"
+                        />
+                    </StyledContainer>
 
-          <StyledContainer color="#D84040">
-            <FormCard title="Extra Accomodations" type="accomodations" subtitle="Are you willing to accomodate for neurodiverse kids? (Ex. kids with Autism, ADHD, sensory processing issues, etc.)" />
-          </StyledContainer>
-          
-          <StyledButton color="#D84040">
-            Submit
-          </StyledButton>
+                    <StyledContainer color="#D84040">
+                        <FormCard
+                            title="Extra Accomodations"
+                            type="accomodations"
+                            subtitle="Are you willing to accomodate for neurodiverse kids? (Ex. kids with Autism, ADHD, sensory processing issues, etc.)"
+                        />
+                    </StyledContainer>
 
-
-        </FormCardsContainer>
-      </StyledFormPageContainer>
-      <SnowyGround />
-    </>
-  );
+                    <StyledButton color="#D84040">Submit</StyledButton>
+                </FormCardsContainer>
+            </StyledFormPageContainer>
+            <SnowyGround />
+        </>
+    );
 };

@@ -14,19 +14,19 @@ const glow = keyframes`
 `;
 
 const MoonContainer = styled.div`
-  position: fixed;
-  top: 200px;
-  right: 50px;
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: #fff;
-  animation: ${glow} 3s ease-in-out infinite;
-  z-index: 0;
+    position: fixed;
+    top: 200px;
+    right: 50px;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #fff;
+    animation: ${glow} 3s ease-in-out infinite;
+    z-index: 0;
 `;
 
 const Moon: React.FC = () => {
-  return <MoonContainer />;
+    return <MoonContainer />;
 };
 
-export default Moon; 
+export default Moon;

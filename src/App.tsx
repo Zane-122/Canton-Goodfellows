@@ -18,7 +18,7 @@ import { EmailSignIn } from './components/auth/EmailSignIn';
 import { EmailSignUp } from './components/auth/EmailSignUp';
 import { LogIn } from './pages/LogIn';
 import { SignOut } from './components/auth/SignOut';
-import {SignUp} from './pages/SignUp';
+import { SignUp } from './pages/SignUp';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -31,22 +31,19 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 const AddFamilyButton = styled(Button)`
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
 `;
 
 const App: React.FC = () => {
-  
-
-  return (
-    <AuthProvider>
-      <GlobalStyle />
-      <HomePage />
-
-    </AuthProvider>
-  );
+    return (
+        <AuthProvider>
+            <GlobalStyle />
+            <HomePage />
+        </AuthProvider>
+    );
 };
 
-export default App; 
+export default App;

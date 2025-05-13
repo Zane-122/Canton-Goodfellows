@@ -13,8 +13,8 @@ const SignOutContainer = styled.div`
 `;
 
 const ErrorMessage = styled.div`
-    background-color: #FFE6E6;
-    color: #D84040;
+    background-color: #ffe6e6;
+    color: #d84040;
     padding: 0.5vmin 1vmin;
     border-radius: 0.5vmin;
     font-size: 1.5vmin;
@@ -52,13 +52,9 @@ export const SignOut: React.FC<SignOutProps> = ({ onSignOut }) => {
     return (
         <SignOutContainer>
             {error && <ErrorMessage>{error}</ErrorMessage>}
-            <CartoonButton 
-                color="#D84040" 
-                onClick={handleSignOut}
-                disabled={isLoading || !user}
-            >
+            <CartoonButton color="#D84040" onClick={handleSignOut} disabled={isLoading || !user}>
                 {isLoading ? 'Signing Out...' : 'Sign Out'}
             </CartoonButton>
         </SignOutContainer>
     );
-};   
+};

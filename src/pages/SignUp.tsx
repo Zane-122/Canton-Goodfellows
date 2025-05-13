@@ -1,10 +1,10 @@
-import { EmailSignIn } from "../components/auth/EmailSignIn";
-import CartoonContainer from "../components/containers/CartoonContainer";
-import { styled } from "styled-components";
-import Navbar from "../components/Navbar";
-import GoogleSignIn from "../components/auth/GoogleSignIn";
-import Button from "../components/buttons/CartoonButton";
-import { EmailSignUp } from "../components/auth/EmailSignUp";
+import { EmailSignIn } from '../components/auth/EmailSignIn';
+import CartoonContainer from '../components/containers/CartoonContainer';
+import { styled } from 'styled-components';
+import Navbar from '../components/Navbar';
+import GoogleSignIn from '../components/auth/GoogleSignIn';
+import Button from '../components/buttons/CartoonButton';
+import { EmailSignUp } from '../components/auth/EmailSignUp';
 import { Link, useNavigate } from 'react-router-dom';
 
 const StyledContainer = styled(CartoonContainer)`
@@ -22,14 +22,32 @@ export const SignUp = () => {
     return (
         <>
             <Navbar />
-            <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh"}}>
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100vh',
+                }}
+            >
                 <StyledContainer>
                     <EmailSignUp onSignUp={() => navigate('/')} />
                     <p> - or - </p>
                     <GoogleSignIn text="Sign Up with Google" onError={() => {}} />
-                    <p> - if you already have an account, <Link to="/login" style={{ color: '#1EC9F2', textDecoration: 'none', cursor: 'pointer' }}>log in here</Link> - </p>
+                    <p>
+                        {' '}
+                        - if you already have an account,{' '}
+                        <Link
+                            to="/login"
+                            style={{ color: '#1EC9F2', textDecoration: 'none', cursor: 'pointer' }}
+                        >
+                            log in here
+                        </Link>{' '}
+                        -{' '}
+                    </p>
                 </StyledContainer>
             </div>
         </>
     );
-}   
+};

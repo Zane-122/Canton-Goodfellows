@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { Register, useNavigate } from "react-router-dom";
-import { useAuth } from "../firebase/contexts/AuthContext";
-import Navbar from "../components/Navbar";
-import styled from "styled-components";
-import CartoonContainer from "../components/containers/CartoonContainer";
-import CartoonButton from "../components/buttons/CartoonButton";
-import { getAccountType, getFamilyDocId, setAccountType } from "../firebase/auth";
-import CartoonHeader from "../components/headers/CartoonHeader";
-import SnowyGround from "../components/effects/SnowyGround";
-import Snowfall from "../components/effects/Snowfall";
-import { Family, setFamilyInfo } from "../firebase/families";
+import React, { useEffect, useState } from 'react';
+import { Register, useNavigate } from 'react-router-dom';
+import { useAuth } from '../firebase/contexts/AuthContext';
+import Navbar from '../components/Navbar';
+import styled from 'styled-components';
+import CartoonContainer from '../components/containers/CartoonContainer';
+import CartoonButton from '../components/buttons/CartoonButton';
+import { getAccountType, getFamilyDocId, setAccountType } from '../firebase/auth';
+import CartoonHeader from '../components/headers/CartoonHeader';
+import SnowyGround from '../components/effects/SnowyGround';
+import Snowfall from '../components/effects/Snowfall';
+import { Family, setFamilyInfo } from '../firebase/families';
 
 const StyledContainer = styled(CartoonContainer)<{ isSelected?: boolean }>`
     display: flex;
@@ -21,10 +21,10 @@ const StyledContainer = styled(CartoonContainer)<{ isSelected?: boolean }>`
     max-width: 40vmin;
     gap: 2vmin;
     padding: 3vmin;
-    background-color: ${props => props.isSelected ? 'white' : '#e0e0e0'};
-    box-shadow: ${props => props.isSelected ? '4px 4px 0px 0px rgba(0, 0, 0, 1)' : 'none'};
+    background-color: ${(props) => (props.isSelected ? 'white' : '#e0e0e0')};
+    box-shadow: ${(props) => (props.isSelected ? '4px 4px 0px 0px rgba(0, 0, 0, 1)' : 'none')};
     transition: all 0.3s ease;
-    opacity: ${props => props.isSelected ? '1' : '0.8'};
+    opacity: ${(props) => (props.isSelected ? '1' : '0.8')};
 `;
 
 const ConfirmationOverlay = styled.div`
@@ -95,9 +95,9 @@ const StyledCheckbox = styled.input`
     transition: all 0.2s ease;
 
     &:checked {
-        background-color: #1EC9F2;
+        background-color: #1ec9f2;
         &::after {
-            content: "✓";
+            content: '✓';
             position: absolute;
             top: 50%;
             left: 50%;
@@ -149,8 +149,8 @@ export const Registration: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [isConfirmed, setIsConfirmed] = useState(false);
-    const [pendingAccountType, setPendingAccountType] = useState<"sponsor" | "family" | null>(null);
-    const [familyDocId, setFamilyDocId] = useState<string>("");
+    const [pendingAccountType, setPendingAccountType] = useState<'sponsor' | 'family' | null>(null);
+    const [familyDocId, setFamilyDocId] = useState<string>('');
     useEffect(() => {
         const fetchFamilyDocId = async () => {
             if (user) {
@@ -158,24 +158,24 @@ export const Registration: React.FC = () => {
                 if (id != null) {
                     setFamilyDocId(id);
                 } else {
-                    setFamilyDocId("");
+                    setFamilyDocId('');
                 }
             }
-        }
+        };
         fetchFamilyDocId();
     }, [user]);
     const testFamily: Family = {
-        Parent1Name: "John Doe",
-        Parent2Name: "Jane Doe",
-        StreetAddress: "123 Main St",
-        ZipCode: "12345",
-        PhoneNumber: "1234567890",
+        Parent1Name: 'John Doe',
+        Parent2Name: 'Jane Doe',
+        StreetAddress: '123 Main St',
+        ZipCode: '12345',
+        PhoneNumber: '1234567890',
         Children: [],
-        timestamp: new Date()
-    }
+        timestamp: new Date(),
+    };
     useEffect(() => {
         if (!user) {
-            navigate("/");
+            navigate('/');
             return;
         }
 
@@ -184,21 +184,21 @@ export const Registration: React.FC = () => {
                 const type = await getAccountType();
                 setAccountTypeState(type);
             } catch (error) {
-                console.error("Error checking account type:", error);
+                console.error('Error checking account type:', error);
             }
         };
 
         checkAccountType();
     }, [user, navigate]);
 
-    const handleChangeAccountType = async (newAccountType: "sponsor" | "family") => {
+    const handleChangeAccountType = async (newAccountType: 'sponsor' | 'family') => {
         setPendingAccountType(newAccountType);
         setShowConfirmation(true);
     };
 
     const handleConfirmChange = async () => {
         if (!isConfirmed || !pendingAccountType) return;
-        
+
         setIsLoading(true);
 
         try {
@@ -208,7 +208,7 @@ export const Registration: React.FC = () => {
             setIsConfirmed(false);
             setPendingAccountType(null);
         } catch (error) {
-            console.error("Error setting account type:", error);
+            console.error('Error setting account type:', error);
         } finally {
             setIsLoading(false);
         }
@@ -223,55 +223,108 @@ export const Registration: React.FC = () => {
         if (id != null) {
             setFamilyDocId(id);
         } else {
-            setFamilyDocId("");
+            setFamilyDocId('');
         }
-        if (accountType === "family" && familyDocId !== "") {
-            console.log("Editing family");
+        if (accountType === 'family' && familyDocId !== '') {
+            console.log('Editing family');
             setFamilyInfo(testFamily, familyDocId);
         } else {
-            console.error("No family doc id found" + familyDocId);
+            console.error('No family doc id found' + familyDocId);
         }
-    }
+    };
 
     return (
         <>
             <Navbar />
             <Snowfall />
-            <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", gap: "4vmin"}}>
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: '100vh',
+                    gap: '4vmin',
+                }}
+            >
                 <TitleContainer>
-                    <CartoonHeader 
-                        title={accountType ? `Current Account Type: ${accountType.charAt(0).toUpperCase() + accountType.slice(1)}` : "No Account Type Set"}
-                        subtitle={accountType ? "You can change your account type below" : "Please select an account type below"}
+                    <CartoonHeader
+                        title={
+                            accountType
+                                ? `Current Account Type: ${accountType.charAt(0).toUpperCase() + accountType.slice(1)}`
+                                : 'No Account Type Set'
+                        }
+                        subtitle={
+                            accountType
+                                ? 'You can change your account type below'
+                                : 'Please select an account type below'
+                        }
                     />
                 </TitleContainer>
-                <div style={{display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: "10vmin"}}>
-                    <StyledContainer isSelected={accountType === "sponsor"}>
-                        <CartoonHeader 
-                            title={accountType === null ? "Register to be a Sponsor" : accountType === "sponsor" ? "Edit your sponsor information" : "Register to be a Sponsor"}
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '10vmin',
+                    }}
+                >
+                    <StyledContainer isSelected={accountType === 'sponsor'}>
+                        <CartoonHeader
+                            title={
+                                accountType === null
+                                    ? 'Register to be a Sponsor'
+                                    : accountType === 'sponsor'
+                                      ? 'Edit your sponsor information'
+                                      : 'Register to be a Sponsor'
+                            }
                             subtitle="Register to help families in need on the holidays"
                         />
                         <span style={{ fontSize: '2vmin', color: 'black' }}> - </span>
-                        <CartoonButton 
-                            color={accountType === "sponsor" ? "#1EC9F2" : "#CA242B"}
-                            onClick={() => accountType === "sponsor" ? navigate("/sponsor-profile") : handleChangeAccountType("sponsor")}
+                        <CartoonButton
+                            color={accountType === 'sponsor' ? '#1EC9F2' : '#CA242B'}
+                            onClick={() =>
+                                accountType === 'sponsor'
+                                    ? navigate('/sponsor-profile')
+                                    : handleChangeAccountType('sponsor')
+                            }
                             disabled={isLoading}
                         >
-                            {isLoading ? "Processing..." : accountType === "sponsor" ? "Edit" : "Sponsor a Family"}
+                            {isLoading
+                                ? 'Processing...'
+                                : accountType === 'sponsor'
+                                  ? 'Edit'
+                                  : 'Sponsor a Family'}
                         </CartoonButton>
                     </StyledContainer>
 
-                    <StyledContainer isSelected={accountType === "family"}>
-                        <CartoonHeader 
-                            title={accountType === null ? "Register to be a Family" : accountType === "family" ? "Edit your family information" : "Register to be a Family"}
+                    <StyledContainer isSelected={accountType === 'family'}>
+                        <CartoonHeader
+                            title={
+                                accountType === null
+                                    ? 'Register to be a Family'
+                                    : accountType === 'family'
+                                      ? 'Edit your family information'
+                                      : 'Register to be a Family'
+                            }
                             subtitle=" Register to receive help from sponsors on the holidays"
                         />
                         <span style={{ fontSize: '2vmin', color: 'black' }}> - </span>
-                        <CartoonButton 
-                            color={accountType === "family" ? "#1EC9F2" : "#CA242B"}
-                            onClick={async () => accountType === "family" ? handleEditFamily() : handleChangeAccountType("family")}
+                        <CartoonButton
+                            color={accountType === 'family' ? '#1EC9F2' : '#CA242B'}
+                            onClick={async () =>
+                                accountType === 'family'
+                                    ? handleEditFamily()
+                                    : handleChangeAccountType('family')
+                            }
                             disabled={isLoading}
                         >
-                            {isLoading ? "Processing..." : accountType === "family" ? "Edit" : "Register"}
+                            {isLoading
+                                ? 'Processing...'
+                                : accountType === 'family'
+                                  ? 'Edit'
+                                  : 'Register'}
                         </CartoonButton>
                     </StyledContainer>
                 </div>
@@ -280,20 +333,20 @@ export const Registration: React.FC = () => {
             {showConfirmation && (
                 <ConfirmationOverlay>
                     <ConfirmationContainer>
-                        <CartoonHeader 
+                        <CartoonHeader
                             title="⚠️ Important Notice ⚠️"
-                            subtitle={`You are about to change your account type to ${pendingAccountType}. This action will delete all your previous ${pendingAccountType === "sponsor" ? "family" : "sponsor"} configurations and cannot be undone.`}
+                            subtitle={`You are about to change your account type to ${pendingAccountType}. This action will delete all your previous ${pendingAccountType === 'sponsor' ? 'family' : 'sponsor'} configurations and cannot be undone.`}
                         />
                         <CheckboxContainer>
-                            <StyledCheckbox 
-                                type="checkbox" 
+                            <StyledCheckbox
+                                type="checkbox"
                                 checked={isConfirmed}
                                 onChange={(e) => setIsConfirmed(e.target.checked)}
                             />
                             <span>I understand that this action cannot be undone</span>
                         </CheckboxContainer>
                         <ButtonContainer>
-                            <CartoonButton 
+                            <CartoonButton
                                 color="#CA242B"
                                 onClick={() => {
                                     setShowConfirmation(false);
@@ -303,12 +356,12 @@ export const Registration: React.FC = () => {
                             >
                                 Cancel
                             </CartoonButton>
-                            <CartoonButton 
+                            <CartoonButton
                                 color="#1EC9F2"
                                 onClick={handleConfirmChange}
                                 disabled={!isConfirmed || isLoading}
                             >
-                                {isLoading ? "Processing..." : "Confirm Change"}
+                                {isLoading ? 'Processing...' : 'Confirm Change'}
                             </CartoonButton>
                         </ButtonContainer>
                     </ConfirmationContainer>
@@ -317,4 +370,4 @@ export const Registration: React.FC = () => {
             <SnowyGround />
         </>
     );
-};  
+};
