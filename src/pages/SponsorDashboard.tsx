@@ -94,7 +94,7 @@ const DashboardButton = styled(CartoonButton)`
     position: fixed;
     bottom: 4vmin;
     right: 4vmin;
-    z-index: 100;
+    z-index: 50;
     padding: 2vmin 4vmin;
     font-size: 2vmin;
 `;
@@ -315,6 +315,18 @@ export const SponsorDashboard: React.FC = () => {
             return children[childIndex];
         }
 
+        const ReloadFamily = async (familyId: string) => {
+            if (selectedFamily && selectedFamily.FamilyID === familyId) {
+                const familyDoc = await getFamilyDoc(familyId);
+                const updatedChildren = familyDoc?.data()?.family.Children;
+                const updatedFamily = {...selectedFamily};
+                if (updatedChildren) {
+                    updatedFamily.Children = updatedChildren;
+                    setSelectedFamily(updatedFamily);
+                }
+            }
+        }
+
         const handleSponsorChild = async (familyId: string, childId: string) => {
             try {
                 const sponsorDocId = await getSponsorDocId();
@@ -342,19 +354,12 @@ export const SponsorDashboard: React.FC = () => {
                     // Sponsor the child
                     if (sponsoredChildren.length >= 3) {
                         setSaveMessage("Error: You can only sponsor up to 3 children at a time.");
+                        setTimeout(() => setSaveMessage(""), 2000);
                         return;
                     } else if (sponsoredChildren.includes(childIdentifier) || child?.isSponsored) {
                         setSaveMessage("Error: This child is already sponsored.");
-                        
-                        if (selectedFamily && selectedFamily.FamilyID === familyId) {
-                            const familyDoc = await getFamilyDoc(familyId);
-                            const updatedChildren = familyDoc?.data()?.family.Children;
-                            const updatedFamily = {...selectedFamily};
-                            if (updatedChildren) {
-                                updatedFamily.Children = updatedChildren;
-                                setSelectedFamily(updatedFamily);
-                            }
-                        }
+                        setTimeout(() => setSaveMessage(""), 2000);
+                        ReloadFamily(familyId);
                         return;
                     } else {
                         newSponsoredChildren = [...sponsoredChildren, childIdentifier];
@@ -377,7 +382,7 @@ export const SponsorDashboard: React.FC = () => {
                 const updatedFamilyData = familyDoc?.data();
                 const updatedChildren = updatedFamilyData?.family?.Children || [];
                 
-                // Find and update the specific child in the children array
+                // Find update the  child in the children array
                 const childIndex = updatedChildren.findIndex((c: Child) => c.ChildID === child?.ChildID);
                 if (childIndex !== -1) {
                     updatedChildren[childIndex] = child;
@@ -548,7 +553,13 @@ export const SponsorDashboard: React.FC = () => {
                                                             alignItems: 'center',
                                                             verticalAlign: 'middle',
                                                         }}>
-                                                            {sponsoredChildren.includes(`${selectedFamily.FamilyID} ${child.ChildID}`) ? "Sponsored by You" : child.isSponsored ? "Sponsored by Someone Else" : "Not Sponsored"}
+                                                            <span style={{
+                                                                justifyContent: 'center',
+                                                                alignItems: 'center',
+                                                                verticalAlign: 'middle',
+                                                            }}>
+                                                                {sponsoredChildren.includes(`${selectedFamily.FamilyID} ${child.ChildID}`) ? "Sponsored by You" : child.isSponsored ? "Sponsored by Someone Else" : "Not Sponsored"}
+                                                            </span>
                                                         </div>
                                                     )}
                                                 </div>
@@ -578,12 +589,18 @@ export const SponsorDashboard: React.FC = () => {
                                         </ChildCard>
                                     ))}
                                 </div>
-                                <div style={{ marginTop: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                <div style={{ marginTop: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2vmin' }}>
                                     <CartoonButton 
                                         color="#CA242B" 
                                         onClick={() => setShowChildrenModal(false)}
                                     >
                                         Close
+                                    </CartoonButton>
+                                    <CartoonButton 
+                                        color="#1EC9F2" 
+                                        onClick={() => ReloadFamily(selectedFamily?.FamilyID || '')}
+                                    >
+                                        Reload
                                     </CartoonButton>
                                 </div>
                             </ModalInnerContent>
