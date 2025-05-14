@@ -15,7 +15,7 @@ import styled from "styled-components";
 import Navbar from "../components/Navbar";
 import Snowfall from "../components/effects/Snowfall";
 import SnowyGround from "../components/effects/SnowyGround";
-import { Child, Family, getFamilies } from "../firebase/families";
+import { Child, Family, getChildren, getFamilies } from "../firebase/families";
 
 const PageContainer = styled.div`
     display: flex;
@@ -94,7 +94,7 @@ const DashboardButton = styled(CartoonButton)`
     position: fixed;
     bottom: 4vmin;
     right: 4vmin;
-    z-index: 100;
+    z-index: 50;
     padding: 2vmin 4vmin;
     font-size: 2vmin;
 `;
@@ -181,6 +181,11 @@ export const SponsorDashboard: React.FC = () => {
     const [hasAllInfo, setHasAllInfo] = useState(false);
     const [page, setPage] = useState<"dashboard" | "basicForm" | "childSelection">("dashboard");
     const [sponsoredChildren, setSponsoredChildren] = useState<string[]>([]);
+    const [families, setFamilies] = useState<Family[]>([]);
+    const [selectedFamily, setSelectedFamily] = useState<Family | null>(null);
+    const [showChildrenModal, setShowChildrenModal] = useState(false);
+    const [showFamilyModal, setShowFamilyModal] = useState(false);
+    const [saveMessage, setSaveMessage] = useState("");
 
     useEffect(() => {
         const fetchSponsorInfo = async () => {
@@ -237,8 +242,8 @@ export const SponsorDashboard: React.FC = () => {
         return (
             <FormContainer>
                 <CartoonHeader title="Welcome to Your Dashboard" />
-                <CartoonButton onClick={() => setPage("basicForm")}>Update Basic Info</CartoonButton>
-                <CartoonButton onClick={() => setPage("childSelection")}>Select Children to Sponsor</CartoonButton>
+                <CartoonButton color="#1EC9F2" onClick={() => setPage("basicForm")}>Update Basic Info</CartoonButton>
+                <CartoonButton disabled={!hasAllInfo} color="#1EC9F2" onClick={() => setPage("childSelection")}>Select Children to Sponsor</CartoonButton>
             </FormContainer>
         );
     };
@@ -250,9 +255,23 @@ export const SponsorDashboard: React.FC = () => {
         const [showChildrenModal, setShowChildrenModal] = useState(false);
         const [showFamilyModal, setShowFamilyModal] = useState(false);
         const [saveMessage, setSaveMessage] = useState("");
+        const [sponsoredChildren, setSponsoredChildren] = useState<string[]>([]);
+
+        useEffect(() => {
+            const fetchSponsoredChildren = async () => {
+                const sponsorDocId = await getSponsorDocId();
+                const sponsorRef = doc(db, 'sponsors', sponsorDocId);
+                const sponsorDoc = await getDoc(sponsorRef);
+                const sponsorInfo = sponsorDoc.data();
+                setSponsoredChildren(sponsorInfo?.sponsored_children || []);
+            };
+            fetchSponsoredChildren();
+        }, []);
         
         const handleViewChildren = (family: Family) => {
-            setSelectedFamily(family);
+            // Find the most up-to-date version of this family from the families array
+            const updatedFamily = families.find(f => f.FamilyID === family.FamilyID) || family;
+            setSelectedFamily(updatedFamily);
             setShowChildrenModal(true);
         };
 
@@ -261,6 +280,53 @@ export const SponsorDashboard: React.FC = () => {
             setShowFamilyModal(true);
         };
 
+        const getFamilyDoc = async(familyId: string) => {
+            const familiesRef = collection(db, 'families');
+            const q = query(familiesRef, where('FamilyID', '==', familyId));
+            const querySnapshot = await getDocs(q);
+            
+            if (querySnapshot.empty) {
+                console.error('Family not found');
+                setSaveMessage("Error: Family not found");
+                return;
+            }
+            
+            const familyDoc = querySnapshot.docs[0];
+            return familyDoc;
+        }
+
+        const getChild = async(familyId: string, childId: string): Promise<Child | null> => {  
+            // Find the family document by FamilyID field
+            const family = await getFamilyDoc(familyId);
+            if (family === null) {return null;}
+            const familyData = family?.data();
+
+            // Get the Children array from the family data
+            const children = familyData?.family.Children || [];
+            console.log('Children array:', children);
+            
+            const childIndex = children.findIndex((child: Child) => child.ChildID === childId);
+            if (childIndex === -1) {
+                console.error('Child not found in family');
+                setSaveMessage("Error: Child not found");
+                return null;
+            }
+
+            return children[childIndex];
+        }
+
+        const ReloadFamily = async (familyId: string) => {
+            if (selectedFamily && selectedFamily.FamilyID === familyId) {
+                const familyDoc = await getFamilyDoc(familyId);
+                const updatedChildren = familyDoc?.data()?.family.Children;
+                const updatedFamily = {...selectedFamily};
+                if (updatedChildren) {
+                    updatedFamily.Children = updatedChildren;
+                    setSelectedFamily(updatedFamily);
+                }
+            }
+        }
+
         const handleSponsorChild = async (familyId: string, childId: string) => {
             try {
                 const sponsorDocId = await getSponsorDocId();
@@ -268,45 +334,40 @@ export const SponsorDashboard: React.FC = () => {
                 const sponsorDoc = await getDoc(sponsorRef);
                 const currentInfo = sponsorDoc.data();
                 
-                // Find the family document by FamilyID field
-                const familiesRef = collection(db, 'families');
-                const q = query(familiesRef, where('FamilyID', '==', familyId));
-                const querySnapshot = await getDocs(q);
-                
-                if (querySnapshot.empty) {
-                    console.error('Family not found');
-                    setSaveMessage("Error: Family not found");
-                    return;
-                }
-                
-                const familyDoc = querySnapshot.docs[0];
-                const familyData = familyDoc.data();
-                console.log('Raw family data:', familyData);
-                
-                // Get the Children array from the family data
-                const children = familyData?.family.Children || [];
-                console.log('Children array:', children);
-                
-                const childIndex = children.findIndex((child: Child) => child.ChildID === childId);
-                if (childIndex === -1) {
-                    console.error('Child not found in family');
-                    setSaveMessage("Error: Child not found");
-                    return;
-                }
+                const child = await getChild(familyId, childId);
                 
                 const childIdentifier = `${familyId} ${childId}`;
                 
+                const familyDoc = await getFamilyDoc(familyId);
+                if (familyDoc === null) {return;}
+                const familyData = familyDoc?.data();
+
                 let newSponsoredChildren;
-                if (children[childIndex].isSponsored) {
+                if (sponsoredChildren.includes(childIdentifier)) {
                     // Unsponsor the child
-                    newSponsoredChildren = currentInfo?.sponsored_children?.filter((child: string) => child !== childIdentifier) || [];
-                    children[childIndex].isSponsored = false;
+                    newSponsoredChildren = sponsoredChildren.filter(child => child !== childIdentifier);
+                    if (child) {
+                        child.isSponsored = false;
+                    }
                     setSaveMessage("Child unsponsored successfully!");
                 } else {
                     // Sponsor the child
-                    newSponsoredChildren = [...(currentInfo?.sponsored_children || []), childIdentifier];
-                    children[childIndex].isSponsored = true;
-                    setSaveMessage("Child sponsored successfully!");
+                    if (sponsoredChildren.length >= 3) {
+                        setSaveMessage("Error: You can only sponsor up to 3 children at a time.");
+                        setTimeout(() => setSaveMessage(""), 2000);
+                        return;
+                    } else if (sponsoredChildren.includes(childIdentifier) || child?.isSponsored) {
+                        setSaveMessage("Error: This child is already sponsored.");
+                        setTimeout(() => setSaveMessage(""), 2000);
+                        ReloadFamily(familyId);
+                        return;
+                    } else {
+                        newSponsoredChildren = [...sponsoredChildren, childIdentifier];
+                        if (child) {
+                            child.isSponsored = true;
+                        }
+                        setSaveMessage("Child sponsored successfully!");
+                    }
                 }
 
                 // Update sponsor's sponsored_children
@@ -314,10 +375,35 @@ export const SponsorDashboard: React.FC = () => {
                     sponsored_children: newSponsoredChildren
                 });
                 
-                // Update the family document with the new children array
-                await updateDoc(familyDoc.ref, {
-                    'family.Children': children
-                });
+                // Update local state with the new sponsored children list
+                setSponsoredChildren(newSponsoredChildren);
+                
+                // Get updated children array from family doc
+                const updatedFamilyData = familyDoc?.data();
+                const updatedChildren = updatedFamilyData?.family?.Children || [];
+                
+                // Find update the  child in the children array
+                const childIndex = updatedChildren.findIndex((c: Child) => c.ChildID === child?.ChildID);
+                if (childIndex !== -1) {
+                    updatedChildren[childIndex] = child;
+                }
+                
+                // Update the family document with the modified children array
+                if (familyDoc && familyDoc.ref) {
+                    await updateDoc(familyDoc.ref, {
+                        'family.Children': updatedChildren
+                    });
+                } else {
+                    console.error('Family document reference is undefined');
+                    setSaveMessage("Error updating family document. Please try again.");
+                }
+                
+                // Update the selectedFamily state if it matches the current family
+                if (selectedFamily && selectedFamily.FamilyID === familyId) {
+                    const updatedFamily = {...selectedFamily};
+                    updatedFamily.Children = updatedChildren;
+                    setSelectedFamily(updatedFamily);
+                }
                 
                 setTimeout(() => setSaveMessage(""), 2000);
             } catch (error) {
@@ -371,14 +457,20 @@ export const SponsorDashboard: React.FC = () => {
                 {saveMessage && (
                     <CartoonContainer style={{
                         padding: '2vmin',
+                        position: 'fixed',
+                        bottom: '10vmin',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
                         backgroundColor: saveMessage.includes('Error') ? '#FFE5E5' : '#E5FFE5',
-                        zIndex: 1000,
+                        zIndex: 2000,
+                        transition: 'opacity 0.3s ease-in-out',
+                     
                     }}>
                         <p style={{ 
                             margin: 0, 
                             fontSize: '2vmin',
                             color: saveMessage.includes('Error') ? '#CA242B' : '#059669',
-                            zIndex: 1000,
+                            zIndex: 2000,
                         }}>
                             {saveMessage}
                         </p>
@@ -442,29 +534,37 @@ export const SponsorDashboard: React.FC = () => {
                                             key={child.ChildID} 
                                             gender={child.ChildGender}
                                             style={{
-                                                opacity: child.isSponsored ? 0.7 : 1,
+                                                opacity: sponsoredChildren.includes(`${selectedFamily.FamilyID} ${child.ChildID}`) ? 0.7 : 1,
                                                 position: 'relative'
                                             }}
-                                        >
-                                            {child.isSponsored && (
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    top: '1vmin',
-                                                    right: '1vmin',
-                                                    backgroundColor: '#059669',
-                                                    color: 'white',
-                                                    padding: '0.5vmin 1vmin',
-                                                    borderRadius: '1vmin',
-                                                    fontSize: '1.5vmin',
-                                                    fontFamily: 'TT Trick New, serif'
-                                                }}>
-                                                    Sponsored
-                                                </div>
-                                            )}
+                                        >                    
                                             <ChildInfo>
-                                                <h3 style={{ margin: 0, fontSize: '2.5vmin' }}>{child.ChildID}</h3>
-                                                <p style={{ margin: 0, fontSize: '2vmin' }}>Age: {child.ChildAge}</p>
-                                                <p style={{ margin: 0, fontSize: '2vmin' }}>
+                                                <div style={{ display: 'flex', flexDirection: 'row', gap: '1vmin' }}>
+                                                    <h3 style={{ margin: 0, fontSize: '2.5vmin' }}>{child.ChildID}</h3>
+                                                    {(
+                                                        <div style={{
+                                                            backgroundColor: sponsoredChildren.includes(`${selectedFamily.FamilyID} ${child.ChildID}`) ? '#059669' : child.isSponsored ? '#1EC9F2' : '#CA242B',
+                                                            color: 'white',
+                                                            padding: '0.5vmin 1vmin',
+                                                            borderRadius: '1vmin',
+                                                            fontSize: '1.5vmin',
+                                                            fontFamily: 'TT Trick New, serif',
+                                                            justifyContent: 'center',
+                                                            alignItems: 'center',
+                                                            verticalAlign: 'middle',
+                                                        }}>
+                                                            <span style={{
+                                                                justifyContent: 'center',
+                                                                alignItems: 'center',
+                                                                verticalAlign: 'middle',
+                                                            }}>
+                                                                {sponsoredChildren.includes(`${selectedFamily.FamilyID} ${child.ChildID}`) ? "Sponsored by You" : child.isSponsored ? "Sponsored by Someone Else" : "Not Sponsored"}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                    <p style={{ margin: 0, fontSize: '2vmin' }}>Age: {child.ChildAge}</p>
+                                                    <p style={{ margin: 0, fontSize: '2vmin' }}>
                                                     Has Disabilities: {child.HasDisabilities ? 'Yes' : 'No'}
                                                 </p>
                                                 <p style={{ margin: 0, fontSize: '2vmin' }}>
@@ -474,26 +574,33 @@ export const SponsorDashboard: React.FC = () => {
                                             <ButtonContainer>
                                                 <CartoonButton 
                                                     color={child.ChildGender.toLowerCase() === 'boy' ? '#1EC9F2' : child.ChildGender.toLowerCase() === 'girl' ? '#FF69B4' : '#9B4DCA'} 
-                                                    onClick={() => {}}
+                                                    onClick={() => {console.log(child.ChildToys);}}
                                                 >
                                                     View Wishlist
                                                 </CartoonButton>
                                                 <CartoonButton 
                                                     color={child.ChildGender.toLowerCase() === 'boy' ? '#1EC9F2' : child.ChildGender.toLowerCase() === 'girl' ? '#FF69B4' : '#9B4DCA'} 
-                                                    onClick={() => handleSponsorChild(selectedFamily.FamilyID || '', child.ChildID)}
+                                                    onClick={() => {handleSponsorChild(selectedFamily.FamilyID || '', child.ChildID);}}
+                                                    disabled={!sponsoredChildren.includes(`${selectedFamily.FamilyID} ${child.ChildID}`) && child.isSponsored}
                                                 >
-                                                    {child.isSponsored ? "Unsponsor Child" : "Sponsor Child"}
+                                                    {sponsoredChildren.includes(`${selectedFamily.FamilyID} ${child.ChildID}`) ? "Unsponsor Child" : "Sponsor Child"}
                                                 </CartoonButton>
                                             </ButtonContainer>
                                         </ChildCard>
                                     ))}
                                 </div>
-                                <div style={{ marginTop: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                <div style={{ marginTop: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2vmin' }}>
                                     <CartoonButton 
                                         color="#CA242B" 
                                         onClick={() => setShowChildrenModal(false)}
                                     >
                                         Close
+                                    </CartoonButton>
+                                    <CartoonButton 
+                                        color="#1EC9F2" 
+                                        onClick={() => ReloadFamily(selectedFamily?.FamilyID || '')}
+                                    >
+                                        Reload
                                     </CartoonButton>
                                 </div>
                             </ModalInnerContent>
@@ -628,6 +735,16 @@ export const SponsorDashboard: React.FC = () => {
                 setSaveMessage("Please enter a valid 10-digit phone number");
                 return;
             }
+
+            if (sponsorName.length < 3) {
+                setSaveMessage("Please enter a name with at least 3 characters");
+                return;
+            }
+
+            if (!sponsorName.includes(" ")) {
+                setSaveMessage("Please enter a name with a first and last name");
+                return;
+            }
     
             setIsSaving(true);
             try {
@@ -635,7 +752,7 @@ export const SponsorDashboard: React.FC = () => {
                 const sponsorRef = doc(db, 'sponsors', sponsorDocId);
                 const sponsorDoc = await getDoc(sponsorRef);
                 const currentInfo = sponsorDoc.data();
-
+                
                 await setSponsorInfo({
                     name: sponsorName,
                     email: sponsorEmail,
@@ -644,11 +761,13 @@ export const SponsorDashboard: React.FC = () => {
                     timestamp: new Date(),
                 });
                 setSaveMessage("Information saved successfully!");
+                setHasAllInfo(true);
             } catch (error) {
                 console.error('Error saving sponsor info:', error);
                 setSaveMessage("Error saving information. Please try again.");
             } finally {
                 setIsSaving(false);
+
             }
             setTimeout(() => {
                 if (!isSaving) {
