@@ -16,6 +16,7 @@ import Navbar from "../components/Navbar";
 import Snowfall from "../components/effects/Snowfall";
 import SnowyGround from "../components/effects/SnowyGround";
 import { Child, Family, getChildren, getFamilies } from "../firebase/families";
+import { Tag } from "../components/headers/tag";
 
 const PageContainer = styled.div`
     display: flex;
@@ -542,25 +543,10 @@ export const SponsorDashboard: React.FC = () => {
                                                 <div style={{ display: 'flex', flexDirection: 'row', gap: '1vmin' }}>
                                                     <h3 style={{ margin: 0, fontSize: '2.5vmin' }}>{child.ChildID}</h3>
                                                     {(
-                                                        <div style={{
-                                                            backgroundColor: sponsoredChildren.includes(`${selectedFamily.FamilyID} ${child.ChildID}`) ? '#059669' : child.isSponsored ? '#1EC9F2' : '#CA242B',
-                                                            color: 'white',
-                                                            padding: '0.5vmin 1vmin',
-                                                            borderRadius: '1vmin',
-                                                            fontSize: '1.5vmin',
-                                                            fontFamily: 'TT Trick New, serif',
-                                                            justifyContent: 'center',
-                                                            alignItems: 'center',
-                                                            verticalAlign: 'middle',
-                                                        }}>
-                                                            <span style={{
-                                                                justifyContent: 'center',
-                                                                alignItems: 'center',
-                                                                verticalAlign: 'middle',
-                                                            }}>
-                                                                {sponsoredChildren.includes(`${selectedFamily.FamilyID} ${child.ChildID}`) ? "Sponsored by You" : child.isSponsored ? "Sponsored by Someone Else" : "Not Sponsored"}
-                                                            </span>
-                                                        </div>
+                                                        <Tag
+                                                            backgroundColor={sponsoredChildren.includes(`${selectedFamily.FamilyID} ${child.ChildID}`) ? '#059669' : child.isSponsored ? '#1EC9F2' : '#CA242B'}
+                                                            text={sponsoredChildren.includes(`${selectedFamily.FamilyID} ${child.ChildID}`) ? "Sponsored by You" : child.isSponsored ? "Sponsored by Someone Else" : "Not Sponsored"}
+                                                        />
                                                     )}
                                                 </div>
                                                     <p style={{ margin: 0, fontSize: '2vmin' }}>Age: {child.ChildAge}</p>

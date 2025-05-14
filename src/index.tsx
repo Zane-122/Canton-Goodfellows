@@ -21,7 +21,7 @@ function AppRouter() {
         { path: '/sponsor-registration', element: <SponsorFormPage /> },
         { path: '/login', element: <LogIn /> },
         { path: '/signup', element: <SignUp /> },
-        { path: '/catalog', element: <Catalog familyID={currentFamilyID} /> },
+        { path: '/catalog', element: <Catalog/> },
         { path: '/registration', element: <Registration /> },
         { path: '/sponsor-dashboard', element: <SponsorDashboard /> },
     ]);
