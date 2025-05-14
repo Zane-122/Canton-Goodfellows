@@ -7,7 +7,7 @@ export interface Sponsor {
     email: string;
     contact_number: string;
 
-    child_sponsored: string;
+    sponsored_children: string[];
     timestamp: Date;
 }
 

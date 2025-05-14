@@ -146,6 +146,47 @@ const TitleContainer = styled(CartoonContainer)`
     }
 `;
 
+const InputGroup = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 1vmin;
+    width: 100%;
+    align-items: center;
+`;
+
+const Label = styled.label`
+    font-family: 'TT Trick New', serif;
+    font-size: 2vmin;
+    color: #333;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 0.5vmin;
+`;
+
+const Input = styled.input`
+    padding: 1.5vmin;
+    border: 0.2vmin solid #ccc;
+    border-radius: 1vmin;
+    font-size: 1.8vmin;
+    width: 100%;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+
+    &:focus {
+        outline: none;
+        border-color: #4169E1;
+        box-shadow: 0 0 0.5vmin rgba(65, 105, 225, 0.3);
+    }
+`;
+
+const ErrorMessage = styled.div`
+    color: #dc2626;
+    font-size: 1.6vmin;
+    margin-top: 0.5vmin;
+    text-align: center;
+    height: 2vmin;
+`;
+
 export const Registration: React.FC = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -158,11 +199,30 @@ export const Registration: React.FC = () => {
 
     const defaultFamily: Family = {
         Parent1Name: user?.displayName || '',
-        Parent2Name: '',
-        StreetAddress: '',
-        ZipCode: '',
-        PhoneNumber: '',
-        Children: [],
+        Parent2Name: 'Jane Smith',
+        StreetAddress: '123 Main Street',
+        ZipCode: '48188',
+        PhoneNumber: '(555) 123-4567',
+        Children: [
+            {
+                ChildID: 'Child B',
+                ChildGender: 'Boy',
+                ChildAge: 8,
+                ChildToys: [],
+                HasDisabilities: false,
+                SchoolName: 'Lincoln Elementary',
+                isSponsored: false,
+            },
+            {
+                ChildID: 'Child A',
+                ChildGender: 'Girl',
+                ChildAge: 6,
+                ChildToys: [],
+                HasDisabilities: false,
+                SchoolName: 'Lincoln Elementary',
+                isSponsored: false,
+            }
+        ],
         timestamp: new Date(),
     };
 
@@ -170,7 +230,7 @@ export const Registration: React.FC = () => {
         name: user?.displayName || '',
         email: user?.email || '',
         contact_number: '',
-        child_sponsored: '',
+        sponsored_children: [],
         timestamp: new Date(),
     };
 
@@ -317,7 +377,7 @@ export const Registration: React.FC = () => {
                             color={accountType === 'sponsor' ? '#1EC9F2' : '#CA242B'}
                             onClick={() =>
                                 accountType === 'sponsor'
-                                    ? {}
+                                    ? navigate('/sponsor-dashboard')
                                     : handleChangeAccountType('sponsor')
                             }
                             disabled={isLoading}

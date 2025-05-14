@@ -29,20 +29,19 @@ export interface Child {
     ChildToys: Toy[];
     HasDisabilities: boolean;
 
+    isSponsored: boolean;
+
     SchoolName: string;
 }
 
 export interface Family {
+    FamilyID?: string;
     Parent1Name: string;
     Parent2Name: string;
-
     StreetAddress: string;
     ZipCode: string;
-
     PhoneNumber: string;
-
     Children: Child[];
-
     timestamp: Date;
 }
 
@@ -50,10 +49,27 @@ export async function addFamily(): Promise<DocumentReference> {
     try {
         console.log('Attempting to add document to Firestore...');
         const families = await getFamilies();
-        const familyId = `Family ${families.length + 1}`;
+        
+        // Find the highest existing family number
+        const familyNumbers = families
+            .map(f => {
+                const match = f.FamilyID?.match(/Family (\d+)/);
+                return match ? parseInt(match[1]) : 0;
+            })
+            .filter(num => !isNaN(num));
+        
+        const nextNumber = familyNumbers.length > 0 ? Math.max(...familyNumbers) + 1 : 1;
+        const familyId = `Family ${nextNumber}`;
+        
         const familiesCollection = collection(db, 'families');
-
-        const docRef = await addDoc(familiesCollection, { FamilyID: familyId, family: {} });
+        const docRef = await addDoc(familiesCollection, { 
+            FamilyID: familyId,
+            family: {
+                FamilyID: familyId,
+                timestamp: new Date()
+            }
+        });
+        
         console.log('✅ Success! Document written with ID:', docRef.id);
         return docRef;
     } catch (e) {
@@ -85,7 +101,7 @@ export async function getFamilies(): Promise<Family[]> {
     const querySnapshot = await getDocs(familiesCollection);
     return querySnapshot.docs.map((doc) => ({
         ...doc.data().family,
-        FamilyID: doc.id,
+        FamilyID: doc.data().FamilyID,
     }));
 }
 

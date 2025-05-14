@@ -11,6 +11,7 @@ import { SignUp } from './pages/SignUp';
 import { AuthProvider } from './firebase/contexts/AuthContext';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Registration } from './pages/Registration';
+import { SponsorDashboard } from './pages/SponsorDashboard';
 
 function AppRouter() {
     const [currentFamilyID, setCurrentFamilyID] = useState('Family 1');
@@ -22,6 +23,7 @@ function AppRouter() {
         { path: '/signup', element: <SignUp /> },
         { path: '/catalog', element: <Catalog familyID={currentFamilyID} /> },
         { path: '/registration', element: <Registration /> },
+        { path: '/sponsor-dashboard', element: <SponsorDashboard /> },
     ]);
 
     return <RouterProvider router={router} />;
