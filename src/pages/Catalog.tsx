@@ -11,6 +11,7 @@ import {
     Child,
     getWishlist,
     removeChildToy,
+    toggleToyStarred,
 } from '../firebase/families';
 import Snowfall from '../components/effects/Snowfall';
 import CartoonHeader from '../components/headers/CartoonHeader';
@@ -22,6 +23,8 @@ import SelectionField from '../components/inputs/SelectionField';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../firebase/contexts/AuthContext';
 import { getFamilyDocId } from '../firebase/auth';
+import { Tag } from '../components/headers/tag';
+import StarButton from '../components/buttons/StarButton';
 
 interface RainforestResponse {
     search_results?: Toy[];
@@ -140,7 +143,7 @@ const ScaledText = styled.div<{ isTitle?: boolean }>`
     white-space: normal;
     word-wrap: break-word;
     display: -webkit-box;
-    -webkit-line-clamp: 5;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     line-height: 1.2;
@@ -254,7 +257,7 @@ interface WishlistProps {
     childID: string;
 }
 
-const Catalog: React.FC<CatalogProps> = () => {
+const Catalog: React.FC = () => {
     const [results, setResults] = useState<Toy[]>([]);
     const [loading, setLoading] = useState(false);
     const [childID, setChildID] = useState<string>('Child A');
@@ -264,6 +267,7 @@ const Catalog: React.FC<CatalogProps> = () => {
     const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
     const [wishlistToys, setWishlistToys] = useState<Toy[]>([]);
     const [familyID, setFamilyID] = useState<string | null>(null);
+    const [starringItems, setStarringItems] = useState<Set<string>>(new Set());
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -314,11 +318,14 @@ const Catalog: React.FC<CatalogProps> = () => {
             );
             setResults([]);
             setTimeout(() => {
-                setResults(
-                    response.data.search_results
-                        ?.filter((item) => item.price?.value < 50)
-                        .slice(0, 10) || []
-                );
+                const filteredResults = response.data.search_results
+                    ?.filter((item) => item.price?.value < 75)
+                    .slice(0, 10) || [];
+                
+                setResults(filteredResults.map(item => ({
+                    ...item,
+                    giftType: item.price?.value < 25 ? "Small Gift" : item.price?.value > 50 ? "Large Gift" : "Medium Gift"
+                })));
             }, 50);
         } catch (error) {
             console.error('Search failed:', error);
@@ -355,6 +362,23 @@ const Catalog: React.FC<CatalogProps> = () => {
         }
     };
 
+    const handleToggleStar = async (item: Toy) => {
+        if (!familyID) return;
+        setStarringItems((prev) => new Set([...prev, item.asin]));
+        try {
+            await toggleToyStarred(item, familyID, childID);
+            await loadWishlist();
+        } catch (error) {
+            console.error('Error toggling star:', error);
+        } finally {
+            setStarringItems((prev) => {
+                const next = new Set(prev);
+                next.delete(item.asin);
+                return next;
+            });
+        }
+    };
+
     const getGenderColor = (childID: string) => {
         return children.find((child) => child.ChildID === childID)?.ChildGender === 'Boy'
             ? '#00BCD4'
@@ -363,8 +387,25 @@ const Catalog: React.FC<CatalogProps> = () => {
               : '#9C27B0';
     };
 
+    // Add counts for starred items
+    const starredSmall = wishlistToys.filter(t => t.giftType === "Small Gift" && t.starred).length;
+    const starredMedium = wishlistToys.filter(t => t.giftType === "Medium Gift" && t.starred).length;
+    const starredLarge = wishlistToys.filter(t => t.giftType === "Large Gift" && t.starred).length;
+
     return (
         <>
+            <style>
+                {`
+                    @keyframes pulseGreen {
+                        0% { background-color: white; }
+                        50% { background-color: rgba(5, 150, 105, 0.2); }
+                        100% { background-color: white; }
+                    }
+                    .pulsing {
+                        animation: pulseGreen 1s ease;
+                    }
+                `}
+            </style>
             <Navbar />
             <MemoizedSnowfall />
             <div
@@ -382,7 +423,7 @@ const Catalog: React.FC<CatalogProps> = () => {
                     title={`${childID}'s ${viewWishlist ? 'Wishlist' : 'Gift Catalog'}`}
                     subtitle={
                         viewWishlist
-                            ? 'These are the items on your wishlist'
+                            ? "Star items on your wishlist"
                             : `Add items to your wishlist!`
                     }
                 />
@@ -398,7 +439,7 @@ const Catalog: React.FC<CatalogProps> = () => {
                     }}
                 >
                     <SelectionField
-                        options={children.map((child) => ({
+                        options={children.reverse().map((child) => ({
                             label: child.ChildID,
                             value: child.ChildID,
                         }))}
@@ -426,9 +467,50 @@ const Catalog: React.FC<CatalogProps> = () => {
                     </Button>
                 </div>
                 {viewWishlist ? (
+                    
                     <>
+                        <CartoonContainer style={{
+                            width: 'fit-content',
+                            maxWidth: '50vw',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '10px',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            alignSelf: 'center',
+                        }}>
+                            <div style={{ fontSize: '2.5vmin', fontFamily: 'TT Trick New', textAlign: 'center' }}>
+                                Star up to 1 small gift, 2 medium gifts, and 1 large gift. You can add as many gifts as you like, but you will receive 4 gifts so star the ones you want the most!
+                            </div>
+                        </CartoonContainer>
+                        <CartoonContainer style={{
+                            position: 'fixed',
+                            right: '20px',
+                            top: '16vh',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '15px',
+                            padding: '20px',
+                            zIndex: 100,
+                            backgroundColor: 'white'
+                        }}>
+                            <div style={{ fontSize: '3vmin', fontFamily: 'TT Trick New', textAlign: 'center', fontWeight: 'bold', gap: '5vmin' }}>
+                                Starred:
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2vmin', alignItems: 'center' }}>
+                                <div style={{ fontSize: '3vmin', fontFamily: 'TT Trick New', textAlign: 'center' }}>
+                                    <span style={{ color: starredSmall === 1 ? '#059669' : '#CA242B', fontWeight: 'bold' }}>{starredSmall}</span>/1 Small
+                                </div>
+                                <div style={{ fontSize: '3vmin', fontFamily: 'TT Trick New', textAlign: 'center' }}>
+                                    <span style={{ color: starredMedium === 2 ? '#059669' : '#CA242B', fontWeight: 'bold' }}>{starredMedium}</span>/2 Medium
+                                </div>
+                                <div style={{ fontSize: '3vmin', fontFamily: 'TT Trick New', textAlign: 'center' }}>
+                                    <span style={{ color: starredLarge === 1 ? '#059669' : '#CA242B', fontWeight: 'bold' }}>{starredLarge}</span>/1 Large
+                                </div>
+                            </div>
+                        </CartoonContainer>
                         <ResultsContainer>
-                            {wishlistToys.map((item, index) => (
+                            {wishlistToys.reverse().map((item, index) => (
                                 <FadeInCard key={index} delay={index * 0.1}>
                                     <div
                                         style={{
@@ -448,22 +530,45 @@ const Catalog: React.FC<CatalogProps> = () => {
                                             <CardImage src={item.image} alt={item.title} />
                                             <ChildContainer>
                                                 <ScaledText isTitle>{item.title}</ScaledText>
-                                                <ScaledText>
-                                                    {item.price
-                                                        ? `${item.price.currency} ${item.price.value}`
-                                                        : 'Price not available'}
-                                                </ScaledText>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
+                                                    <ScaledText>
+                                                        {item.price
+                                                            ? `${item.price.currency}`
+                                                            : 'Price not available'}
+                                                    </ScaledText>
+                                                    <Tag backgroundColor={item.giftType === "Small Gift" ? "#059669" : item.giftType === "Large Gift" ? "#CA242B" : "#1EC9F2"} text={item.giftType} />
+                                                </div>
                                             </ChildContainer>
                                         </div>
-                                        <Button
-                                            color="#CA242B"
-                                            disabled={loadingItems.has(item.asin)}
-                                            onClick={() => handleToggleWishlist(item)}
-                                        >
-                                            {loadingItems.has(item.asin)
-                                                ? 'Loading...'
-                                                : 'Remove from wishlist'}
-                                        </Button>
+                                        <span style={{ 
+                                            display: 'flex', 
+                                            flexDirection: 'row', 
+                                            gap: '10px', 
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            width: '100%'
+                                        }}>
+                                            <Button
+                                                color="#CA242B"
+                                                disabled={loadingItems.has(item.asin)}
+                                                onClick={() => handleToggleWishlist(item)}
+                                                style={{ flex: 1 }}
+                                            >
+                                                {loadingItems.has(item.asin)
+                                                    ? 'Loading...'
+                                                    : 'Remove from wishlist'}
+                                            </Button>
+                                            <StarButton
+                                                isStarred={item.starred}
+                                                disabled={starringItems.has(item.asin) || (!item.starred && (
+                                                    (item.giftType === "Small Gift" && wishlistToys.filter(t => t.giftType === "Small Gift" && t.starred).length >= 1) ||
+                                                    (item.giftType === "Medium Gift" && wishlistToys.filter(t => t.giftType === "Medium Gift" && t.starred).length >= 2) ||
+                                                    (item.giftType === "Large Gift" && wishlistToys.filter(t => t.giftType === "Large Gift" && t.starred).length >= 1)
+                                                ))}
+                                                onClick={() => handleToggleStar(item)}
+                                                size={30}
+                                            />
+                                        </span>
                                     </div>
                                 </FadeInCard>
                             ))}
@@ -492,12 +597,18 @@ const Catalog: React.FC<CatalogProps> = () => {
                                         >
                                             <CardImage src={item.image} alt={item.title} />
                                             <ChildContainer>
+                                                
                                                 <ScaledText isTitle>{item.title}</ScaledText>
-                                                <ScaledText>
-                                                    {item.price
-                                                        ? `${item.price.currency} ${item.price.value}`
-                                                        : 'Price not available'}
-                                                </ScaledText>
+                                                <div style={{ display: 'flex', flexDirection: 'row', gap: '10px' }}> 
+                                                    <ScaledText>
+                                                        {item.price
+                                                            ? `$${item.price.value}`
+                                                            : 'Price not available'}
+                                                    </ScaledText>
+                                                    {/* <Tag backgroundColor={getGenderColor(childID)} text={item.starred ? "Sponsored by You" : "Not Sponsored"} /> */}
+                                                </div>
+                                                <Tag backgroundColor={item.giftType === "Small Gift" ? "#059669" : item.giftType === "Large Gift" ? "#CA242B" : "#1EC9F2"} text={item.giftType} />
+
                                             </ChildContainer>
                                         </div>
                                         <Button

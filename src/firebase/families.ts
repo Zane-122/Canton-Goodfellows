@@ -13,11 +13,18 @@ import { getFamilyDocId } from './auth';
 
 export interface Toy {
     title: string;
+
     price: {
         value: number;
         currency: string;
     };
+
     image: string;
+    link: string;
+
+    starred: boolean;
+    giftType: string;
+
     asin: string;
 }
 
@@ -115,9 +122,12 @@ export async function addChildToy(toy: Toy, familyID: string, childID: string): 
 
     const simplifiedToy = {
         title: toy.title,
-        price: toy.price.currency + ' ' + toy.price.value,
+        price:"$"+toy.price.value,
         image: toy.image,
         asin: toy.asin,
+        link: toy.link,
+        giftType: toy.giftType,
+        starred: false,
     };
 
     // Check if toy with this ASIN already exists
@@ -179,4 +189,47 @@ export async function getWishlist(familyID: string, childID: string): Promise<To
             },
         })) || []
     );
+}
+
+export async function toggleToyStarred(toy: Toy, familyID: string, childID: string): Promise<void> {
+    const familyRef = doc(db, 'families', familyID);
+    const familyDoc = await getDoc(familyRef);
+    const familyData = familyDoc.data()?.family;
+    const allChildren = familyData.Children;
+    const chosenChild = allChildren.find((child: Child) => child.ChildID === childID);
+    const currentToys = chosenChild?.ChildToys || [];
+
+    // Count starred toys by type
+    const starredCounts = {
+        "Small Gift": currentToys.filter((t: Toy) => t.giftType === "Small Gift" && t.starred).length,
+        "Medium Gift": currentToys.filter((t: Toy) => t.giftType === "Medium Gift" && t.starred).length,
+        "Large Gift": currentToys.filter((t: Toy) => t.giftType === "Large Gift" && t.starred).length
+    };
+
+    // Check if we can star this toy
+    const canStar = !toy.starred && (
+        (toy.giftType === "Small Gift" && starredCounts["Small Gift"] < 1) ||
+        (toy.giftType === "Medium Gift" && starredCounts["Medium Gift"] < 2) ||
+        (toy.giftType === "Large Gift" && starredCounts["Large Gift"] < 1)
+    );
+
+    if (!canStar && !toy.starred) {
+        return; // Don't proceed if we can't star the toy
+    }
+
+    const updatedToys = currentToys.map((t: Toy) => 
+        t.asin === toy.asin 
+            ? { ...t, starred: !t.starred }
+            : t
+    );
+
+    const updatedChildren = allChildren.map((child: Child) =>
+        child.ChildID === childID
+            ? { ...child, ChildToys: updatedToys }
+            : child
+    );
+
+    await updateDoc(familyRef, {
+        'family.Children': updatedChildren,
+    });
 }
