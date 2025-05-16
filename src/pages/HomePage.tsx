@@ -22,6 +22,7 @@ import img2 from '../images/Christmas Gifts from Unsplash.jpg';
 import CartoonButton from '../components/buttons/CartoonButton';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import { Tag } from '../components/headers/tag';
 const GlobalStyle = createGlobalStyle`
   @font-face {
     font-family: 'Coolvetica Rg';
@@ -155,11 +156,16 @@ export const HomePage: React.FC = () => {
 
     useEffect(() => {
         const getAccountType = async () => {
-            const userDoc = await getDoc(doc(db, 'users', user?.uid || ''));
+            if (!user) {console.log('NO USER'); return;}
+            else console.log('USER EXISTS');
+            
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
             const userData = userDoc?.data();
             const accountType = userData?.accountType;
             setAccountType(accountType);
+            console.log(accountType === null ? 'YOUR CODE DOESNT WORK' : accountType);
         };
+        
         getAccountType();
     }, [user]);
 
@@ -171,14 +177,6 @@ export const HomePage: React.FC = () => {
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
-
-    useEffect(() => {
-        if (user) {
-            setLoggedIn(true);
-        } else {
-            setLoggedIn(false);
-        }
-    }, [user]);
 
     const firstName = useMemo(() => (user ? getFirstName(user.displayName || '') : ''), [user]);
 
@@ -205,11 +203,13 @@ export const HomePage: React.FC = () => {
                     gap: '5vmin',
                 }}
             >
-                {accountType !== null && <CartoonContainer>
+                {accountType !== null && <StyledContainer>
+                    <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1vmin'}}>
                     <CartoonHeader
                         title="Go to your dashboard!"
                         subtitle={accountType === 'sponsor' ? 'Click below to go to your sponsor dashboard where you can manage who you have sponsored' : 'Click below to go to your family dashboard where you can manage your family'}
                     />
+                    <text> - </text>
                     <CartoonButton
                         color="#CA242B"
                         onClick={() => {
@@ -218,7 +218,8 @@ export const HomePage: React.FC = () => {
                     >
                         {accountType === 'sponsor' ? 'Go to Sponsor Dashboard' : 'Go to Family Dashboard'}
                     </CartoonButton>
-                </CartoonContainer>}
+                    </div>
+                </StyledContainer>}
                 <StyledContainer>
                     <div
                         style={{
@@ -242,7 +243,8 @@ export const HomePage: React.FC = () => {
                                 </>
                             }
                         />
-                        <p style={{ fontSize: '2vmin', color: 'black' }}> - </p>
+                        {accountType === null && <p style={{ fontSize: '2vmin', color: 'black' }}> - </p>}
+                        {accountType !== null && <div style={{padding: '1vmin'}}> <Tag backgroundColor="#CA242B" text={`Registered as a ${accountType}`}/> </div>}
                         <CartoonButton
                             color="#CA242B"
                             disabled={!user}
@@ -253,6 +255,7 @@ export const HomePage: React.FC = () => {
                             {' '}
                             <p>Register</p>{' '}
                         </CartoonButton>
+                        
                     </div>
 
                     <CartoonImageContainer width="40vmin" height="40vmin">
@@ -302,7 +305,7 @@ export const HomePage: React.FC = () => {
                 </StyledContainer>
             </div>
         ),
-        []
+        [accountType, navigate]
     );
 
     return (
