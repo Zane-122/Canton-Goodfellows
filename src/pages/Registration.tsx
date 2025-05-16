@@ -9,11 +9,11 @@ import { getAccountType, getFamilyDocId, setAccountType } from '../firebase/auth
 import CartoonHeader from '../components/headers/CartoonHeader';
 import SnowyGround from '../components/effects/SnowyGround';
 import Snowfall from '../components/effects/Snowfall';
-import { Family, setFamilyInfo } from '../firebase/families';
+import { defaultFamily, Family, setFamilyInfo } from '../firebase/families';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { getDoc } from 'firebase/firestore';
-import { setSponsorInfo, Sponsor } from '../firebase/sponsors';
+import { defaultSponsor, setSponsorInfo, Sponsor } from '../firebase/sponsors';
 
 const StyledContainer = styled(CartoonContainer)<{ isSelected?: boolean }>`
     display: flex;
@@ -197,44 +197,6 @@ export const Registration: React.FC = () => {
     const [pendingAccountType, setPendingAccountType] = useState<'sponsor' | 'family' | null>(null);
     const [familyDocId, setFamilyDocId] = useState<string>('');
 
-    const defaultFamily: Family = {
-        Parent1Name: user?.displayName || '',
-        Parent2Name: 'Jane Smith',
-        StreetAddress: '123 Main Street',
-        ZipCode: '48188',
-        PhoneNumber: '(555) 123-4567',
-        Children: [
-            {
-                ChildID: 'Child B',
-                ChildGender: 'Boy',
-                ChildAge: 8,
-                ChildToys: [],
-                HasDisabilities: false,
-                SchoolName: 'Lincoln Elementary',
-                isSponsored: false,
-                sponsorDocID: '',
-            },
-            {
-                ChildID: 'Child A',
-                ChildGender: 'Girl',
-                ChildAge: 6,
-                ChildToys: [],
-                HasDisabilities: false,
-                SchoolName: 'Lincoln Elementary',
-                isSponsored: false,
-                sponsorDocID: '',
-            }
-        ],
-        timestamp: new Date(),
-    };
-
-    const defaultSponsor: Sponsor = {
-        name: user?.displayName || '',
-        email: user?.email || '',
-        contact_number: '',
-        sponsored_children: [],
-        timestamp: new Date(),
-    };
 
     useEffect(() => {
         const fetchFamilyDocId = async () => {
@@ -284,9 +246,9 @@ export const Registration: React.FC = () => {
                 await setAccountType(newAccountType);
                 setAccountTypeState(newAccountType);
                 if (newAccountType === 'family') {
-                    await setFamilyInfo(defaultFamily);
+                    await setFamilyInfo(defaultFamily(user?.displayName || ''));
                 } else if (newAccountType === 'sponsor') {
-                    await setSponsorInfo(defaultSponsor);
+                    await setSponsorInfo(defaultSponsor(user?.displayName || '', user?.email || ''));
                 }
             } catch (error) {
                 console.error('Error setting account type:', error);
@@ -311,9 +273,9 @@ export const Registration: React.FC = () => {
             setIsConfirmed(false);
             setPendingAccountType(null);
             if (pendingAccountType === 'family') {
-                await setFamilyInfo(defaultFamily);
+                await setFamilyInfo(defaultFamily(user?.displayName || ''));
             } else if (pendingAccountType === 'sponsor') {
-                await setSponsorInfo(defaultSponsor);
+                await setSponsorInfo(defaultSponsor(user?.displayName || '', user?.email || ''));
             }
         } catch (error) {
             console.error('Error setting account type:', error);

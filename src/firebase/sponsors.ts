@@ -26,7 +26,13 @@ export async function addSponsor(): Promise<DocumentReference> {
         throw e
     }
 }
-
+export const defaultSponsor = (displayName: string = '', email: string = ''): Sponsor => ({
+    name: displayName,
+    email: email,
+    contact_number: '',
+    sponsored_children: [],
+    timestamp: new Date(),
+});
 export async function setSponsorInfo(sponsor: Sponsor): Promise<void> {
     const id = await getSponsorDocId();
     const sponsorRef = doc(db, 'sponsors', id);

@@ -179,6 +179,9 @@ const Account = () => {
                             <li>• Remove all your data</li>
                             <li>• Cancel any active sponsorships</li>
                         </ul>
+                        <StyledText style={{ color: '#CA242B', fontSize: '2.2vmin' }}>
+                            EVEN IF ACCOUNT DELETION FAILS, ACCOUNT DATA MAY STILL BE DELETED
+                        </StyledText>
                         <div style={{
                             display: 'flex',
                             gap: '2vmin',

@@ -7,9 +7,12 @@ import {
     updateDoc,
     setDoc,
     getDoc,
+    deleteDoc,
 } from 'firebase/firestore';
 import { db } from './config';
 import { getFamilyDocId } from './auth';
+import { User } from 'firebase/auth';
+
 
 export interface Toy {
     title: string;
@@ -52,7 +55,36 @@ export interface Family {
     Children: Child[];
     timestamp: Date;
 }
-
+export const defaultFamily = (displayName: string = ''): Family => ({
+    Parent1Name: displayName,
+    Parent2Name: 'Jane Smith',
+    StreetAddress: '123 Main Street',
+    ZipCode: '48188',
+    PhoneNumber: '(555) 123-4567',
+    Children: [
+        {
+            ChildID: 'Child B',
+            ChildGender: 'Boy',
+            ChildAge: 8,
+            ChildToys: [],
+            HasDisabilities: false,
+            SchoolName: 'Lincoln Elementary',
+            isSponsored: false,
+            sponsorDocID: '',
+        },
+        {
+            ChildID: 'Child A',
+            ChildGender: 'Girl',
+            ChildAge: 6,
+            ChildToys: [],
+            HasDisabilities: false,
+            SchoolName: 'Lincoln Elementary',
+            isSponsored: false,
+            sponsorDocID: '',
+        }
+    ],
+    timestamp: new Date(),
+});
 export async function addFamily(): Promise<DocumentReference> {
     try {
         console.log('Attempting to add document to Firestore...');

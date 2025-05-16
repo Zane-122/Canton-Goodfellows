@@ -265,6 +265,7 @@ export const SponsorDashboard: React.FC = () => {
         const [showFamilyModal, setShowFamilyModal] = useState(false);
         const [saveMessage, setSaveMessage] = useState("");
         const [sponsoredChildren, setSponsoredChildren] = useState<string[]>([]);
+        const [refreshFamilies, setRefreshFamilies] = useState(false);
 
         useEffect(() => {
             const fetchSponsoredChildren = async () => {
@@ -425,7 +426,9 @@ export const SponsorDashboard: React.FC = () => {
         };
 
         useEffect(() => {
+            
             const fetchFamilies = async () => {
+                setIsLoading(true);
                 try {
                     const fetchedFamilies = await getFamilies();
                     console.log('Fetched families:', fetchedFamilies);
@@ -435,26 +438,12 @@ export const SponsorDashboard: React.FC = () => {
                 } finally {
                     setIsLoading(false);
                 }
+
             };
             
             fetchFamilies();
-        }, []);
-
-        if (isLoading) {
-            return (
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    height: '100vh',
-                    color: 'white',
-                    fontFamily: 'TT Trick New, serif',
-                    fontSize: '3vmin',
-                }}>
-                    Loading families...
-                </div>
-            );
-        }
+            setRefreshFamilies(false);
+        }, [refreshFamilies]);
 
         return (
             <div style={{
@@ -505,6 +494,14 @@ export const SponsorDashboard: React.FC = () => {
                             style={{ minWidth: '25vmin' }}
                         >
                             {showOnlySponsored ? "All Families" : "Families I'm Sponsoring"}
+                        </CartoonButton>
+                        <CartoonButton 
+                            color={showOnlySponsored ? "#1EC9F2" : "#1EC9F2"}
+                            onClick={() => setRefreshFamilies(true)}
+                            style={{ minWidth: '25vmin' }}
+                            disabled={isLoading}
+                        >
+                            Refresh Families
                         </CartoonButton>
                     </div>
                 </TitleCartoonContainer>
@@ -575,7 +572,7 @@ export const SponsorDashboard: React.FC = () => {
                                 );
                             }
                         }).length === 0 && (
-                        <CartoonHeader title={showOnlySponsored ? "No families sponsored" : "No families found"} subtitle={showOnlySponsored ? "Sponsor a child to see the family here!" : "Please check back later"} />
+                        <CartoonHeader title={isLoading ? "Loading..." : showOnlySponsored ? "No families sponsored" : "No families found"} subtitle={isLoading ? "Loading..." : showOnlySponsored ? "Sponsor a child to see the family here!" : "Please check back later"} />
                     )} 
                 </CartoonContainer>
 
@@ -893,28 +890,6 @@ export const SponsorDashboard: React.FC = () => {
             </PageContainer>
         );
     };
-
-    if (isLoading) {
-        return (
-            <>
-                <PageContainer>
-                    <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'center', 
-                        alignItems: 'center', 
-                        height: '100vh',
-                        color: 'white',
-                        fontFamily: 'TT Trick New, serif',
-                        fontSize: '3vmin',
-                        position: 'relative',
-                        zIndex: 2
-                    }}>
-                        Loading...
-                    </div>
-                </PageContainer>
-            </>
-        );
-    }
 
     if (!user || accountType !== 'sponsor') {
         return <Navigate to="/" replace />;
