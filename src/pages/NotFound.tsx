@@ -53,7 +53,7 @@ export const NotFound = () => {
                         onClick={() => setIsThinking(!isThinking)}
                         style={{ cursor: 'pointer' }}
                     >
-                        <StyledContainer color="#ff4b45">
+                        <StyledContainer color="#CA242B">
                             <CartoonHeader 
                                 title="Whoops!" 
                                 color="#ffe6e6"
@@ -77,7 +77,7 @@ export const NotFound = () => {
                     </div>
 
                     <Link to="/">
-                        <CartoonButton color="#ff4b45">
+                        <CartoonButton color="#CA242B">
                             <CartoonHeader 
                                 title="Take me home!"
                                 color="#ffe6e6"
