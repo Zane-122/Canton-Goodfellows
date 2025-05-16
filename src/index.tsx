@@ -13,19 +13,19 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Registration } from './pages/Registration';
 import { SponsorDashboard } from './pages/SponsorDashboard';
 import Account from './pages/Account';
+import FamilyDashboard from './pages/FamilyDashboard';
 
 function AppRouter() {
     const [currentFamilyID, setCurrentFamilyID] = useState('Family 1');
 
     const router = createBrowserRouter([
         { path: '/', element: <HomePage /> },
-        { path: '/sponsor-registration', element: <SponsorFormPage /> },
         { path: '/login', element: <LogIn /> },
         { path: '/signup', element: <SignUp /> },
-        { path: '/catalog', element: <Catalog/> },
         { path: '/registration', element: <Registration /> },
         { path: '/sponsor-dashboard', element: <SponsorDashboard /> },
         { path: '/account', element: <Account /> },
+        { path: '/family-dashboard', element: <FamilyDashboard /> },
     ]);
 
     return <RouterProvider router={router} />;

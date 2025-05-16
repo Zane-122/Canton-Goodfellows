@@ -19,7 +19,7 @@ import { Child, Family, getChildren, getFamilies, Toy } from "../firebase/famili
 import { Tag } from "../components/headers/tag";
 import CartoonImageContainer from "../components/containers/CartoonImageContainer";
 
-const PageContainer = styled.div`
+export const PageContainer = styled.div`
     display: flex;
     flex-direction: column;
     background: radial-gradient(circle at 50% 200%, #87CEEB 50%, #4169E1 70%, #1E3A8A 100%);
@@ -38,7 +38,7 @@ const SnowfallContainer = styled.div`
     z-index: 1;
 `;
 
-const ContentContainer = styled.div`
+export const ContentContainer = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -54,7 +54,7 @@ const ContentContainer = styled.div`
     z-index: 2;
 `;
 
-const FormContainer = styled(CartoonContainer)`
+export const FormContainer = styled(CartoonContainer)`
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -67,7 +67,7 @@ const FormContainer = styled(CartoonContainer)`
     background-color: rgba(255, 255, 255, 0.9);
 `;
 
-const InputGroup = styled.div`
+export const InputGroup = styled.div`
     display: flex;
     flex-direction: column;
     gap: 1vmin;
@@ -75,7 +75,7 @@ const InputGroup = styled.div`
     align-items: center;
 `;
 
-const Label = styled.label`
+export const Label = styled.label`
     font-family: 'TT Trick New', serif;
     font-size: 2vmin;
     color: #333;
