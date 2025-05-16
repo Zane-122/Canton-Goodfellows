@@ -172,6 +172,13 @@ const ButtonContainer = styled.div`
     justify-content: center;
 `;
 
+const TitleCartoonContainer = styled(CartoonContainer)`
+    display: flex;
+    flex-direction: column;
+    gap: 1vmin;
+    margin-top: 10vmin;
+`;
+
 ////////////////////////////////////////////////////////////
 
 export const SponsorDashboard: React.FC = () => {
@@ -187,6 +194,7 @@ export const SponsorDashboard: React.FC = () => {
     const [showChildrenModal, setShowChildrenModal] = useState(false);
     const [showFamilyModal, setShowFamilyModal] = useState(false);
     const [saveMessage, setSaveMessage] = useState("");
+    const [showOnlySponsored, setShowOnlySponsored] = useState(false);
 
     useEffect(() => {
         const fetchSponsorInfo = async () => {
@@ -477,9 +485,26 @@ export const SponsorDashboard: React.FC = () => {
                         </p>
                     </CartoonContainer>
                 )}
-                <CartoonContainer>
+                <TitleCartoonContainer>
                     <CartoonHeader title="Child Selection" subtitle="Select a child to sponsor!" />
-                </CartoonContainer>
+                    <p>If every child in a family is fully sponsored, they will not show up in the list.</p>
+                    <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        gap: '2vmin',
+                        marginTop: '2vmin',
+                        width: '100%'
+                    }}>
+                        <CartoonButton 
+                            color={showOnlySponsored ? "#1EC9F2" : "#1EC9F2"}
+                            onClick={() => setShowOnlySponsored(!showOnlySponsored)}
+                            style={{ minWidth: '25vmin' }}
+                        >
+                            {showOnlySponsored ? "All Families" : "Families I'm Sponsoring"}
+                        </CartoonButton>
+                    </div>
+                </TitleCartoonContainer>
 
                 <CartoonContainer style={{
                     display: 'flex',
@@ -491,6 +516,20 @@ export const SponsorDashboard: React.FC = () => {
                     alignItems: 'center',
                 }}>
                     {families
+                        .filter(family => {
+                            if (showOnlySponsored) {
+                                // Only show families where the current user has sponsored children
+                                return family.Children.some(child => 
+                                    sponsoredChildren.includes(`${family.FamilyID} ${child.ChildID}`)
+                                );
+                            } else {
+                                // Show families that either have unsponsored children or have children sponsored by the current user
+                                return family.Children.some(child => 
+                                    !child.isSponsored || 
+                                    sponsoredChildren.includes(`${family.FamilyID} ${child.ChildID}`)
+                                );
+                            }
+                        })
                         .sort((a, b) => {
                             const aNum = parseInt((a.FamilyID || '0').replace(/\D/g, ''));
                             const bNum = parseInt((b.FamilyID || '0').replace(/\D/g, ''));
