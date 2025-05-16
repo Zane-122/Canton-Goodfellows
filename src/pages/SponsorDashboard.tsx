@@ -561,7 +561,20 @@ export const SponsorDashboard: React.FC = () => {
                             </CartoonButton>
                         </CartoonContainer>
                     ))}
-                    {families.length === 0 && (
+                    {families.filter(family => {
+                            if (showOnlySponsored) {
+                                // Only show families where the current user has sponsored children
+                                return family.Children.some(child => 
+                                    sponsoredChildren.includes(`${family.FamilyID} ${child.ChildID}`)
+                                );
+                            } else {
+                                // Show families that either have unsponsored children or have children sponsored by the current user
+                                return family.Children.some(child => 
+                                    !child.isSponsored || 
+                                    sponsoredChildren.includes(`${family.FamilyID} ${child.ChildID}`)
+                                );
+                            }
+                        }).length === 0 && (
                         <CartoonHeader title={showOnlySponsored ? "No families sponsored" : "No families found"} subtitle={showOnlySponsored ? "Sponsor a child to see the family here!" : "Please check back later"} />
                     )} 
                 </CartoonContainer>
