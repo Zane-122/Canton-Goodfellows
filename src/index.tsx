@@ -12,6 +12,7 @@ import { AuthProvider } from './firebase/contexts/AuthContext';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Registration } from './pages/Registration';
 import { SponsorDashboard } from './pages/SponsorDashboard';
+import { NotFound } from './pages/NotFound';
 import Account from './pages/Account';
 
 function AppRouter() {
@@ -26,6 +27,7 @@ function AppRouter() {
         { path: '/registration', element: <Registration /> },
         { path: '/sponsor-dashboard', element: <SponsorDashboard /> },
         { path: '/account', element: <Account /> },
+        {path: '*', element: <NotFound />}
     ]);
 
     return <RouterProvider router={router} />;

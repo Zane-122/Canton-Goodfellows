@@ -7,6 +7,7 @@ interface CartoonContainerProps {
     color?: string;
     solidBorder?: boolean;
     style?: React.CSSProperties;
+    onClick?: () => void;
 }
 
 interface ContainerProps {
@@ -34,9 +35,16 @@ const CartoonContainer: React.FC<CartoonContainerProps> = ({
     color = '#FFFFFF',
     solidBorder = false,
     style,
+    onClick
 }) => {
     return (
-        <Container className={className} color={color} solidBorder={solidBorder} style={style}>
+        <Container 
+            className={className} 
+            color={color} 
+            solidBorder={solidBorder} 
+            style={style}
+            onClick={onClick}
+        >
             {children}
         </Container>
     );
