@@ -27,6 +27,7 @@ import {
 import { db } from './config';
 import { addFamily, setFamilyInfo, defaultFamily } from './families';
 import { addSponsor, setSponsorInfo, defaultSponsor } from './sponsors';
+import { useNavigate } from 'react-router-dom';
 
 const googleProvider = new GoogleAuthProvider();
 export const handleAddSponsor = async (): Promise<string> => {

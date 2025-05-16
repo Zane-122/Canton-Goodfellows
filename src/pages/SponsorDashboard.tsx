@@ -15,8 +15,9 @@ import styled from "styled-components";
 import Navbar from "../components/Navbar";
 import Snowfall from "../components/effects/Snowfall";
 import SnowyGround from "../components/effects/SnowyGround";
-import { Child, Family, getChildren, getFamilies } from "../firebase/families";
+import { Child, Family, getChildren, getFamilies, Toy } from "../firebase/families";
 import { Tag } from "../components/headers/tag";
+import CartoonImageContainer from "../components/containers/CartoonImageContainer";
 
 const PageContainer = styled.div`
     display: flex;
@@ -121,31 +122,25 @@ const ModalOverlay = styled.div`
 
 const ModalContent = styled(CartoonContainer)`
     display: flex;
+    position: relative;
     flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
     gap: 2vmin;
     padding: 4vmin;
     width: 90%;
     max-width: 80vmin;
     max-height: 80vh;
     overflow-y: auto;
-    animation: slideIn 0.3s ease-out;
-
-    @keyframes slideIn {
-        from {
-            transform: translateY(-20px);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0);
-            opacity: 1;
-        }
-    }
+    margin-top: 5vh;
 `;
 
 const ModalInnerContent = styled.div`
     display: flex;
     flex-direction: column;
     gap: 2vmin;
+    align-items: center;
+    justify-content: center;
     width: 100%;
 `;
 
@@ -153,6 +148,7 @@ const ChildCard = styled(CartoonContainer)<{ gender: string }>`
     display: flex;
     flex-direction: row;
     gap: 2vmin;
+    width: 100%;
     padding: 2vmin;
     border: 0.7vmin solid ${props => props.gender.toLowerCase() === 'boy' ? '#1EC9F2' : props.gender.toLowerCase() === 'girl' ? '#FF69B4' : '#9B4DCA'};
     background-color: white;
@@ -176,7 +172,31 @@ const TitleCartoonContainer = styled(CartoonContainer)`
     display: flex;
     flex-direction: column;
     gap: 1vmin;
-    margin-top: 10vmin;
+
+`;
+
+const WishlistContainer = styled(ModalContent)`
+    width: 75vmin;
+    max-height: 50vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 0;
+    padding: 2vmin;
+    box-shadow: 0 0 0px 0 rgba(0, 0, 0, 0);
+`;
+
+const WishlistText = styled.text<{ fontSize: number }>`
+    font-size: ${props => props.fontSize}vmin;
+    color: #333;
+    padding: 1vmin;
+    text-align: center;
+    font-family: 'TT Trick New', serif;
+`;
+
+const SpreadButton = styled(CartoonButton)`
+    width: 100%;
 `;
 
 ////////////////////////////////////////////////////////////
@@ -188,13 +208,10 @@ export const SponsorDashboard: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [hasAllInfo, setHasAllInfo] = useState(false);
     const [page, setPage] = useState<"dashboard" | "basicForm" | "childSelection">("dashboard");
-    const [sponsoredChildren, setSponsoredChildren] = useState<string[]>([]);
-    const [families, setFamilies] = useState<Family[]>([]);
-    const [selectedFamily, setSelectedFamily] = useState<Family | null>(null);
-    const [showChildrenModal, setShowChildrenModal] = useState(false);
-    const [showFamilyModal, setShowFamilyModal] = useState(false);
-    const [saveMessage, setSaveMessage] = useState("");
+
     const [showOnlySponsored, setShowOnlySponsored] = useState(false);
+    const [selectedChildWishlist, setSelectedChildWishlist] = useState<Toy[] | null>(null);
+    const [showChildWishlistModal, setShowChildWishlistModal] = useState(false);
 
     useEffect(() => {
         const fetchSponsorInfo = async () => {
@@ -266,6 +283,8 @@ export const SponsorDashboard: React.FC = () => {
         const [saveMessage, setSaveMessage] = useState("");
         const [sponsoredChildren, setSponsoredChildren] = useState<string[]>([]);
         const [refreshFamilies, setRefreshFamilies] = useState(false);
+        const [showChildWishlistModal, setShowChildWishlistModal] = useState(false);
+        const [selectedChildWishlist, setSelectedChildWishlist] = useState<Toy[] | null>(null);
 
         useEffect(() => {
             const fetchSponsoredChildren = async () => {
@@ -277,6 +296,15 @@ export const SponsorDashboard: React.FC = () => {
             };
             fetchSponsoredChildren();
         }, []);
+
+        const handleViewChildWishlist = (childWishlist: Toy[]) => {
+            setShowFamilyModal(false);
+
+            
+            
+            setSelectedChildWishlist(childWishlist);
+            setShowChildWishlistModal(true);
+        };
         
         const handleViewChildren = (family: Family) => {
             // Find the most up-to-date version of this family from the families array
@@ -326,7 +354,7 @@ export const SponsorDashboard: React.FC = () => {
         }
 
         const ReloadFamily = async (familyId: string) => {
-            if (selectedFamily && selectedFamily.FamilyID === familyId) {
+            if (selectedFamily) {
                 const familyDoc = await getFamilyDoc(familyId);
                 const updatedChildren = familyDoc?.data()?.family.Children;
                 const updatedFamily = {...selectedFamily};
@@ -619,7 +647,7 @@ export const SponsorDashboard: React.FC = () => {
                                             <ButtonContainer>
                                                 <CartoonButton 
                                                     color={child.ChildGender.toLowerCase() === 'boy' ? '#1EC9F2' : child.ChildGender.toLowerCase() === 'girl' ? '#FF69B4' : '#9B4DCA'} 
-                                                    onClick={() => {console.log(child.ChildToys);}}
+                                                    onClick={() => {ReloadFamily(selectedFamily.FamilyID || ''); handleViewChildWishlist(child.ChildToys);}}
                                                 >
                                                     View Wishlist
                                                 </CartoonButton>
@@ -657,6 +685,7 @@ export const SponsorDashboard: React.FC = () => {
                     <ModalOverlay onClick={() => setShowFamilyModal(false)}>
                         <ModalContent>
                             <ModalInnerContent onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                                
                                 <CartoonHeader 
                                     title={`${selectedFamily.FamilyID} - Family Information`} 
                                     subtitle="Family Details"
@@ -708,6 +737,120 @@ export const SponsorDashboard: React.FC = () => {
                                 </div>
                             </ModalInnerContent>
                         </ModalContent>
+                    </ModalOverlay>
+                )}
+
+                {showChildWishlistModal && selectedChildWishlist && (
+                    <ModalOverlay onClick={() => setShowChildWishlistModal(false)}>
+                        <CartoonContainer style={{ display: 'flex', flexDirection: 'column', gap: '2vmin', alignItems: 'center', justifyContent: 'center', padding: '2vmin', margin: '2vmin', marginTop: '5vh'}}>
+                        <WishlistContainer>
+                            <ModalInnerContent onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                                {/* Most Wanted Gifts Section */}
+                                {selectedChildWishlist.filter(toy => toy.starred).length > 0 && (
+                                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1vmin' }}>
+                                        <CartoonHeader title="Most Wanted Gifts" subtitle="These are their top picks!" />
+                                        <p style={{ margin: 0, fontSize: '2vmin', alignSelf: 'center', justifyContent: 'center'}}> - </p>
+                                        {selectedChildWishlist
+                                            .filter(toy => toy.starred)
+                                            .map((toy, index) => (
+                                                <CartoonContainer key={index}>
+                                                    <div style={{ display: 'flex', flexDirection: 'row', gap: '2vmin', padding: '1.2vmin' }}>
+                                                        <div style={{ 
+                                                            display: 'flex', 
+                                                            flexDirection: 'column', 
+                                                            gap: '0.8vmin', 
+                                                            width: '60%',
+                                                            alignItems: 'center',
+                                                            textAlign: 'center'
+                                                        }}>
+                                                            {toy.starred && (
+                                                                <div style={{ display: 'flex', justifyContent: 'center', width: '100%', gap: '1vmin'}}>
+                                                                    <Tag backgroundColor="#FFD700" text="Most Wanted" />
+                                                                    <Tag backgroundColor={toy.giftType === "Small Gift" ? "#059669" : toy.giftType === "Large Gift" ? "#CA242B" : "#1EC9F2"} text={`${toy.giftType}`} />
+                                                                </div>
+                                                            )}
+                                                            <h3 style={{ 
+                                                                margin: 0, 
+                                                                fontSize: '2.2vmin',
+                                                                display: '-webkit-box',
+                                                                WebkitLineClamp: 3,
+                                                                WebkitBoxOrient: 'vertical',
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis',
+                                                                lineHeight: '1.2',
+                                                                textAlign: 'center'
+                                                            }}>{toy.title}</h3>
+                                                            <p style={{ margin: 0, fontSize: '2vmin' }}>{`${toy.price}`}</p>
+                                                            <p> - </p>
+                                                            <SpreadButton color="#1EC9F2" onClick={() => window.open(toy.link, '_blank')}>
+                                                                View on Amazon
+                                                            </SpreadButton>
+                                                        </div>
+                                                        <CartoonImageContainer width="22vmin" height="22vmin">
+                                                            <img src={toy.image} alt={toy.title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                                        </CartoonImageContainer>
+                                                    </div>
+                                                </CartoonContainer>
+                                            ))}
+                                    </div>
+                                )}
+
+                                {/* Other Gifts Section */}
+                                {selectedChildWishlist.filter(toy => !toy.starred).length > 0 && (
+                                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1vmin' }}>
+                                        <CartoonHeader title="Other Gifts" subtitle="More items on their wishlist" />
+                                        {selectedChildWishlist
+                                            .filter(toy => !toy.starred)
+                                            .map((toy, index) => (
+                                                <CartoonContainer key={index}>
+                                                    <div style={{ display: 'flex', flexDirection: 'row', gap: '2vmin', padding: '1.2vmin' }}>
+                                                        <div style={{ 
+                                                            display: 'flex', 
+                                                            flexDirection: 'column', 
+                                                            gap: '0.8vmin', 
+                                                            width: '60%',
+                                                            alignItems: 'center',
+                                                            textAlign: 'center'
+                                                        }}>
+
+                                                            <Tag backgroundColor={toy.giftType === "Small Gift" ? "#059669" : toy.giftType === "Large Gift" ? "#CA242B" : "#1EC9F2"} text={`${toy.giftType}`} />
+                                                            <h3 style={{ 
+                                                                margin: 0, 
+                                                                fontSize: '2.2vmin',
+                                                                display: '-webkit-box',
+                                                                WebkitLineClamp: 3,
+                                                                WebkitBoxOrient: 'vertical',
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis',
+                                                                lineHeight: '1.2',
+                                                                textAlign: 'center'
+                                                            }}>{toy.title}</h3>
+                                                            <p style={{ margin: 0, fontSize: '2vmin' }}>{`${toy.price}`}</p>
+                                                            <p> - </p>
+                                                            <SpreadButton color="#1EC9F2" onClick={() => window.open(toy.link, '_blank')}>
+                                                                View on Amazon
+                                                            </SpreadButton>
+                                                        </div>
+                                                        <CartoonImageContainer width="22vmin" height="22vmin">
+                                                            <img src={toy.image} alt={toy.title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                                        </CartoonImageContainer>
+                                                    </div>
+                                                </CartoonContainer>
+                                            ))}
+                                    </div>
+                                )}
+
+                                {selectedChildWishlist.length === 0 && (
+                                    <CartoonHeader title="" subtitle="This child has no toys in their wishlist. Check again later!" />
+                                )}
+
+                                
+                            </ModalInnerContent>
+                        </WishlistContainer>
+                        <CartoonButton color="#CA242B" onClick={() => setShowChildWishlistModal(false)}>
+                                        Close
+                                    </CartoonButton>
+                        </CartoonContainer>
                     </ModalOverlay>
                 )}
             </div>

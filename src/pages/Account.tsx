@@ -7,7 +7,7 @@ import CartoonHeader from '../components/headers/CartoonHeader';
 import CartoonContainer from '../components/containers/CartoonContainer';
 import CartoonButton from '../components/buttons/CartoonButton';
 import { styled } from 'styled-components';
-import { logOut, deleteAccount, getAccountType, setAccountType } from '../firebase/auth';
+import { logOut, deleteAccount, getAccountType, setAccountType, AuthError } from '../firebase/auth';
 import { useNavigate } from 'react-router-dom';
 
 const ModalOverlay = styled.div`
@@ -139,7 +139,17 @@ const Account = () => {
                 <text> - </text>
 
                 <CartoonButton color="#CA242B" onClick={() => {
-                    logOut();
+                    try{
+                        logOut();
+                        navigate('/');
+                    } catch (error) {
+                        console.error('Error logging out:', error);
+                        if (error instanceof AuthError) {
+                            setError(error.message || "Failed to log out. Please try again.");
+                        } else {
+                            setError("An unexpected error occurred. Please try again.");
+                        }
+                    }
                 }}>
                     Log Out
                 </CartoonButton>
