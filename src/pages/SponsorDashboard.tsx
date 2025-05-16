@@ -560,12 +560,15 @@ export const SponsorDashboard: React.FC = () => {
                                 See family Info
                             </CartoonButton>
                         </CartoonContainer>
-                    ))} 
+                    ))}
+                    {families.length === 0 && (
+                        <CartoonHeader title={showOnlySponsored ? "No families sponsored" : "No families found"} subtitle={showOnlySponsored ? "Sponsor a child to see the family here!" : "Please check back later"} />
+                    )} 
                 </CartoonContainer>
 
                 {showChildrenModal && selectedFamily && (
                     <ModalOverlay onClick={() => setShowChildrenModal(false)}>
-                        <ModalContent>
+                        <ModalContent>  
                             <ModalInnerContent onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                                 <CartoonHeader 
                                     title={`${selectedFamily.FamilyID} - Children`} 
