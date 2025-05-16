@@ -212,6 +212,7 @@ export const Registration: React.FC = () => {
                 HasDisabilities: false,
                 SchoolName: 'Lincoln Elementary',
                 isSponsored: false,
+                sponsorDocID: '',
             },
             {
                 ChildID: 'Child A',
@@ -221,6 +222,7 @@ export const Registration: React.FC = () => {
                 HasDisabilities: false,
                 SchoolName: 'Lincoln Elementary',
                 isSponsored: false,
+                sponsorDocID: '',
             }
         ],
         timestamp: new Date(),

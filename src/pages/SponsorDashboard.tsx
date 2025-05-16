@@ -349,6 +349,7 @@ export const SponsorDashboard: React.FC = () => {
                     newSponsoredChildren = sponsoredChildren.filter(child => child !== childIdentifier);
                     if (child) {
                         child.isSponsored = false;
+                        child.sponsorDocID = '';
                     }
                     setSaveMessage("Child unsponsored successfully!");
                 } else {
@@ -366,6 +367,7 @@ export const SponsorDashboard: React.FC = () => {
                         newSponsoredChildren = [...sponsoredChildren, childIdentifier];
                         if (child) {
                             child.isSponsored = true;
+                            child.sponsorDocID = sponsorDocId;
                         }
                         setSaveMessage("Child sponsored successfully!");
                     }
@@ -453,6 +455,7 @@ export const SponsorDashboard: React.FC = () => {
                 alignItems: 'center',
                 gap: '2vmin',
                 padding: '4vmin',
+                marginTop: '10vh',
                 zIndex: 2,
             }}>
                 {saveMessage && (
@@ -486,9 +489,13 @@ export const SponsorDashboard: React.FC = () => {
                     flexDirection: 'row',
                     gap: '2vmin',
                     padding: '4vmin',
-                    width: '90%',
-                    justifyContent: 'center',
+                    justifyContent: 'flex-start',
+                    maxWidth: '60vw',
                     alignItems: 'center',
+                    overflowX: 'auto',
+                    whiteSpace: 'nowrap',
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: 'transparent transparent',
                 }}>
                     {families
                         .sort((a, b) => {
