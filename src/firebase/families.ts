@@ -37,7 +37,8 @@ export interface Child {
     HasDisabilities: boolean;
 
     isSponsored: boolean;
-
+    sponsorDocID: string;
+    
     SchoolName: string;
 }
 

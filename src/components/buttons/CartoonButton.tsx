@@ -25,22 +25,20 @@ const Button = styled.button<{ color: string }>`
     transition: all 0.1s ease;
 
     &:hover {
-        transform: translate(-2px, -2px);
-        box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
-    }
-
-    &:active {
-        transform: translate(0px, 0px);
+        transform: translate(2px, 2px);
         box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
     }
 
+    &:active {
+        transform: translate(4px, 4px);
+        box-shadow: -0px -0px 0px 0px rgba(0, 0, 0, 1);
+    }
+
     &:disabled {
-        opacity: 0.5;
         cursor: not-allowed;
-        &:hover {
-            transform: none;
-            box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
-        }
+        background-color: #888;
+        transform: translate(4px, 4px);
+        box-shadow: -0px -0px 0px 0px rgba(0, 0, 0, 1);
     }
 `;
 

@@ -7,6 +7,7 @@ import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     updateProfile,
+    deleteUser,
 } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { auth } from './config';
@@ -129,43 +130,157 @@ export async function signInWithGoogle(): Promise<User> {
     }
 }
 
-export async function setAccountType(accountType: 'sponsor' | 'family'): Promise<void> {
+export const setAccountType = async (accountType: 'family' | 'sponsor') => {
     const user = auth.currentUser;
     if (!user) {
-        throw new AuthError('No user is signed in.', 'no-user-signed-in');
+        throw new Error('No user is currently signed in');
     }
+
     const userRef = doc(db, 'users', user.uid);
     const userDoc = await getDoc(userRef);
     const userData = userDoc.data();
 
+    if (!userData) {
+        throw new Error('User data not found');
+    }
+
+    // If the user is already the requested account type, do nothing
+    if (userData.accountType === accountType) {
+        return;
+    }
+
     let familyDocId: string | undefined;
     let sponsorDocId: string | undefined;
+    let originalUserData = { ...userData };
+    let originalFamilyData: any = null;
+    let originalSponsorData: any = null;
+    let updatedFamilies: { ref: DocumentReference; data: any }[] = [];
 
-    // Delete existing documents if they exist
-    if (userData?.family?.familyDocId) {
-        await deleteDoc(doc(db, 'families', userData.family.familyDocId));
-    }
-    if (userData?.sponsor?.sponsorDocId) {
-        await deleteDoc(doc(db, 'sponsors', userData.sponsor.sponsorDocId));
-    }
+    try {
+        // Clean up existing relationships before switching account types
+        if (userData.accountType === 'family' && userData.family?.familyDocId) {
+            const familyRef = doc(db, 'families', userData.family.familyDocId);
+            const familyDoc = await getDoc(familyRef);
+            originalFamilyData = familyDoc.data();
+            const children = originalFamilyData?.family?.Children || [];
 
-    // Create new document based on account type
-    if (accountType === 'family') {
-        familyDocId = await handleAddFamily();
-    } else {
-        sponsorDocId = await handleAddSponsor();
-    }
+            // For each child, remove them from their sponsor's sponsored_children array
+            for (const child of children) {
+                console.log(child);
+                if (child?.sponsorDocID && child.sponsorDocID !== '') {
+                    const sponsorRef = doc(db, 'sponsors', child.sponsorDocID);
+                    const sponsorDoc = await getDoc(sponsorRef);
+                    const sponsorData = sponsorDoc.data();
+                    
+                    if (sponsorData?.sponsored_children && Array.isArray(sponsorData.sponsored_children)) {
+                        if (!originalFamilyData?.FamilyID) {
+                            console.error('Family ID not found in family data');
+                            console.log(originalFamilyData);
+                            console.log(originalFamilyData.FamilyID);
+                        }
+                        const childIdentifier = `${originalFamilyData.FamilyID} ${child.ChildID}`;
+                        console.log(childIdentifier);
+                        const updatedSponsoredChildren = sponsorData.sponsored_children.filter(
+                            (id: string) => id !== childIdentifier
+                        );
+                        
+                        await updateDoc(sponsorRef, {
+                            sponsored_children: updatedSponsoredChildren
+                        });
+                    } else {
+                        console.log("No sponsored children found");
+                    }
+                }
+            }
 
-    // Update user document
-    await updateDoc(userRef, {
-        email: user.email,
-        accountType: accountType,
-        ...(accountType === 'sponsor' && { sponsor: { sponsorDocId } }),
-        ...(accountType === 'family' && { family: { familyDocId } }),
-        ...(accountType === 'sponsor' && { family: deleteField() }),
-        ...(accountType === 'family' && { sponsor: deleteField() }),
-    });
-}
+            await deleteDoc(familyRef);
+        } else if (userData.accountType === 'sponsor' && userData.sponsor?.sponsorDocId) {
+            const sponsorRef = doc(db, 'sponsors', userData.sponsor.sponsorDocId);
+            const sponsorDoc = await getDoc(sponsorRef);
+            originalSponsorData = sponsorDoc.data();
+            
+            // Get all families to check for sponsored children
+            const familiesRef = collection(db, 'families');
+            const familiesSnapshot = await getDocs(familiesRef);
+            
+            // For each family, check and update their children
+            for (const familyDoc of familiesSnapshot.docs) {
+                const familyData = familyDoc.data();
+                const children = familyData?.family?.Children || [];
+                let childrenUpdated = false;
+                
+                // Check each child in the family
+                for (let i = 0; i < children.length; i++) {
+                    if (children[i].sponsorDocID === userData.sponsor.sponsorDocId) {
+                        // Remove sponsor reference and set isSponsored to false
+                        children[i].sponsorDocID = '';
+                        children[i].isSponsored = false;
+                        childrenUpdated = true;
+                    }
+                }
+                
+                // If any children were updated, update the family document
+                if (childrenUpdated) {
+                    await updateDoc(familyDoc.ref, {
+                        'family.Children': children
+                    });
+                    // Store for potential rollback
+                    updatedFamilies.push({
+                        ref: familyDoc.ref,
+                        data: familyData
+                    });
+                }
+            }
+            
+            await deleteDoc(sponsorRef);
+        }
+
+        // Create new document based on account type
+        if (accountType === 'family') {
+            familyDocId = await handleAddFamily();
+        } else {
+            sponsorDocId = await handleAddSponsor();
+        }
+
+        // Update the user's account type and document references
+        await updateDoc(userRef, {
+            accountType: accountType,
+            ...(accountType === 'sponsor' && { sponsor: { sponsorDocId } }),
+            ...(accountType === 'family' && { family: { familyDocId } }),
+            ...(accountType === 'sponsor' && { family: deleteField() }),
+            ...(accountType === 'family' && { sponsor: deleteField() })
+        });
+
+    } catch (error) {
+        console.error('Error in account type change, rolling back:', error);
+        
+        // Restore original documents
+        try {
+            if (originalFamilyData) {
+                const familyRef = doc(db, 'families', userData.family.familyDocId);
+                await setDoc(familyRef, originalFamilyData);
+            }
+            
+            if (originalSponsorData) {
+                const sponsorRef = doc(db, 'sponsors', userData.sponsor.sponsorDocId);
+                await setDoc(sponsorRef, originalSponsorData);
+            }
+            
+            // Restore updated family documents
+            for (const family of updatedFamilies) {
+                await setDoc(family.ref, family.data);
+            }
+            
+            // Restore user document
+            await setDoc(userRef, originalUserData);
+            
+            throw new Error('Failed to change account type. All changes have been rolled back.');
+        } catch (restoreError) {
+            console.error('Error during rollback:', restoreError);
+            throw new Error('Failed to change account type and rollback failed. Please contact support.');
+        }
+    }
+};
 
 export async function getAccountType(): Promise<'sponsor' | 'family' | null> {
     const user = auth.currentUser;
@@ -247,6 +362,161 @@ export async function logOut(): Promise<void> {
     } catch (error) {
         console.error('Error signing out:', error);
         throw new AuthError('Failed to sign out. Please try again.', 'signout-failed');
+    }
+}
+
+export async function deleteAccount(): Promise<void> {
+    const user = auth.currentUser;
+    if (!user) {
+        throw new AuthError('No user is signed in.', 'no-user-signed-in');
+    }
+
+    // Store document references and data for potential rollback
+    let familyRef: DocumentReference | null = null;
+    let sponsorRef: DocumentReference | null = null;
+    let familyData: any = null;
+    let sponsorData: any = null;
+    let updatedFamilies: { ref: DocumentReference; children: any[] }[] = [];
+    let userRef: DocumentReference | null = null;
+    let userData: any = null;
+
+    try {
+        // Get user's account type and associated document IDs
+        userRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userRef);
+        userData = userDoc.data();
+
+        if (!userData) {
+            throw new AuthError('User data not found.', 'user-data-not-found');
+        }
+
+        // First, clean up Firestore documents
+        if (userData.accountType === 'family' && userData.family?.familyDocId) {
+            familyRef = doc(db, 'families', userData.family.familyDocId);
+            const familyDoc = await getDoc(familyRef);
+            familyData = familyDoc.data();
+            
+            if (!familyData?.family?.Children) {
+                console.warn('No children found in family document');
+            } else {
+                const children = familyData.family.Children;
+
+                // For each child, remove them from their sponsor's sponsored_children array
+                for (const child of children) {
+                    console.log(child);
+                    if (child?.sponsorDocID && child.sponsorDocID !== '') {
+                        const sponsorRef = doc(db, 'sponsors', child.sponsorDocID);
+                        const sponsorDoc = await getDoc(sponsorRef);
+                        const sponsorData = sponsorDoc.data();
+                        
+                        if (sponsorData?.sponsored_children && Array.isArray(sponsorData.sponsored_children)) {
+                            if (!familyData?.FamilyID) {
+                                console.error('Family ID not found in family data');
+                                console.log(familyData);
+                                console.log(familyData.FamilyID);
+                            }
+                            const childIdentifier = `${familyData.FamilyID} ${child.ChildID}`;
+                            console.log(childIdentifier);
+                            const updatedSponsoredChildren = sponsorData.sponsored_children.filter(
+                                (id: string) => id !== childIdentifier
+                            );
+                            
+                            await updateDoc(sponsorRef, {
+                                sponsored_children: updatedSponsoredChildren
+                            });
+                        } else {
+                            console.log("No sponsored children found");
+                        }
+                    }
+                }
+            }
+
+            await deleteDoc(familyRef);
+        } else if (userData.accountType === 'sponsor' && userData.sponsor?.sponsorDocId) {
+            sponsorRef = doc(db, 'sponsors', userData.sponsor.sponsorDocId);
+            const sponsorDoc = await getDoc(sponsorRef);
+            sponsorData = sponsorDoc.data();
+            
+            // Get all families to check for sponsored children
+            const familiesRef = collection(db, 'families');
+            const familiesSnapshot = await getDocs(familiesRef);
+            
+            // For each family, check and update their children
+            for (const familyDoc of familiesSnapshot.docs) {
+                const familyData = familyDoc.data();
+                const children = familyData?.family?.Children || [];
+                let childrenUpdated = false;
+                let originalChildren = [...children];
+                
+                // Check each child in the family
+                for (let i = 0; i < children.length; i++) {
+                    if (children[i]?.sponsorDocID === userData.sponsor.sponsorDocId) {
+                        // Remove sponsor reference and set isSponsored to false
+                        children[i].sponsorDocID = '';
+                        children[i].isSponsored = false;
+                        childrenUpdated = true;
+                    }
+                }
+                
+                // If any children were updated, update the family document
+                if (childrenUpdated) {
+                    await updateDoc(familyDoc.ref, {
+                        'family.Children': children
+                    });
+                    // Store for potential rollback
+                    updatedFamilies.push({
+                        ref: familyDoc.ref,
+                        children: originalChildren
+                    });
+                }
+            }
+            
+            await deleteDoc(sponsorRef);
+        }
+
+        // Delete the user document
+        if (userRef) {
+            await deleteDoc(userRef);
+        }
+
+        // Finally, delete the auth account
+        try {
+            await deleteUser(user);
+        } catch (error) {
+            console.error('Error deleting auth account:', error);
+            // If auth deletion fails, we need to restore the Firestore documents
+            try {
+                if (familyRef && familyData) {
+                    await setDoc(familyRef, familyData);
+                }
+                if (sponsorRef && sponsorData) {
+                    await setDoc(sponsorRef, sponsorData);
+                }
+                // Restore updated family documents
+                for (const family of updatedFamilies) {
+                    await updateDoc(family.ref, {
+                        'family.Children': family.children
+                    });
+                }
+                // Restore user document
+                if (userRef && userData) {
+                    await setDoc(userRef, userData);
+                }
+            } catch (restoreError) {
+                console.error('Error restoring documents after auth deletion failure:', restoreError);
+            }
+            throw new AuthError('Failed to delete authentication account. All changes have been rolled back.', 'auth-delete-failed');
+        }
+
+    } catch (error) {
+        console.error('Error in account deletion process:', error);
+        if (error instanceof FirebaseError) {
+            throw new AuthError(error.message, error.code);
+        }
+        if (error instanceof Error) {
+            throw new AuthError(error.message, 'delete-failed');
+        }
+        throw new AuthError('An unknown error occurred', 'delete-failed');
     }
 }
 

@@ -64,14 +64,13 @@ const Navbar: React.FC = () => {
                             color="#1EC9F2"
                             onClick={() => {
                                 if (user) {
-                                    logOut();
-                                    navigate(0);
+                                    navigate('/account');
                                 } else {
                                     navigate('/login');
                                 }
                             }}
                         >
-                            <p className="navbar-link">{user ? 'Log Out' : 'Log In'}</p>
+                            <p className="navbar-link">{user ? 'Account' : 'Log In'}</p>
                         </CartoonButton>
                     </li>
                 </ul>
