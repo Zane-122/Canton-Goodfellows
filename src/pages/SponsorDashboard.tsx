@@ -297,11 +297,9 @@ export const SponsorDashboard: React.FC = () => {
             fetchSponsoredChildren();
         }, []);
 
-        const handleViewChildWishlist = (childWishlist: Toy[]) => {
+        const handleViewChildWishlist = async (childWishlist: Toy[]) => {
             setShowFamilyModal(false);
-
-            
-            
+            await ReloadFamily(selectedFamily?.FamilyID || '');
             setSelectedChildWishlist(childWishlist);
             setShowChildWishlistModal(true);
         };
@@ -354,7 +352,7 @@ export const SponsorDashboard: React.FC = () => {
         }
 
         const ReloadFamily = async (familyId: string) => {
-            if (selectedFamily) {
+            if (selectedFamily && selectedFamily.FamilyID === familyId) {
                 const familyDoc = await getFamilyDoc(familyId);
                 const updatedChildren = familyDoc?.data()?.family.Children;
                 const updatedFamily = {...selectedFamily};
@@ -647,7 +645,7 @@ export const SponsorDashboard: React.FC = () => {
                                             <ButtonContainer>
                                                 <CartoonButton 
                                                     color={child.ChildGender.toLowerCase() === 'boy' ? '#1EC9F2' : child.ChildGender.toLowerCase() === 'girl' ? '#FF69B4' : '#9B4DCA'} 
-                                                    onClick={() => {ReloadFamily(selectedFamily.FamilyID || ''); handleViewChildWishlist(child.ChildToys);}}
+                                                    onClick={() => handleViewChildWishlist(child.ChildToys)}
                                                 >
                                                     View Wishlist
                                                 </CartoonButton>
