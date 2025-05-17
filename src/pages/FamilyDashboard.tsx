@@ -19,7 +19,9 @@ import Catalog from "./Catalog";
 import { setSponsorInfo } from "../firebase/sponsors";
 import CartoonImageInput from "../components/inputs/CartoonImageInput";
 import CartoonImageContainer from "../components/containers/CartoonImageContainer";
-import { uploadImage, uploadMultipleImages } from "../firebase/storage";
+import { uploadImage, uploadMultipleImages, getFileDownloadURL, deleteFile } from "../firebase/storage";
+import { ref, listAll, getDownloadURL, deleteObject } from "firebase/storage";
+import { storage } from "../firebase/config";
 
 const FamilyDashboard = () => {
     const [accountType, setAccountType] = useState<string | null>(null);
@@ -35,6 +37,62 @@ const FamilyDashboard = () => {
     const [deleteMessage, setDeleteMessage] = useState("");
     const [isDeleting, setIsDeleting] = useState(false);
     const [allDocumentsUploaded, setAllDocumentsUploaded] = useState(false);
+    const [enlargeImage, setEnlargeImage] = useState(false);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [loadingAccountStatus, setLoadingAccountStatus] = useState(true);
+    const [documentStatus, setDocumentStatus] = useState<{
+        address: { url: string | null; status: 'pending' | 'uploading' | 'success' | 'error' };
+        children: { url: string | null; status: 'pending' | 'uploading' | 'success' | 'error' };
+        income: { url: string | null; status: 'pending' | 'uploading' | 'success' | 'error' };
+    }>({
+        address: { url: null, status: 'pending' },
+        children: { url: null, status: 'pending' },
+        income: { url: null, status: 'pending' }
+    });
+
+    const loadDocuments = async () => {
+        if (!user?.uid) return;
+        
+        try {
+            const types: ('address' | 'children' | 'income')[] = ['address', 'children', 'income'];
+            const newDocumentStatus = { ...documentStatus };
+            
+            for (const type of types) {
+                try {
+                    // List files in the folder
+                    const folderRef = ref(storage, `documents/${user.uid}/${type}`);
+                    const result = await listAll(folderRef);
+                    
+                    if (result.items.length > 0) {
+                        // Get the most recent file (assuming files are named with timestamps)
+                        const mostRecentFile = result.items.sort((a, b) => {
+                            return b.name.localeCompare(a.name); // Sort by name (which includes timestamp)
+                        })[0];
+                        
+                        const url = await getDownloadURL(mostRecentFile);
+                        newDocumentStatus[type] = { url, status: 'success' };
+                    } else {
+                        console.log(`No existing ${type} document found`);
+                        newDocumentStatus[type] = { url: null, status: 'pending' };
+                    }
+                } catch (error) {
+                    console.log(`No existing ${type} document found`);
+                    newDocumentStatus[type] = { url: null, status: 'pending' };
+                }
+            }
+            
+            setDocumentStatus(newDocumentStatus);
+            
+            // Check if all documents are uploaded
+            const allUploaded = Object.values(newDocumentStatus).every(doc => doc.status === 'success');
+            setAllDocumentsUploaded(allUploaded);
+        } catch (error) {
+            console.error('Error loading documents:', error);
+        } finally {
+            setLoadingAccountStatus(false);
+        }
+    };
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -49,9 +107,8 @@ const FamilyDashboard = () => {
         }
 
         checkAuth();
-        
+        loadDocuments();
     }, [user, navigate]);
-
 
     const getFamilyInfo = async () => {
         if (!user?.uid) return;
@@ -435,11 +492,6 @@ const FamilyDashboard = () => {
         const [enlargeImage, setEnlargeImage] = useState(false);
         const [selectedImage, setSelectedImage] = useState<string | null>(null);
         const [isUploading, setIsUploading] = useState(false);
-        const [uploadStatus, setUploadStatus] = useState<{[key: string]: 'pending' | 'uploading' | 'success' | 'error'}>({
-            address: 'pending',
-            children: 'pending',
-            income: 'pending'
-        });
         const [documents, setDocuments] = useState<{
             address: File | null;
             children: File | null;
@@ -468,28 +520,70 @@ const FamilyDashboard = () => {
                 const uploadPromises = Object.entries(documents).map(async ([type, file]) => {
                     if (!file) return;
                     
-                    setUploadStatus(prev => ({ ...prev, [type]: 'uploading' }));
+                    setDocumentStatus(prev => ({
+                        ...prev,
+                        [type]: { ...prev[type as keyof typeof prev], status: 'uploading' }
+                    }));
+
                     try {
+                        // Delete all existing files in the folder
+                        const folderRef = ref(storage, `documents/${user.uid}/${type}`);
+                        const result = await listAll(folderRef);
+                        const deletePromises = result.items.map(fileRef => deleteObject(fileRef));
+                        await Promise.all(deletePromises);
+                        
                         const url = await uploadImage(file, `documents/${user.uid}/${type}`);
-                        setUploadStatus(prev => ({ ...prev, [type]: 'success' }));
-                        if (documents.address && documents.children && documents.income) {
-                            setAllDocumentsUploaded(true);
-                        } else {
-                            setAllDocumentsUploaded(false);
-                        }
+                        setDocumentStatus(prev => ({
+                            ...prev,
+                            [type]: { url, status: 'success' }
+                        }));
+                        
+                        const allUploaded = Object.values(documentStatus).every(doc => doc.status === 'success');
+                        setAllDocumentsUploaded(allUploaded);
+                        
                         return url;
                     } catch (error) {
                         console.error(`Error uploading ${type} document:`, error);
-                        setUploadStatus(prev => ({ ...prev, [type]: 'error' }));
+                        setDocumentStatus(prev => ({
+                            ...prev,
+                            [type]: { ...prev[type as keyof typeof prev], status: 'error' }
+                        }));
                         throw error;
                     }
                 });
 
                 await Promise.all(uploadPromises);
+                await loadDocuments(); // Refresh document status after upload
             } catch (error) {
                 console.error('Error uploading documents:', error);
             } finally {
                 setIsUploading(false);
+            }
+        };
+
+        const handleRemoveDocument = async (type: 'address' | 'children' | 'income') => {
+            if (!user?.uid) return;
+            
+            try {
+                // Delete all files in the folder
+                const folderRef = ref(storage, `documents/${user.uid}/${type}`);
+                const result = await listAll(folderRef);
+                const deletePromises = result.items.map(fileRef => deleteObject(fileRef));
+                await Promise.all(deletePromises);
+                
+                // Update local state
+                setDocuments(prev => ({ ...prev, [type]: null }));
+                setDocumentStatus(prev => ({
+                    ...prev,
+                    [type]: { url: null, status: 'pending' }
+                }));
+                
+                // Update allDocumentsUploaded status
+                const newStatus = { ...documentStatus, [type]: { url: null, status: 'pending' } };
+                const allUploaded = Object.values(newStatus).every(doc => doc.status === 'success');
+                setAllDocumentsUploaded(allUploaded);
+            } catch (error) {
+                console.error(`Error removing ${type} document:`, error);
             }
         };
 
@@ -522,10 +616,6 @@ const FamilyDashboard = () => {
                 gap: '4vmin', 
                 padding: '2vmin' 
             }}>
-                <CartoonHeader 
-                    title="Identity Verification" 
-                    subtitle="Please provide the following documents to verify your identity"
-                />
                 
                 <CartoonContainer style={{
                     display: 'flex',
@@ -536,6 +626,11 @@ const FamilyDashboard = () => {
                     width: '100%',
                     alignItems: 'center'
                 }}>
+                                    <CartoonHeader 
+                    title="Identity Verification" 
+                    subtitle="Please provide the following documents to verify your identity"
+                />
+                <p> - </p>
                     {/* Address Proof */}
                     <div style={{ 
                         display: 'flex', 
@@ -558,7 +653,6 @@ const FamilyDashboard = () => {
                                 alignItems: 'center', 
                                 gap: '1vmin',
                             }}>
-                                
                                 <Tag backgroundColor="#1EC9F2" text="Required" />
                             </div>
                             <CartoonHeader 
@@ -566,22 +660,25 @@ const FamilyDashboard = () => {
                                 subtitle="Upload a document that proves you live in Canton"
                             />
                             <div style={{ 
-                                    color: getStatusColor(uploadStatus.address),
-                                    fontFamily: 'TT Trick New, serif',
-                                    fontSize: '2vmin'
-                                }}>
-                                    {getStatusText(uploadStatus.address)}
-                                </div>
+                                color: getStatusColor(documentStatus.address.status),
+                                fontFamily: 'TT Trick New, serif',
+                                fontSize: '2vmin'
+                            }}>
+                                {getStatusText(documentStatus.address.status)}
+                            </div>
                         </div>
                         <CartoonImageInput 
                             placeholder="Upload proof of address (utility bill, lease agreement, etc.)" 
                             onChange={(file) => handleImageUpload(file, 'address')}
-                            value={documents.address ? URL.createObjectURL(documents.address) : ""} 
-                            onEnlarge={() => {handleImageUpload(documents.address, 'address'); setEnlargeImage(true);}}
-                            onRemove={() => {
-                                setDocuments(prev => ({ ...prev, address: null }));
-                                setUploadStatus(prev => ({ ...prev, address: 'pending' }));
+                            value={documents.address ? URL.createObjectURL(documents.address) : documentStatus.address.url || ""} 
+                            onEnlarge={() => {
+                                const imageToShow = documents.address ? URL.createObjectURL(documents.address) : documentStatus.address.url;
+                                if (imageToShow) {
+                                    setSelectedImage(imageToShow);
+                                    setEnlargeImage(true);
+                                }
                             }}
+                            onRemove={() => handleRemoveDocument('address')}
                         />
                     </div>
 
@@ -607,7 +704,6 @@ const FamilyDashboard = () => {
                                 alignItems: 'center', 
                                 gap: '1vmin',
                             }}>
-                                
                                 <Tag backgroundColor="#1EC9F2" text="Required" />
                             </div>
                             <CartoonHeader 
@@ -615,22 +711,25 @@ const FamilyDashboard = () => {
                                 subtitle="Upload a document that proves your children live with you"
                             />
                             <div style={{ 
-                                color: getStatusColor(uploadStatus.children),
+                                color: getStatusColor(documentStatus.children.status),
                                 fontFamily: 'TT Trick New, serif',
                                 fontSize: '2vmin'
                             }}>
-                                {getStatusText(uploadStatus.children)}
+                                {getStatusText(documentStatus.children.status)}
                             </div>
                         </div>
                         <CartoonImageInput 
                             placeholder="Upload proof of children (birth certificates, school records, etc.)" 
                             onChange={(file) => handleImageUpload(file, 'children')}
-                            value={documents.children ? URL.createObjectURL(documents.children) : ""} 
-                            onEnlarge={() => {handleImageUpload(documents.children, 'children'); setEnlargeImage(true);}}
-                            onRemove={() => {
-                                setDocuments(prev => ({ ...prev, children: null }));
-
+                            value={documents.children ? URL.createObjectURL(documents.children) : documentStatus.children.url || ""} 
+                            onEnlarge={() => {
+                                const imageToShow = documents.children ? URL.createObjectURL(documents.children) : documentStatus.children.url;
+                                if (imageToShow) {
+                                    setSelectedImage(imageToShow);
+                                    setEnlargeImage(true);
+                                }
                             }}
+                            onRemove={() => handleRemoveDocument('children')}
                         />
                     </div>
 
@@ -656,7 +755,6 @@ const FamilyDashboard = () => {
                                 alignItems: 'center', 
                                 gap: '1vmin',
                             }}>
-                                
                                 <Tag backgroundColor="#1EC9F2" text="Required" />
                             </div>
                             <CartoonHeader 
@@ -664,22 +762,25 @@ const FamilyDashboard = () => {
                                 subtitle="Upload documents showing all family income"
                             />
                             <div style={{ 
-                                color: getStatusColor(uploadStatus.income),
+                                color: getStatusColor(documentStatus.income.status),
                                 fontFamily: 'TT Trick New, serif',
                                 fontSize: '2vmin'
                             }}>
-                                {getStatusText(uploadStatus.income)}
+                                {getStatusText(documentStatus.income.status)}
                             </div>
                         </div>
                         <CartoonImageInput 
                             placeholder="Upload proof of income (pay checks, tax returns, etc.)" 
                             onChange={(file) => handleImageUpload(file, 'income')}
-                            value={documents.income ? URL.createObjectURL(documents.income) : ""} 
-                            onEnlarge={() => {handleImageUpload(documents.income, 'income'); setEnlargeImage(true);}}
-                            onRemove={() => {
-                                setDocuments(prev => ({ ...prev, income: null }));
-                                setUploadStatus(prev => ({ ...prev, income: 'pending' }));
+                            value={documents.income ? URL.createObjectURL(documents.income) : documentStatus.income.url || ""} 
+                            onEnlarge={() => {
+                                const imageToShow = documents.income ? URL.createObjectURL(documents.income) : documentStatus.income.url;
+                                if (imageToShow) {
+                                    setSelectedImage(imageToShow);
+                                    setEnlargeImage(true);
+                                }
                             }}
+                            onRemove={() => handleRemoveDocument('income')}
                         />
                     </div>
 
@@ -731,7 +832,6 @@ const FamilyDashboard = () => {
     };
 
     const DashboardPage: React.FC = () => {
-       
         return (
             <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2vmin'}}>  
             <CartoonContainer style={{
@@ -745,13 +845,21 @@ const FamilyDashboard = () => {
                 <CartoonButton color="#1EC9F2" onClick={() => setPage("basicForm")}>Update Basic Info</CartoonButton>
                 
                 <CartoonButton disabled={!hasAllInfo} color="#1EC9F2" onClick={() => setPage("childAdding")}>Add Children</CartoonButton>
-                <CartoonButton  disabled={!hasAllInfo || family?.Children.length === 0} color="#1EC9F2" onClick={() => setPage("identityVerification")}>Verify Identity</CartoonButton>
+                <CartoonButton disabled={!hasAllInfo || family?.Children.length === 0} color="#1EC9F2" onClick={() => setPage("identityVerification")}>Verify Identity</CartoonButton>
                 
                 <CartoonButton disabled={!allDocumentsUploaded || !family?.Verified} color="#1EC9F2" onClick={() => setPage("giftCatalog")}>Gift Catalog</CartoonButton>
 
             </CartoonContainer>
-            {(!hasAllInfo || family?.Children.length === 0 || !allDocumentsUploaded) && (<CartoonContainer style={{borderColor: 'black', backgroundColor: '#CA242B', color: 'white', height: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-                <p style={{fontSize: '2vmin', fontFamily: 'TT Trick New, serif', textAlign: 'center', color: 'white'}}> {!hasAllInfo ? "Please update your basic information before adding children" : (family?.Children.length === 0) ? "Please add children before verifying identity" : "Please upload all documents to verify identity"} </p>
+            {(!hasAllInfo || family?.Children.length === 0 || !allDocumentsUploaded) && (<CartoonContainer style={{borderColor: 'black', backgroundColor: loadingAccountStatus ? 'gray' : '#CA242B', color: 'white', height: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                <p style={{fontSize: '2vmin', fontFamily: 'TT Trick New, serif', textAlign: 'center', color: 'white'}}> 
+                    {!hasAllInfo ? "Please update your basic information before adding children" : 
+                     loadingAccountStatus ? "Loading..." : (family?.Children.length === 0) ? "Please add children before verifying identity" : 
+                     "Please upload all required documents: " + 
+                     Object.entries(documentStatus)
+                         .filter(([_, doc]) => doc.status !== 'success')
+                         .map(([type]) => type)
+                         .join(', ')} 
+                </p>
             </CartoonContainer>)}
 
             {(allDocumentsUploaded && !family?.Verified) && (<CartoonContainer style={{borderColor: 'black', backgroundColor: '#FFD711', color: 'black', height: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
