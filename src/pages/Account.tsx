@@ -140,8 +140,8 @@ const Account = () => {
 
                 <CartoonButton color="#CA242B" onClick={() => {
                     try{
-                        logOut();
                         navigate('/');
+                        logOut();
                     } catch (error) {
                         console.error('Error logging out:', error);
                         if (error instanceof AuthError) {

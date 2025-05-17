@@ -53,6 +53,7 @@ export interface Family {
     ZipCode: string;
     PhoneNumber: string;
     Children: Child[];
+    Verified: boolean;
     timestamp: Date;
 }
 export const defaultFamily = (displayName: string = ''): Family => ({
@@ -62,6 +63,7 @@ export const defaultFamily = (displayName: string = ''): Family => ({
     ZipCode: '',
     PhoneNumber: '',
     Children: [],
+    Verified: false,
     timestamp: new Date(),
 });
 export async function addFamily(): Promise<DocumentReference> {

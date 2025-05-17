@@ -49,11 +49,7 @@ const Navbar: React.FC = () => {
                         <CartoonButton
                             color="#"
                             onClick={() => {
-                                if (user) {
-                                    navigate('/catalog');
-                                } else {
-                                    navigate('/login');
-                                }
+                               
                             }}
                         >
                             <p className="navbar-link">Contact</p>

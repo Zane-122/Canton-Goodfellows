@@ -558,6 +558,7 @@ export const SponsorDashboard: React.FC = () => {
                     scrollbarColor: 'transparent transparent',
                 }}>
                     {families
+                        .filter(family => family.Verified)
                         .filter(family => {
                             if (showOnlySponsored) {
                                 // Only show families where the current user has sponsored children
@@ -596,7 +597,7 @@ export const SponsorDashboard: React.FC = () => {
                             </CartoonButton>
                         </CartoonContainer>
                     ))}
-                    {families.filter(family => {
+                    {families.filter(family => family.Verified).filter(family => {
                             if (showOnlySponsored) {
                                 // Only show families where the current user has sponsored children
                                 return family.Children.some(child => 
@@ -876,7 +877,7 @@ export const SponsorDashboard: React.FC = () => {
         const formatPhoneNumber = (value: string) => {
             const phoneNumber = value.replace(/\D/g, '');
             if (phoneNumber.length === 0) return '';
-            if (phoneNumber.length <= 3) return `(${phoneNumber})`;
+            if (phoneNumber.length <= 3) return `(${phoneNumber}`;
             if (phoneNumber.length <= 6) return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
             return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
         };

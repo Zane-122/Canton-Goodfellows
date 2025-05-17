@@ -211,15 +211,7 @@ export const Registration: React.FC = () => {
         };
         fetchFamilyDocId();
     }, [user]);
-    const testFamily: Family = {
-        Parent1Name: 'John Doe',
-        Parent2Name: 'Jane Doe',
-        StreetAddress: '123 Main St',
-        ZipCode: '12345',
-        PhoneNumber: '1234567890',
-        Children: [],
-        timestamp: new Date(),
-    };
+
     useEffect(() => {
         if (!user) {
             navigate('/');
@@ -368,9 +360,9 @@ export const Registration: React.FC = () => {
                         <span style={{ fontSize: '2vmin', color: 'black' }}> - </span>
                         <CartoonButton
                             color={accountType === 'family' ? '#1EC9F2' : '#CA242B'}
-                            onClick={async () =>
+                            onClick={() =>
                                 accountType === 'family'
-                                    ? {}
+                                    ? navigate('/family-dashboard')
                                     : handleChangeAccountType('family')
                             }
                             disabled={isLoading}

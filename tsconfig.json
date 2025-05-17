@@ -8,8 +8,7 @@
     "strict": true,
     "skipLibCheck": true,
     "jsx": "react-jsx",
-    // "types": ["node"] // Try removing "axios" if it's here
-    "typeRoots": ["./node_modules/@types", "./types"] // Ensure node_modules/@types is included
+    "typeRoots": ["./node_modules/@types", "./types"]
   },
   "include": ["src"],
   "exclude": ["node_modules"]

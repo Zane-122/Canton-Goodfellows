@@ -17,13 +17,16 @@ import { Tag } from "../components/headers/tag";
 import styled from "styled-components";
 import Catalog from "./Catalog";
 import { setSponsorInfo } from "../firebase/sponsors";
+import CartoonImageInput from "../components/inputs/CartoonImageInput";
+import CartoonImageContainer from "../components/containers/CartoonImageContainer";
+import { uploadImage, uploadMultipleImages } from "../firebase/storage";
 
 const FamilyDashboard = () => {
     const [accountType, setAccountType] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [hasAllInfo, setHasAllInfo] = useState(false);
     const [family, setFamily] = useState<Family | null>(null);
-    const [page, setPage] = useState<"dashboard" | "basicForm" | "childAdding" | "giftCatalog">("dashboard");
+    const [page, setPage] = useState<"dashboard" | "basicForm" | "childAdding" | "giftCatalog" | "identityVerification">("dashboard");
     const [refreshFamily, setRefreshFamily] = useState(false);
     const navigate = useNavigate();
     const {user} = useAuth();
@@ -31,7 +34,8 @@ const FamilyDashboard = () => {
     const [childToDelete, setChildToDelete] = useState<string | null>(null);
     const [deleteMessage, setDeleteMessage] = useState("");
     const [isDeleting, setIsDeleting] = useState(false);
-    
+    const [allDocumentsUploaded, setAllDocumentsUploaded] = useState(false);
+
     useEffect(() => {
         const checkAuth = async () => {
             if (!user) {
@@ -308,6 +312,7 @@ const FamilyDashboard = () => {
                             StreetAddress: address,
                             ZipCode: zipCode,
                             timestamp: new Date(),
+                            Verified: false,
                         });
                         setSaveMessage("Information saved successfully!");
                         setTimeout(() => {
@@ -354,7 +359,7 @@ const FamilyDashboard = () => {
                                 />
                             </InputGroup>
                             <InputGroup>
-                                <Label>Parent 1 Name</Label>
+                                <Label>Parent 2 Name</Label>
                                 <CartoonInput
                                     color={loadingAccountInfo ? "gray" : "white"}
                                     placeholder="What is Parent 2's name?"
@@ -368,7 +373,7 @@ const FamilyDashboard = () => {
                                 <Label>Input a contact number</Label>
                                 <CartoonInput
                                     color={loadingAccountInfo ? "gray" : "white"}
-                                    placeholder="What is Parent 1's name?"
+                                    placeholder="What is your phone number?"
                                     onChange={(e) => {
                                        handlePhoneChange(e);
                                     }}
@@ -426,6 +431,305 @@ const FamilyDashboard = () => {
         );
     };
 
+    const IdentityVerification: React.FC = () => {
+        const [enlargeImage, setEnlargeImage] = useState(false);
+        const [selectedImage, setSelectedImage] = useState<string | null>(null);
+        const [isUploading, setIsUploading] = useState(false);
+        const [uploadStatus, setUploadStatus] = useState<{[key: string]: 'pending' | 'uploading' | 'success' | 'error'}>({
+            address: 'pending',
+            children: 'pending',
+            income: 'pending'
+        });
+        const [documents, setDocuments] = useState<{
+            address: File | null;
+            children: File | null;
+            income: File | null;
+        }>({
+            address: null,
+            children: null,
+            income: null
+        });
+
+        const handleImageUpload = (file: File | null, type: 'address' | 'children' | 'income') => {
+            setDocuments(prev => ({ ...prev, [type]: file }));
+            if (file) {
+                const url = URL.createObjectURL(file);
+                setSelectedImage(url);
+            } else {
+                setSelectedImage(null);
+            }
+        };
+
+        const handleUpload = async () => {
+            if (!user?.uid) return;
+            setIsUploading(true);
+            
+            try {
+                const uploadPromises = Object.entries(documents).map(async ([type, file]) => {
+                    if (!file) return;
+                    
+                    setUploadStatus(prev => ({ ...prev, [type]: 'uploading' }));
+                    try {
+                        const url = await uploadImage(file, `documents/${user.uid}/${type}`);
+                        setUploadStatus(prev => ({ ...prev, [type]: 'success' }));
+                        if (documents.address && documents.children && documents.income) {
+                            setAllDocumentsUploaded(true);
+                        } else {
+                            setAllDocumentsUploaded(false);
+                        }
+                        return url;
+                    } catch (error) {
+                        console.error(`Error uploading ${type} document:`, error);
+                        setUploadStatus(prev => ({ ...prev, [type]: 'error' }));
+                        throw error;
+                    }
+                });
+
+                await Promise.all(uploadPromises);
+            } catch (error) {
+                console.error('Error uploading documents:', error);
+            } finally {
+                setIsUploading(false);
+            }
+        };
+
+        const getStatusColor = (status: 'pending' | 'uploading' | 'success' | 'error') => {
+            switch (status) {
+                case 'success': return '#4CAF50';
+                case 'error': return '#f44336';
+                case 'uploading': return '#2196F3';
+                default: return '#9E9E9E';
+            }
+        };
+
+        const getStatusText = (status: 'pending' | 'uploading' | 'success' | 'error') => {
+            switch (status) {
+                case 'success': return '✓ Uploaded';
+                case 'error': return '✗ Failed';
+                case 'uploading': return '⟳ Uploading...';
+                default: return '○ Pending';
+            }
+        };
+
+        return (
+            <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center',
+                width: '100%',
+                maxWidth: '80vmin',
+                margin: '0 auto',
+                gap: '4vmin', 
+                padding: '2vmin' 
+            }}>
+                <CartoonHeader 
+                    title="Identity Verification" 
+                    subtitle="Please provide the following documents to verify your identity"
+                />
+                
+                <CartoonContainer style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4vmin',
+                    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                    padding: '4vmin',
+                    width: '100%',
+                    alignItems: 'center'
+                }}>
+                    {/* Address Proof */}
+                    <div style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        gap: '2vmin',
+                        width: '100%',
+                        maxWidth: '60vmin',
+                        alignItems: 'center'
+                    }}>
+                        <div style={{ 
+                            display: 'flex', 
+                            flexDirection: 'column',
+                            alignItems: 'center', 
+                            gap: '1vmin',
+                            width: '100%',
+                        }}>
+                            <div style={{ 
+                                display: 'flex', 
+                                flexDirection: 'column',
+                                alignItems: 'center', 
+                                gap: '1vmin',
+                            }}>
+                                
+                                <Tag backgroundColor="#1EC9F2" text="Required" />
+                            </div>
+                            <CartoonHeader 
+                                title="Proof of Address" 
+                                subtitle="Upload a document that proves you live in Canton"
+                            />
+                            <div style={{ 
+                                    color: getStatusColor(uploadStatus.address),
+                                    fontFamily: 'TT Trick New, serif',
+                                    fontSize: '2vmin'
+                                }}>
+                                    {getStatusText(uploadStatus.address)}
+                                </div>
+                        </div>
+                        <CartoonImageInput 
+                            placeholder="Upload proof of address (utility bill, lease agreement, etc.)" 
+                            onChange={(file) => handleImageUpload(file, 'address')}
+                            value={documents.address ? URL.createObjectURL(documents.address) : ""} 
+                            onEnlarge={() => {handleImageUpload(documents.address, 'address'); setEnlargeImage(true);}}
+                            onRemove={() => {
+                                setDocuments(prev => ({ ...prev, address: null }));
+                                setUploadStatus(prev => ({ ...prev, address: 'pending' }));
+                            }}
+                        />
+                    </div>
+
+                    {/* Children Proof */}
+                    <div style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        gap: '2vmin',
+                        width: '100%',
+                        maxWidth: '60vmin',
+                        alignItems: 'center'
+                    }}>
+                        <div style={{ 
+                            display: 'flex', 
+                            flexDirection: 'column',
+                            alignItems: 'center', 
+                            gap: '1vmin',
+                            width: '100%',
+                        }}>
+                            <div style={{ 
+                                display: 'flex', 
+                                flexDirection: 'column',
+                                alignItems: 'center', 
+                                gap: '1vmin',
+                            }}>
+                                
+                                <Tag backgroundColor="#1EC9F2" text="Required" />
+                            </div>
+                            <CartoonHeader 
+                                title="Proof of Children" 
+                                subtitle="Upload a document that proves your children live with you"
+                            />
+                            <div style={{ 
+                                color: getStatusColor(uploadStatus.children),
+                                fontFamily: 'TT Trick New, serif',
+                                fontSize: '2vmin'
+                            }}>
+                                {getStatusText(uploadStatus.children)}
+                            </div>
+                        </div>
+                        <CartoonImageInput 
+                            placeholder="Upload proof of children (birth certificates, school records, etc.)" 
+                            onChange={(file) => handleImageUpload(file, 'children')}
+                            value={documents.children ? URL.createObjectURL(documents.children) : ""} 
+                            onEnlarge={() => {handleImageUpload(documents.children, 'children'); setEnlargeImage(true);}}
+                            onRemove={() => {
+                                setDocuments(prev => ({ ...prev, children: null }));
+
+                            }}
+                        />
+                    </div>
+
+                    {/* Income Proof */}
+                    <div style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        gap: '2vmin',
+                        width: '100%',
+                        maxWidth: '60vmin',
+                        alignItems: 'center'
+                    }}>
+                        <div style={{ 
+                            display: 'flex', 
+                            flexDirection: 'column',
+                            alignItems: 'center', 
+                            gap: '1vmin',
+                            width: '100%',
+                        }}>
+                            <div style={{ 
+                                display: 'flex', 
+                                flexDirection: 'column',
+                                alignItems: 'center', 
+                                gap: '1vmin',
+                            }}>
+                                
+                                <Tag backgroundColor="#1EC9F2" text="Required" />
+                            </div>
+                            <CartoonHeader 
+                                title="Proof of Income" 
+                                subtitle="Upload documents showing all family income"
+                            />
+                            <div style={{ 
+                                color: getStatusColor(uploadStatus.income),
+                                fontFamily: 'TT Trick New, serif',
+                                fontSize: '2vmin'
+                            }}>
+                                {getStatusText(uploadStatus.income)}
+                            </div>
+                        </div>
+                        <CartoonImageInput 
+                            placeholder="Upload proof of income (pay checks, tax returns, etc.)" 
+                            onChange={(file) => handleImageUpload(file, 'income')}
+                            value={documents.income ? URL.createObjectURL(documents.income) : ""} 
+                            onEnlarge={() => {handleImageUpload(documents.income, 'income'); setEnlargeImage(true);}}
+                            onRemove={() => {
+                                setDocuments(prev => ({ ...prev, income: null }));
+                                setUploadStatus(prev => ({ ...prev, income: 'pending' }));
+                            }}
+                        />
+                    </div>
+
+                    <CartoonButton 
+                        color="#1EC9F2" 
+                        disabled={isUploading || !Object.values(documents).some(doc => doc !== null)} 
+                        onClick={handleUpload}
+                        style={{ marginTop: '2vmin' }}
+                    >
+                        {isUploading ? "Uploading Documents..." : "Upload All Documents"}
+                    </CartoonButton>
+                </CartoonContainer>
+
+                {enlargeImage && selectedImage && (
+                    <ModalOverlay onClick={() => setEnlargeImage(false)}>
+                        <div onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                            <ModalContent>
+                                <ModalInnerContent>
+                                    <CartoonHeader 
+                                        title="Document Preview" 
+                                        subtitle="Your uploaded document"
+                                    />
+                                    <CartoonImageContainer width="60vmin" height="60vmin">
+                                        <img 
+                                            src={selectedImage} 
+                                            alt="Document Preview" 
+                                            style={{ 
+                                                width: '100%', 
+                                                height: '100%', 
+                                                objectFit: 'contain' 
+                                            }} 
+                                        />
+                                    </CartoonImageContainer>
+                                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2vmin' }}>
+                                        <CartoonButton 
+                                            color="#1EC9F2" 
+                                            onClick={() => setEnlargeImage(false)}
+                                        >
+                                            Close
+                                        </CartoonButton>
+                                    </div>
+                                </ModalInnerContent>
+                            </ModalContent>
+                        </div>
+                    </ModalOverlay>
+                )}
+            </div>
+        );
+    };
+
     const DashboardPage: React.FC = () => {
        
         return (
@@ -441,12 +745,17 @@ const FamilyDashboard = () => {
                 <CartoonButton color="#1EC9F2" onClick={() => setPage("basicForm")}>Update Basic Info</CartoonButton>
                 
                 <CartoonButton disabled={!hasAllInfo} color="#1EC9F2" onClick={() => setPage("childAdding")}>Add Children</CartoonButton>
+                <CartoonButton  disabled={!hasAllInfo || family?.Children.length === 0} color="#1EC9F2" onClick={() => setPage("identityVerification")}>Verify Identity</CartoonButton>
                 
-                <CartoonButton disabled={!hasAllInfo || family?.Children.length === 0} color="#1EC9F2" onClick={() => setPage("giftCatalog")}>Gift Catalog</CartoonButton>
+                <CartoonButton disabled={!allDocumentsUploaded || !family?.Verified} color="#1EC9F2" onClick={() => setPage("giftCatalog")}>Gift Catalog</CartoonButton>
 
             </CartoonContainer>
-            {(!hasAllInfo || family?.Children.length === 0) && (<CartoonContainer style={{borderColor: 'black', backgroundColor: '#CA242B', color: 'white', height: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-                <p style={{fontSize: '2vmin', fontFamily: 'TT Trick New, serif', textAlign: 'center', color: 'white'}}> {!hasAllInfo ? "Please update your basic information before adding children" : (family?.Children.length === 0) ? "Please add children before adding gifts" : ""} </p>
+            {(!hasAllInfo || family?.Children.length === 0 || !allDocumentsUploaded) && (<CartoonContainer style={{borderColor: 'black', backgroundColor: '#CA242B', color: 'white', height: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                <p style={{fontSize: '2vmin', fontFamily: 'TT Trick New, serif', textAlign: 'center', color: 'white'}}> {!hasAllInfo ? "Please update your basic information before adding children" : (family?.Children.length === 0) ? "Please add children before verifying identity" : "Please upload all documents to verify identity"} </p>
+            </CartoonContainer>)}
+
+            {(allDocumentsUploaded && !family?.Verified) && (<CartoonContainer style={{borderColor: 'black', backgroundColor: '#FFD711', color: 'black', height: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                <p style={{fontSize: '2vmin', fontFamily: 'TT Trick New, serif', textAlign: 'center', color: 'black'}}> Please wait for your identity to be verified </p>
             </CartoonContainer>)}
             </div>
         );
@@ -811,6 +1120,7 @@ const FamilyDashboard = () => {
                 {page === "basicForm" && <BasicInfoForm />}
                 {page === "childAdding" && <ChildAdding />}
                 {page === "giftCatalog" && <Catalog />}
+                {page === "identityVerification" && <IdentityVerification />}
             </div>
             <SnowyGround />
 
