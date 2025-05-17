@@ -57,32 +57,11 @@ export interface Family {
 }
 export const defaultFamily = (displayName: string = ''): Family => ({
     Parent1Name: displayName,
-    Parent2Name: 'Jane Smith',
-    StreetAddress: '123 Main Street',
-    ZipCode: '48188',
-    PhoneNumber: '(555) 123-4567',
-    Children: [
-        {
-            ChildID: 'Child B',
-            ChildGender: 'Boy',
-            ChildAge: 8,
-            ChildToys: [],
-            HasDisabilities: false,
-            SchoolName: 'Lincoln Elementary',
-            isSponsored: false,
-            sponsorDocID: '',
-        },
-        {
-            ChildID: 'Child A',
-            ChildGender: 'Girl',
-            ChildAge: 6,
-            ChildToys: [],
-            HasDisabilities: false,
-            SchoolName: 'Lincoln Elementary',
-            isSponsored: false,
-            sponsorDocID: '',
-        }
-    ],
+    Parent2Name: '',
+    StreetAddress: '',
+    ZipCode: '',
+    PhoneNumber: '',
+    Children: [],
     timestamp: new Date(),
 });
 export async function addFamily(): Promise<DocumentReference> {

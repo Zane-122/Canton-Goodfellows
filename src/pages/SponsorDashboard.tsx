@@ -19,10 +19,10 @@ import { Child, Family, getChildren, getFamilies, Toy } from "../firebase/famili
 import { Tag } from "../components/headers/tag";
 import CartoonImageContainer from "../components/containers/CartoonImageContainer";
 
-const PageContainer = styled.div`
+export const PageContainer = styled.div`
     display: flex;
     flex-direction: column;
-    background: radial-gradient(circle at 50% 200%, #87CEEB 50%, #4169E1 70%, #1E3A8A 100%);
+
     background-attachment: fixed;
     position: relative;
     overflow-x: hidden;
@@ -38,7 +38,7 @@ const SnowfallContainer = styled.div`
     z-index: 1;
 `;
 
-const ContentContainer = styled.div`
+export const ContentContainer = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -46,18 +46,17 @@ const ContentContainer = styled.div`
     padding: 4vmin;
     gap: 4vmin;
     flex: 1;
-    margin-top: 15vh;
-    margin-bottom: 10vh;
     width: 100%;
     box-sizing: border-box;
     position: relative;
     z-index: 2;
 `;
 
-const FormContainer = styled(CartoonContainer)`
+export const FormContainer = styled(CartoonContainer)`
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 3vmin;
     padding: 4vmin;
     width: 90%;
@@ -67,7 +66,7 @@ const FormContainer = styled(CartoonContainer)`
     background-color: rgba(255, 255, 255, 0.9);
 `;
 
-const InputGroup = styled.div`
+export const InputGroup = styled.div`
     display: flex;
     flex-direction: column;
     gap: 1vmin;
@@ -75,7 +74,7 @@ const InputGroup = styled.div`
     align-items: center;
 `;
 
-const Label = styled.label`
+export const Label = styled.label`
     font-family: 'TT Trick New', serif;
     font-size: 2vmin;
     color: #333;
@@ -92,7 +91,7 @@ const Message = styled.div<{ isError?: boolean }>`
     width: 100%;
 `;
 
-const DashboardButton = styled(CartoonButton)`
+export const DashboardButton = styled(CartoonButton)`
     position: fixed;
     bottom: 4vmin;
     right: 4vmin;
@@ -101,7 +100,31 @@ const DashboardButton = styled(CartoonButton)`
     font-size: 2vmin;
 `;
 
-const ModalOverlay = styled.div`
+export const ChildCard = styled(CartoonContainer)<{ gender: string }>`
+    display: flex;
+    flex-direction: row;
+    gap: 2vmin;
+    width: 100%;
+    padding: 2vmin;
+    border: 0.7vmin solid ${props => props.gender.toLowerCase() === 'boy' ? '#1EC9F2' : props.gender.toLowerCase() === 'girl' ? '#FF69B4' : '#9B4DCA'};
+    background-color: white;
+`;
+
+export const ChildInfo = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 1vmin;
+    flex: 1;
+`;
+
+export const ButtonContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 1vmin;
+    justify-content: center;
+`;
+
+export const ModalOverlay = styled.div`
     position: fixed;
     top: 0;
     left: 0;
@@ -120,7 +143,7 @@ const ModalOverlay = styled.div`
     }
 `;
 
-const ModalContent = styled(CartoonContainer)`
+export const ModalContent = styled(CartoonContainer)`
     display: flex;
     position: relative;
     flex-direction: column;
@@ -130,42 +153,19 @@ const ModalContent = styled(CartoonContainer)`
     padding: 4vmin;
     width: 90%;
     max-width: 80vmin;
-    max-height: 80vh;
+    max-height: 60vh;
     overflow-y: auto;
+    z-index: 1000;
     margin-top: 5vh;
 `;
 
-const ModalInnerContent = styled.div`
+export const ModalInnerContent = styled.div`
     display: flex;
     flex-direction: column;
     gap: 2vmin;
     align-items: center;
     justify-content: center;
     width: 100%;
-`;
-
-const ChildCard = styled(CartoonContainer)<{ gender: string }>`
-    display: flex;
-    flex-direction: row;
-    gap: 2vmin;
-    width: 100%;
-    padding: 2vmin;
-    border: 0.7vmin solid ${props => props.gender.toLowerCase() === 'boy' ? '#1EC9F2' : props.gender.toLowerCase() === 'girl' ? '#FF69B4' : '#9B4DCA'};
-    background-color: white;
-`;
-
-const ChildInfo = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 1vmin;
-    flex: 1;
-`;
-
-const ButtonContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 1vmin;
-    justify-content: center;
 `;
 
 const TitleCartoonContainer = styled(CartoonContainer)`
@@ -266,11 +266,24 @@ export const SponsorDashboard: React.FC = () => {
 
     const DashboardPage: React.FC = () => {
         return (
-            <FormContainer>
-                <CartoonHeader title="Welcome to Your Dashboard" />
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2vmin'}}>  
+            <CartoonContainer style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '2vmin',
+                
+            }}>
+                <CartoonHeader title="Welcome to Your Dashboard" subtitle="Sponsor Dashboard"/>
                 <CartoonButton color="#1EC9F2" onClick={() => setPage("basicForm")}>Update Basic Info</CartoonButton>
                 <CartoonButton disabled={!hasAllInfo} color="#1EC9F2" onClick={() => setPage("childSelection")}>Select Children to Sponsor</CartoonButton>
-            </FormContainer>
+            </CartoonContainer>
+
+             {(!hasAllInfo) && (<CartoonContainer style={{borderColor: 'black', backgroundColor: '#CA242B', color: 'white', height: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                 <p style={{fontSize: '2vmin', fontFamily: 'TT Trick New, serif', textAlign: 'center', color: 'white'}}> {"Please update your basic information before adding children"} </p>
+             </CartoonContainer>)}
+             </div>
         );
     };
 
@@ -478,7 +491,6 @@ export const SponsorDashboard: React.FC = () => {
                 alignItems: 'center',
                 gap: '2vmin',
                 padding: '4vmin',
-                marginTop: '10vh',
                 zIndex: 2,
             }}>
                 {saveMessage && (
@@ -615,7 +627,7 @@ export const SponsorDashboard: React.FC = () => {
                                     flexDirection: 'column',
                                     gap: '2vmin',
                                 }}>
-                                    {[...selectedFamily.Children].reverse().map((child) => (
+                                    {[...selectedFamily.Children].map((child) => (
                                         <ChildCard 
                                             key={child.ChildID} 
                                             gender={child.ChildGender}
@@ -680,6 +692,7 @@ export const SponsorDashboard: React.FC = () => {
                 )}
 
                 {showFamilyModal && selectedFamily && (
+                
                     <ModalOverlay onClick={() => setShowFamilyModal(false)}>
                         <ModalContent>
                             <ModalInnerContent onClick={(e: React.MouseEvent) => e.stopPropagation()}>
@@ -713,17 +726,7 @@ export const SponsorDashboard: React.FC = () => {
                                         <p style={{ margin: 0, fontSize: '2vmin' }}>Zip Code: {selectedFamily.ZipCode}</p>
                                         <p style={{ margin: 0, fontSize: '2vmin' }}>Phone: {selectedFamily.PhoneNumber}</p>
                                     </div>
-                                    <div style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '1vmin',
-                                    }}>
-                                        <h3 style={{ margin: 0, fontSize: '2.5vmin', color: '#333' }}>General Information</h3>
-                                        <p style={{ margin: 0, fontSize: '2vmin' }}>Total Children: {selectedFamily.Children.length}</p>
-                                        <p style={{ margin: 0, fontSize: '2vmin' }}>
-                                            Registration Date: {selectedFamily.timestamp ? new Date(selectedFamily.timestamp).toLocaleDateString() : 'N/A'}
-                                        </p>
-                                    </div>
+                                    
                                 </CartoonContainer>
                                 <div style={{ marginTop: '2vmin' }}>
                                     <CartoonButton 
@@ -849,7 +852,9 @@ export const SponsorDashboard: React.FC = () => {
                                         Close
                                     </CartoonButton>
                         </CartoonContainer>
+                        
                     </ModalOverlay>
+                    
                 )}
             </div>
         );
@@ -910,6 +915,7 @@ export const SponsorDashboard: React.FC = () => {
         }, []);
     
         const handleSave = async () => {
+            
             setSaveMessage("-");
             
             if (!validateEmail(sponsorEmail)) {
@@ -933,6 +939,7 @@ export const SponsorDashboard: React.FC = () => {
             }
     
             setIsSaving(true);
+            setLoadingAccountInfo(true);
             try {
                 const sponsorDocId = await getSponsorDocId();
                 const sponsorRef = doc(db, 'sponsors', sponsorDocId);
@@ -953,7 +960,7 @@ export const SponsorDashboard: React.FC = () => {
                 setSaveMessage("Error saving information. Please try again.");
             } finally {
                 setIsSaving(false);
-
+                setLoadingAccountInfo(false);
             }
             setTimeout(() => {
                 if (!isSaving) {
@@ -963,8 +970,6 @@ export const SponsorDashboard: React.FC = () => {
         };
     
         return (
-            <PageContainer>
-                <ContentContainer>
                     <FormContainer>
                         <CartoonHeader
                             title="Basic Information"
@@ -1027,8 +1032,7 @@ export const SponsorDashboard: React.FC = () => {
                             </CartoonButton>
                         </CartoonContainer>
                     </FormContainer>
-                </ContentContainer>
-            </PageContainer>
+
         );
     };
 
@@ -1037,32 +1041,38 @@ export const SponsorDashboard: React.FC = () => {
     }
 
     return (
-        <>
+        <div>
             <Navbar />
-            <SnowfallContainer>
-                <Snowfall />
-            </SnowfallContainer>
+            <Snowfall />
+            
             <div style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                justifyContent: 'center',
-                height: '100vh',
+                justifyContent: 'flex-start',
+                gap: '2vmin',
+                minHeight: '100vh',
+                marginTop: '20vh',
+
             }}>
-                {
-                    page === "dashboard" ? <DashboardPage /> : page === "basicForm" ? <BasicInfoForm /> : <ChildSelection />
-                }
+
+
+                {page === "dashboard" && <DashboardPage />}
+                {page === "basicForm" && <BasicInfoForm />}
+                {page === "childSelection" && <ChildSelection />}
+
+                <DashboardButton 
+                    color="#1EC9F2" 
+                    onClick={() => setPage("dashboard")}
+                    disabled={page === "dashboard"}
+                >
+                    Back to Dashboard
+                </DashboardButton>
+
             </div>
-
-            <DashboardButton 
-                color="#1EC9F2" 
-                onClick={() => setPage("dashboard")}
-                disabled={page === "dashboard"}
-            >
-                Back to Dashboard
-            </DashboardButton>
-
             <SnowyGround />
-        </>
+
+            
+        </div>
     );
 }

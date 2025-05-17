@@ -23,6 +23,7 @@ const Button = styled.button<{ color: string }>`
     border: 3px solid black;
     box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
     transition: all 0.1s ease;
+    transform: translate(0, 0);
 
     &:hover {
         transform: translate(2px, 2px);
@@ -31,14 +32,14 @@ const Button = styled.button<{ color: string }>`
 
     &:active {
         transform: translate(4px, 4px);
-        box-shadow: -0px -0px 0px 0px rgba(0, 0, 0, 1);
+        box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 1);
     }
 
     &:disabled {
         cursor: not-allowed;
         background-color: #888;
         transform: translate(4px, 4px);
-        box-shadow: -0px -0px 0px 0px rgba(0, 0, 0, 1);
+        box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 1);
     }
 `;
 
