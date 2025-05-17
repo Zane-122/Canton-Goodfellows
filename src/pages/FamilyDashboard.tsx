@@ -2,18 +2,137 @@ import { useEffect, useState } from "react";
 import CartoonButton from "../components/buttons/CartoonButton";
 import CartoonContainer from "../components/containers/CartoonContainer";
 import CartoonInput from "../components/inputs/CartoonInput";
-import { ContentContainer, InputGroup, Label, PageContainer, FormContainer } from "./SponsorDashboard";
+import { ContentContainer, InputGroup, Label, PageContainer, FormContainer, DashboardButton, ChildCard, ChildInfo, ButtonContainer, ModalOverlay, ModalContent, ModalInnerContent } from "./SponsorDashboard";
 import CartoonHeader from "../components/headers/CartoonHeader";
+import { useAuth } from "../firebase/contexts/AuthContext";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "../firebase/config";
+import SnowyGround from "../components/effects/SnowyGround";
+import Snowfall from "../components/effects/Snowfall";
+import Navbar from "../components/Navbar";
+import { Family, setFamilyInfo, Child } from "../firebase/families";
+import { Navigate, useNavigate } from "react-router-dom";
+import { getAccountType } from "../firebase/auth";
+import { Tag } from "../components/headers/tag";
+import styled from "styled-components";
+import Catalog from "./Catalog";
+import { setSponsorInfo } from "../firebase/sponsors";
 
 const FamilyDashboard = () => {
+    const [accountType, setAccountType] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [hasAllInfo, setHasAllInfo] = useState(false);
+    const [family, setFamily] = useState<Family | null>(null);
+    const [page, setPage] = useState<"dashboard" | "basicForm" | "childAdding" | "giftCatalog">("dashboard");
+    const [refreshFamily, setRefreshFamily] = useState(false);
+    const navigate = useNavigate();
+    const {user} = useAuth();
+    
+    useEffect(() => {
+        const checkAuth = async () => {
+            if (!user) {
+                navigate('/login');
+                return;
+            }
+
+            const type = await getAccountType();
+            setAccountType(type);
+            setIsLoading(false);
+        }
+
+        checkAuth();
+        
+    }, [user, navigate]);
+
+    const getFamilyInfo = async () => {
+        if (!user?.uid) return;
+        const userRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userRef);
+        console.log(userDoc.data());
+        if (userDoc !== null) {
+            const userData = userDoc.data();
+            if (userData?.accountType !== 'family') return;
+
+            const familyId = userData?.family.familyDocId;
+            console.log(familyId);
+            const familyRef = doc(db, 'families', familyId);
+            const familyDoc = await getDoc(familyRef);
+            console.log(familyDoc.data());
+            if (familyDoc !== null) {
+                const familyData = familyDoc.data();
+                setFamily(familyData?.family as Family);
+                if (familyData?.family.Parent1Name && familyData?.family.Parent2Name && familyData?.family.PhoneNumber && familyData?.family.StreetAddress && familyData?.family.ZipCode) {
+                    setHasAllInfo(true);
+                }
+                console.log("It works");
+            }
+        }
+    };
+    useEffect(() => {
+        getFamilyInfo();
+        setRefreshFamily(false);
+    }, [user, navigate, page]);
+
+    const handleRefreshFamily = async () => {
+        setRefreshFamily(true);
+        await getFamilyInfo();
+        setRefreshFamily(false);
+    };
+
+    const handleDeleteChild = async (childId: string) => {
+        console.log("Deleting child");
+        if (!user?.uid) return;
+        const userRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userRef);
+        const userData = userDoc.data();
+        console.log(userData);
+        if (userData?.accountType !== 'family') return;
+        
+        const familyDocId = userData?.family.familyDocId;
+        const familyRef = doc(db, 'families', familyDocId);
+        const familyDoc = await getDoc(familyRef);
+        const familyID = familyDoc.data()?.FamilyID;
+        const family = familyDoc.data()?.family;
+
+
+        if (family.Children.length === 0) return;
+
+        const childIndex = family.Children.findIndex((child: Child) => child.ChildID === childId);
+
+        if (childIndex === -1) return;
+
+        if (family.Children[childIndex].isSponsored) {
+
+            const sponsorDocId = family.Children[childIndex].sponsorDocID;
+
+            const sponsorRef = doc(db, 'sponsors', sponsorDocId);
+
+            const sponsorDoc = await getDoc(sponsorRef);
+            const sponsor = sponsorDoc.data();
+            console.log(sponsor?.sponsored_children);
+            console.log(`${familyID} ${childId}`);
+            const newSponsoredChildren = [...sponsor?.sponsored_children.filter((child: string) => child !== `${familyID} ${childId}`)];
+            console.log(newSponsoredChildren);
+            await setDoc(sponsorRef, {contact_number: sponsor?.contact_number, email: sponsor?.email, name: sponsor?.name, sponsored_children: newSponsoredChildren, timestamp: new Date()});
+        }
+        const newChildren = [...family.Children.filter((child: Child) => child.ChildID !== childId)];
+        console.log(newChildren);
+
+        await setFamilyInfo({...family, Children: newChildren});
+        await handleRefreshFamily();
+    }
+
     const BasicInfoForm: React.FC = () => {
-        const [sponsorName, setSponsorName] = useState("");
-        const [sponsorEmail, setSponsorEmail] = useState("");
-        const [sponsorPhone, setSponsorPhone] = useState("");
+        const [parent1Name, setParent1Name] = useState("");
+        const [parent2Name, setParent2Name] = useState("");
+        const [phoneNumber, setPhoneNumber] = useState("");
+        const [address, setAddress] = useState("");
+        const [zipCode, setZipCode] = useState("");
         const [isSaving, setIsSaving] = useState(false);
         const [saveMessage, setSaveMessage] = useState("-");
-        const [loadingAccountInfo, setLoadingAccountInfo] = useState(true);
 
+        const [loadingAccountInfo, setLoadingAccountInfo] = useState(true);
+        const {user} = useAuth();
         const validateEmail = (email: string) => {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(email);
@@ -22,31 +141,168 @@ const FamilyDashboard = () => {
         const formatPhoneNumber = (value: string) => {
             const phoneNumber = value.replace(/\D/g, '');
             if (phoneNumber.length === 0) return '';
-            if (phoneNumber.length < 3) return `(${phoneNumber}`;
+            if (phoneNumber.length <= 3) return `(${phoneNumber}`;
             if (phoneNumber.length <= 6) return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
             return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
         };
     
         const handlePhoneChange = (value: string) => {
             const formatted = formatPhoneNumber(value);
-            setSponsorPhone(formatted);
+            setPhoneNumber(formatted);
         };
     
         const validatePhone = (phone: string) => {
             const phoneNumber = phone.replace(/\D/g, '');
             return phoneNumber.length === 10;
         };
+        const getFamilyInfo = async () => {
+            setLoadingAccountInfo(true);
+            if (!user?.uid) return;
+            const userRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userRef);
+            console.log(userDoc.data());
+            if (userDoc !== null) {
+                const userData = userDoc.data();
+                if (userData?.accountType !== 'family') return;
     
+                const familyId = userData?.family.familyDocId;
+                console.log(familyId);
+                const familyRef = doc(db, 'families', familyId);
+                const familyDoc = await getDoc(familyRef);
+                console.log(familyDoc.data());
+                if (familyDoc !== null) {
+                    const familyData = familyDoc.data();
+                    setParent1Name(familyData?.family.Parent1Name);
+                    console.log(familyData);
+                    console.log(familyData?.family.Parent1Name);
+                    setParent2Name(familyData?.family.Parent2Name);
+                    setPhoneNumber(familyData?.family.PhoneNumber);
+                    setAddress(familyData?.family.StreetAddress);
+                    setZipCode(familyData?.family.ZipCode);
+                    console.log("It works");
+                }
+            }
+            setLoadingAccountInfo(false);
+        };
         useEffect(() => {
             
-        }, []);
+            try {
+                getFamilyInfo();
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoadingAccountInfo(false);
+                console.log("Loading account info is false");
+            }
+        }, [user]);
     
         const handleSave = async () => {
+            setLoadingAccountInfo(true);
+            if (parent1Name.length < 3) {
+                setSaveMessage("Please enter a name with at least 3 characters");
+                setTimeout(() => {
+                    setSaveMessage("-");
+                }, 2000);
+                return;
+            }
+            if (parent2Name.length < 3) {
+                setSaveMessage("Please enter a name with at least 3 characters");
+                setTimeout(() => {
+                    setSaveMessage("-");
+                }, 2000);
+                return;
+            }
+            if (!validatePhone(phoneNumber)) {
+                setSaveMessage("Please enter a valid 10-digit phone number");
+                setTimeout(() => {
+                    setSaveMessage("-");
+                }, 2000);
+                return;
+            }
+            if (address.length < 3) {
+                setSaveMessage("Please enter a street address with at least 5 characters");
+                setTimeout(() => {
+                    setSaveMessage("-");
+                }, 2000);
+                return;
+            }
+            if (!address.includes(" ")) {
+                setSaveMessage("Please enter a street address with a street name and number");
+                setTimeout(() => {
+                    setSaveMessage("-");
+                }, 2000);
+                return;
+            }
+            if (zipCode.length !== 5) {
+                setSaveMessage("Please enter a valid 5-digit zip code");
+                setTimeout(() => {
+                    setSaveMessage("-");
+                }, 2000);
+                return;
+            }
+            if (!parent1Name.includes(" ")) {
+                setSaveMessage("Please enter a first and last name for Parent 1");
+                setTimeout(() => {
+                    setSaveMessage("-");
+                }, 2000);
+                return;
+            }
+            if (!parent2Name.includes(" ")) {
+                setSaveMessage("Please enter a first and last name for Parent 2");
+                setTimeout(() => {
+                    setSaveMessage("-");
+                }, 2000);
+                return;
+            }
             
+            setIsSaving(true);
+            try {
+                if (!user?.uid) return;
+                const userRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userRef);
+                console.log(userDoc.data());
+                if (userDoc !== null) {
+                    const userData = userDoc.data();
+                    if (userData?.accountType !== 'family') return;
+
+                    const familyId = userData?.family.familyDocId;
+                    console.log(familyId);
+                    const familyRef = doc(db, 'families', familyId);
+                    const familyDoc = await getDoc(familyRef);
+                    console.log(familyDoc.data());
+                    if (familyDoc !== null) {
+                        const familyData = familyDoc.data();
+                        setParent1Name(familyData?.family.Parent1Name);
+                        console.log(familyData);
+                        console.log(familyData?.family.Parent1Name);
+                        await setFamilyInfo({
+                            Children: familyData?.family.Children,
+                            Parent1Name: parent1Name,
+                            Parent2Name: parent2Name,
+                            PhoneNumber: phoneNumber,
+                            StreetAddress: address,
+                            ZipCode: zipCode,
+                            timestamp: new Date(),
+                        });
+                        setSaveMessage("Information saved successfully!");
+                        setTimeout(() => {
+                            setSaveMessage("-");
+                        }, 2000);
+                        console.log("It works");
+                        getFamilyInfo();
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                setSaveMessage("Error saving information");
+            } finally {
+                setIsSaving(false);
+                
+            }
         };
     
         return (
-            <PageContainer>
+            <div>
                 <ContentContainer>
                     <FormContainer>
                         <CartoonHeader
@@ -62,34 +318,63 @@ const FamilyDashboard = () => {
                             justifyContent: 'center',
                         }}>
                             <InputGroup>
-                                <Label>Name</Label>
+                                <Label>Parent 1 Name</Label>
                                 <CartoonInput
                                     color={loadingAccountInfo ? "gray" : "white"}
-                                    placeholder="What's your name?"
-                                    onChange={(e) => setSponsorName(e)}
-                                    value={loadingAccountInfo ? "Loading..." : sponsorName}
+                                    placeholder="What is Parent 1's name?"
+                                    onChange={(e) => {
+                                        setParent1Name(e);
+                                    }}
+                                    value={loadingAccountInfo ? "Loading..." : parent1Name}
                                 />
                             </InputGroup>
-    
                             <InputGroup>
-                                <Label>Email</Label>
+                                <Label>Parent 1 Name</Label>
                                 <CartoonInput
                                     color={loadingAccountInfo ? "gray" : "white"}
-                                    placeholder="What's your email?"
-                                    onChange={(e) => setSponsorEmail(e)}
-                                    value={loadingAccountInfo ? "Loading..." : sponsorEmail}
+                                    placeholder="What is Parent 2's name?"
+                                    onChange={(e) => {
+                                        setParent2Name(e);
+                                    }}
+                                    value={loadingAccountInfo ? "Loading..." : parent2Name}
                                 />
                             </InputGroup>
-    
                             <InputGroup>
-                                <Label>Phone Number</Label>
+                                <Label>Input a contact number</Label>
                                 <CartoonInput
                                     color={loadingAccountInfo ? "gray" : "white"}
-                                    placeholder="(123) 456-7890"
-                                    onChange={(e) => handlePhoneChange(e)}
-                                    value={loadingAccountInfo ? "Loading..." : sponsorPhone}
+                                    placeholder="What is Parent 1's name?"
+                                    onChange={(e) => {
+                                       handlePhoneChange(e);
+                                    }}
+                                    value={loadingAccountInfo ? "Loading..." : phoneNumber}
                                 />
                             </InputGroup>
+
+                            <InputGroup>
+                                <Label>Input a street address</Label>
+                                <CartoonInput
+                                    color={loadingAccountInfo ? "gray" : "white"}
+                                    placeholder="What is your street address?"
+                                    onChange={(e) => {
+                                        setAddress(e);
+                                    }}
+                                    value={loadingAccountInfo ? "Loading..." : address}
+                                />
+                            </InputGroup>
+
+                            <InputGroup>
+                                <Label>Input a zip code</Label>
+                                <CartoonInput
+                                    color={loadingAccountInfo ? "gray" : "white"}
+                                    placeholder="What is your zip code?"
+                                    onChange={(e) => {
+                                        setZipCode(e);
+                                    }}
+                                    value={loadingAccountInfo ? "Loading..." : zipCode}
+                                />
+                            </InputGroup>
+                                    
     
                             <p style={{
                                 color: saveMessage.includes('Error') || saveMessage.includes('Please') 
@@ -99,7 +384,8 @@ const FamilyDashboard = () => {
                                         : 'black',
                                 height: '2vmin',
                                 fontFamily: 'TT Trick New, serif',
-                                fontSize: '2vmin'
+                                fontSize: '2vmin',
+                                textAlign: 'center',
                             }}> {saveMessage} </p>
                             <CartoonButton
                                 color="#1EC9F2"
@@ -111,13 +397,366 @@ const FamilyDashboard = () => {
                         </CartoonContainer>
                     </FormContainer>
                 </ContentContainer>
-            </PageContainer>
+                </div>
         );
     };
+
+    const DashboardPage: React.FC = () => {
+        return (
+            <CartoonContainer style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '2vmin',
+            }}>
+                <CartoonHeader title="Welcome to Your Dashboard" subtitle="Family Dashboard"/>
+                <CartoonButton color="#1EC9F2" onClick={() => setPage("basicForm")}>Update Basic Info</CartoonButton>
+                <CartoonButton disabled={!hasAllInfo} color="#1EC9F2" onClick={() => setPage("childAdding")}>Add Children</CartoonButton>
+                <CartoonButton disabled={!hasAllInfo || family?.Children.length === 0} color="#1EC9F2" onClick={() => setPage("giftCatalog")}>Gift Catalog</CartoonButton>
+            </CartoonContainer>
+        );
+    };
+
+    const ChildAdding: React.FC = () => {
+        const [showChildForm, setShowChildForm] = useState(false);
+        const [editingChild, setEditingChild] = useState<Child | null>(null);
+        const [childAge, setChildAge] = useState("");
+        const [childGender, setChildGender] = useState<"Boy" | "Girl" | "Other">("Boy");
+        const [hasDisabilities, setHasDisabilities] = useState(false);
+        const [schoolName, setSchoolName] = useState("");
+        const [isSaving, setIsSaving] = useState(false);
+        const [saveMessage, setSaveMessage] = useState("-");
+
+        const generateChildID = () => {
+            if (!family) return "Child A";
+            const existingChildren = family.Children || [];
+            const lastChild = existingChildren[existingChildren.length - 1];
+            if (!lastChild) return "Child A";
+            
+            const lastLetter = lastChild.ChildID.slice(-1);
+            const nextLetter = String.fromCharCode(lastLetter.charCodeAt(0) + 1);
+            return `Child ${nextLetter}`;
+        };
+
+        const handleAddChild = async () => {
+            if (!childAge || isNaN(Number(childAge)) || Number(childAge) < 0 || Number(childAge) > 18) {
+                setSaveMessage("Please enter a valid age between 0 and 18");
+                setTimeout(() => setSaveMessage("-"), 2000);
+                return;
+            }
+
+            if (!schoolName.trim()) {
+                setSaveMessage("Please enter a school name");
+                setTimeout(() => setSaveMessage("-"), 2000);
+                return;
+            }
+
+            setIsSaving(true);
+            try {
+                if (!user?.uid || !family) return;
+
+                const newChild: Child = {
+                    ChildID: editingChild?.ChildID || generateChildID(),
+                    ChildAge: Number(childAge),
+                    ChildGender: childGender,
+                    HasDisabilities: hasDisabilities,
+                    ChildToys: editingChild?.ChildToys || [],
+                    isSponsored: editingChild?.isSponsored || false,
+                    sponsorDocID: editingChild?.sponsorDocID || "",
+                    SchoolName: schoolName
+                };
+
+                const updatedChildren = editingChild 
+                    ? family.Children.map(child => child.ChildID === editingChild.ChildID ? newChild : child)
+                    : [...(family.Children || []), newChild];
+
+                await setFamilyInfo({
+                    ...family,
+                    Children: updatedChildren,
+                    timestamp: new Date()
+                });
+
+                setFamily({ ...family, Children: updatedChildren });
+                setSaveMessage("Child information saved successfully!");
+                setTimeout(() => {
+                    setSaveMessage("-");
+                    setShowChildForm(false);
+                    setEditingChild(null);
+                    setChildAge("");
+                    setChildGender("Boy");
+                    setHasDisabilities(false);
+                    setSchoolName("");
+                }, 2000);
+            } catch (error) {
+                console.error('Error saving child info:', error);
+                setSaveMessage("Error saving information. Please try again.");
+            } finally {
+                setIsSaving(false);
+            }
+        };
+
+        const handleEditChild = (child: Child) => {
+            setEditingChild(child);
+            setChildAge(child.ChildAge.toString());
+            setChildGender(child.ChildGender as "Boy" | "Girl" | "Other");
+            setHasDisabilities(child.HasDisabilities);
+            setSchoolName(child.SchoolName || "");
+            setShowChildForm(true);
+        };
+
+        return (
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '2vmin',
+                width: '100%',
+                maxWidth: '80vmin',
+            }}>
+                <FormContainer style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}>
+                    <CartoonHeader title="Add Children" subtitle="Please add the children in your family 18 and below"/>
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        gap: '2vmin',
+                    }}>
+                        <CartoonButton color="#1EC9F2" onClick={() => setShowChildForm(true)}>Add Child</CartoonButton>
+                        <CartoonButton color="#1EC9F2" disabled={refreshFamily} onClick={() => {handleRefreshFamily()}}>Refresh Family</CartoonButton>
+                    </div>
+                </FormContainer>
+
+                {family?.Children && family.Children.length > 0 && (
+                    <FormContainer>
+                        <CartoonHeader title="Current Children" subtitle="Your family's children"/>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'flex-start',
+                            justifyContent: 'flex-start',
+                            gap: '2vmin',
+                            width: '100%',
+                            maxWidth: '60vmin'
+                        }}>
+                            {family.Children.map((child) => (
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '2vmin',
+                                    width: '100%',
+                                    maxWidth: '50vmin'
+                                }}>
+                                <ChildCard key={child.ChildID} gender={child.ChildGender}>
+                                    <ChildInfo>
+                                        <div style={{ display: 'flex', flexDirection: 'row', gap: '1vmin' }}>
+                                            <h3 style={{ margin: 0, fontSize: '2.5vmin' }}>{child.ChildID}</h3>
+                                            <Tag
+                                                backgroundColor={child.ChildGender.toLowerCase() === 'boy' ? '#1EC9F2' : child.ChildGender.toLowerCase() === 'girl' ? '#FF69B4' : '#9B4DCA'}
+                                                text={child.ChildGender}
+                                            />
+                                            <Tag
+                                                backgroundColor={child.isSponsored ? '#059669' : '#CA242B'}
+                                                text={child.isSponsored ? 'Sponsored' : 'Not Sponsored'}
+                                            />
+                                        </div>
+                                        <p style={{ margin: 0, fontSize: '2vmin' }}>Age: {child.ChildAge}</p>
+                                        <p style={{ margin: 0, fontSize: '2vmin' }}>Disabilities: {child.HasDisabilities ? 'Yes' : 'No'}</p>
+                                        <p style={{ margin: 0, fontSize: '2vmin' }}>School: {child.SchoolName}</p>
+                                        <p style={{ margin: 0, fontSize: '2vmin' }}>
+                                            Toys in Wishlist: {child.ChildToys.length}
+                                        </p>
+                                    </ChildInfo>
+                                    <ButtonContainer>
+                                        <CartoonButton 
+                                            color={child.ChildGender.toLowerCase() === 'boy' ? '#1EC9F2' : child.ChildGender.toLowerCase() === 'girl' ? '#FF69B4' : '#9B4DCA'} 
+                                            onClick={() => handleEditChild(child)}
+                                        >
+                                            Edit Child
+                                        </CartoonButton>
+                                        <CartoonButton 
+                                            color="#CA242B" 
+                                            onClick={() => handleDeleteChild(child.ChildID)}
+                                        >
+                                            Delete Child
+                                        </CartoonButton>
+                                    </ButtonContainer>
+                                    </ChildCard>
+                                </div>
+                            ))}
+                        </div>
+                    </FormContainer>
+                    
+                )}
+                {showChildForm && (
+                    <ModalOverlay onClick={() => {
+                        setShowChildForm(false);
+                        setEditingChild(null);
+                        setChildAge("");
+                        setChildGender("Boy");
+                        setHasDisabilities(false);
+                        setSchoolName("");
+                    }}>
+                        <div onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                            <ModalContent>
+                                <ModalInnerContent>
+                                    <CartoonHeader 
+                                        title={editingChild ? "Edit Child" : "Add New Child"} 
+                                        subtitle="Please fill out the child's information"
+                                    />
+                                    <CartoonContainer style={{
+                                        padding: '3vmin',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '2vmin',
+                                    }}>
+                                        <InputGroup>
+                                            <Label>Age</Label>
+                                            <CartoonInput
+                                                color="white"
+                                                placeholder="Enter age (0-18)"
+                                                onChange={(e) => setChildAge(e)}
+                                                value={childAge}
+                                            />
+                                        </InputGroup>
+
+                                        <InputGroup>
+                                            <Label>School Name</Label>
+                                            <CartoonInput
+                                                color="white"
+                                                placeholder="Enter school name"
+                                                onChange={(e) => setSchoolName(e)}
+                                                value={schoolName}
+                                            />
+                                        </InputGroup>
+
+                                        <InputGroup>
+                                            <Label>Gender</Label>
+                                            <div style={{
+                                                display: 'flex',
+                                                gap: '2vmin',
+                                                justifyContent: 'center',
+                                                width: '100%'
+                                            }}>
+                                                {["Boy", "Girl", "Other"].map((gender) => (
+                                                    <CartoonButton
+                                                        key={gender}
+                                                        color={childGender === gender ? 
+                                                            (gender === "Boy" ? "#1EC9F2" : 
+                                                             gender === "Girl" ? "#FF69B4" : 
+                                                             "#9B4DCA") : 
+                                                            "#E5E5E5"}
+                                                        onClick={() => setChildGender(gender as "Boy" | "Girl" | "Other")}
+                                                        style={{
+                                                            flex: 1,
+                                                            backgroundColor: childGender === gender ? undefined : 'white',
+                                                            color: childGender === gender ? 'white' : '#333'
+                                                        }}
+                                                    >
+                                                        {gender}
+                                                    </CartoonButton>
+                                                ))}
+                                            </div>
+                                        </InputGroup>
+
+                                        <InputGroup>
+                                            <Label>Has Disabilities</Label>
+                                            <CartoonButton
+                                                color={hasDisabilities ? "#1EC9F2" : "#E5E5E5"}
+                                                onClick={() => setHasDisabilities(!hasDisabilities)}
+                                                style={{
+                                                    width: '100%',
+                                                    backgroundColor: hasDisabilities ? undefined : 'white',
+                                                    color: hasDisabilities ? 'white' : '#333'
+                                                }}
+                                            >
+                                                {hasDisabilities ? "Yes" : "No"}
+                                            </CartoonButton>
+                                        </InputGroup>
+
+                                        <p style={{
+                                            color: saveMessage.includes('Error') || saveMessage.includes('Please') 
+                                                ? '#CA242B' 
+                                                : saveMessage.includes('successfully') 
+                                                    ? '#059669' 
+                                                    : 'black',
+                                            height: '2vmin',
+                                            fontFamily: 'TT Trick New, serif',
+                                            fontSize: '2vmin',
+                                            textAlign: 'center',
+                                        }}> {saveMessage} </p>
+
+                                        <div style={{ display: 'flex', gap: '2vmin', justifyContent: 'center' }}>
+                                            <CartoonButton
+                                                color="#CA242B"
+                                                onClick={() => {
+                                                    setShowChildForm(false);
+                                                    setEditingChild(null);
+                                                    setChildAge("");
+                                                    setChildGender("Boy");
+                                                    setHasDisabilities(false);
+                                                    setSchoolName("");
+                                                }}
+                                            >
+                                                Cancel
+                                            </CartoonButton>
+                                            <CartoonButton
+                                                color="#1EC9F2"
+                                                onClick={handleAddChild}
+                                                disabled={isSaving}
+                                            >
+                                                {isSaving ? "Saving..." : editingChild ? "Update Child" : "Add Child"}
+                                            </CartoonButton>
+                                        </div>
+                                    </CartoonContainer>
+                                </ModalInnerContent>
+                            </ModalContent>
+                        </div>
+                    </ModalOverlay>
+                )}
+            </div>
+        );
+    };
+
+    setTimeout(() => {
+        if (!user || accountType !== 'family') {
+            return <Navigate to="/" replace />;
+        }
+    }, 1000);
+
     return (
-        <div>
-            <h1>Family Dashboard</h1>
-        </div>
+        <>
+            <Snowfall />
+            <Navbar />
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                gap: '2vmin',
+                minHeight: '100vh',
+                marginTop: '20vh',
+
+            }}>
+                {page === "dashboard" && <DashboardPage />}
+                {page === "basicForm" && <BasicInfoForm />}
+                {page === "childAdding" && <ChildAdding />}
+                {page === "giftCatalog" && <Catalog />}
+            </div>
+            <SnowyGround />
+
+            <DashboardButton 
+                color="#1EC9F2" 
+                onClick={() => setPage("dashboard")}
+                disabled={page === "dashboard"}
+            >
+                Back to Dashboard
+            </DashboardButton>
+        </>
+
     );
 };
 

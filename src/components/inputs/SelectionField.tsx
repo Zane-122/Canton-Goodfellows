@@ -4,46 +4,56 @@ import CartoonContainer from '../containers/CartoonContainer';
 
 const SelectionContainer = styled(CartoonContainer)<{ backgroundColor?: string }>`
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    padding: 15px;
+    flex-wrap: nowrap;
+    gap: 1vmin;
+    padding: 1vmin;
     background: ${(props) => props.backgroundColor || 'white'};
-    border: 3px solid black;
-    box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
-    justify-content: center;
+    border: 0.4vmin solid black;
+    box-shadow: 0.5vmin 0.5vmin 0px 0px rgba(0, 0, 0, 1);
+    justify-content: flex-start;
     align-items: center;
     width: fit-content;
+    max-width: calc(10vmin * 4 + 1vmin * 3 + 2vmin); /* Width of 4 buttons + gaps + padding */
     margin: 0 auto;
+    overflow-x: auto;
+    &::-webkit-scrollbar {
+        display: none;
+    }
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 `;
 
 const SelectableButton = styled.button<{ isSelected: boolean; selectionColor?: string }>`
-    padding: 8px 16px;
+    padding: 1vmin 2vmin;
     font-family: 'TT Trick New', serif;
-    font-size: 1em;
+    font-size: 2vmin;
     font-weight: 600;
     background: ${(props) => (props.isSelected ? props.selectionColor || '#CA242B' : 'white')};
     color: ${(props) => (props.isSelected ? 'white' : 'black')};
-    border: 3px solid black;
-    border-radius: 8px;
+    border: 0.4vmin solid black;
+    border-radius: 1vmin;
     cursor: pointer;
     transition: all 0.15s ease;
     box-shadow: ${(props) =>
-        props.isSelected ? '4px 4px 0px 0px rgba(0, 0, 0, 1)' : '2px 2px 0px 0px rgba(0, 0, 0, 1)'};
-    min-width: 80px;
+        props.isSelected ? '0.5vmin 0.5vmin 0px 0px rgba(0, 0, 0, 1)' : '0.25vmin 0.25vmin 0px 0px rgba(0, 0, 0, 1)'};
+    min-width: fit-content;
+    width: fit-content;
+    flex: 0 0 auto;
     text-align: center;
+    white-space: nowrap;
 
     &:hover {
         box-shadow: ${(props) =>
             props.isSelected
-                ? '4px 4px 0px 0px rgba(0, 0, 0, 1)'
-                : '3px 3px 0px 0px rgba(0, 0, 0, 1)'};
+                ? '0.5vmin 0.5vmin 0px 0px rgba(0, 0, 0, 1)'
+                : '0.4vmin 0.4vmin 0px 0px rgba(0, 0, 0, 1)'};
     }
 
     &:active {
         box-shadow: ${(props) =>
             props.isSelected
-                ? '4px 4px 0px 0px rgba(0, 0, 0, 1)'
-                : '1px 1px 0px 0px rgba(0, 0, 0, 1)'};
+                ? '0.5vmin 0.5vmin 0px 0px rgba(0, 0, 0, 1)'
+                : '0.15vmin 0.15vmin 0px 0px rgba(0, 0, 0, 1)'};
     }
 `;
 

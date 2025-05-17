@@ -205,7 +205,7 @@ const SearchBarContainer = styled(CartoonContainer)`
     display: flex;
     gap: 10px;
     width: 100%;
-    max-width: 600px;
+    width: 40vw;
     margin: 0 auto;
     padding: 20px;
 `;
@@ -407,11 +407,9 @@ const Catalog: React.FC = () => {
                 `}
             </style>
             <Navbar />
-            <MemoizedSnowfall />
             <div
                 style={{
                     padding: '20px',
-                    marginTop: '15vh',
                     minHeight: '100vh',
                     display: 'flex',
                     flexDirection: 'column',
@@ -457,6 +455,13 @@ const Catalog: React.FC = () => {
                         selectionColor={getGenderColor(childID)}
                     />
                     <Button
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'flex-end',
+                            justifyContent: 'flex-end',
+                            gap: '1vmin',
+                        }}
                         color={getGenderColor(childID)}
                         onClick={() => {
                             setViewWishlist(!viewWishlist);
@@ -631,7 +636,6 @@ const Catalog: React.FC = () => {
                     </>
                 )}
             </div>
-            <SnowyGround />
         </>
     );
 };
