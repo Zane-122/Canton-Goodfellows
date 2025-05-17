@@ -27,6 +27,10 @@ const FamilyDashboard = () => {
     const [refreshFamily, setRefreshFamily] = useState(false);
     const navigate = useNavigate();
     const {user} = useAuth();
+    const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+    const [childToDelete, setChildToDelete] = useState<string | null>(null);
+    const [deleteMessage, setDeleteMessage] = useState("");
+    const [isDeleting, setIsDeleting] = useState(false);
     
     useEffect(() => {
         const checkAuth = async () => {
@@ -43,6 +47,7 @@ const FamilyDashboard = () => {
         checkAuth();
         
     }, [user, navigate]);
+
 
     const getFamilyInfo = async () => {
         if (!user?.uid) return;
@@ -79,48 +84,60 @@ const FamilyDashboard = () => {
         setRefreshFamily(false);
     };
 
-    const handleDeleteChild = async (childId: string) => {
-        console.log("Deleting child");
-        if (!user?.uid) return;
-        const userRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userRef);
-        const userData = userDoc.data();
-        console.log(userData);
-        if (userData?.accountType !== 'family') return;
+    const handleDeleteChild = (childId: string) => {
+        setChildToDelete(childId);
+        setShowDeleteConfirmation(true);
+    };
+
+    const confirmDeleteChild = async () => {
+        if (!childToDelete || !user?.uid) return;
         
-        const familyDocId = userData?.family.familyDocId;
-        const familyRef = doc(db, 'families', familyDocId);
-        const familyDoc = await getDoc(familyRef);
-        const familyID = familyDoc.data()?.FamilyID;
-        const family = familyDoc.data()?.family;
+        // Close modal immediately
+        setShowDeleteConfirmation(false);
+        setChildToDelete(null);
+        
+        try {
+            const userRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userRef);
+            const userData = userDoc.data();
+            if (userData?.accountType !== 'family') return;
+            
+            const familyDocId = userData?.family.familyDocId;
+            const familyRef = doc(db, 'families', familyDocId);
+            const familyDoc = await getDoc(familyRef);
+            const familyID = familyDoc.data()?.FamilyID;
+            const family = familyDoc.data()?.family;
 
+            if (!family || family.Children.length === 0) return;
 
-        if (family.Children.length === 0) return;
+            const childIndex = family.Children.findIndex((child: Child) => child.ChildID === childToDelete);
+            if (childIndex === -1) return;
 
-        const childIndex = family.Children.findIndex((child: Child) => child.ChildID === childId);
+            if (family.Children[childIndex].isSponsored) {
+                const sponsorDocId = family.Children[childIndex].sponsorDocID;
+                const sponsorRef = doc(db, 'sponsors', sponsorDocId);
+                const sponsorDoc = await getDoc(sponsorRef);
+                const sponsor = sponsorDoc.data();
+                
+                if (sponsor) {
+                    const newSponsoredChildren = sponsor.sponsored_children.filter((child: string) => child !== `${familyID} ${childToDelete}`);
+                    await setDoc(sponsorRef, {
+                        contact_number: sponsor.contact_number,
+                        email: sponsor.email,
+                        name: sponsor.name,
+                        sponsored_children: newSponsoredChildren,
+                        timestamp: new Date()
+                    });
+                }
+            }
 
-        if (childIndex === -1) return;
-
-        if (family.Children[childIndex].isSponsored) {
-
-            const sponsorDocId = family.Children[childIndex].sponsorDocID;
-
-            const sponsorRef = doc(db, 'sponsors', sponsorDocId);
-
-            const sponsorDoc = await getDoc(sponsorRef);
-            const sponsor = sponsorDoc.data();
-            console.log(sponsor?.sponsored_children);
-            console.log(`${familyID} ${childId}`);
-            const newSponsoredChildren = [...sponsor?.sponsored_children.filter((child: string) => child !== `${familyID} ${childId}`)];
-            console.log(newSponsoredChildren);
-            await setDoc(sponsorRef, {contact_number: sponsor?.contact_number, email: sponsor?.email, name: sponsor?.name, sponsored_children: newSponsoredChildren, timestamp: new Date()});
+            const newChildren = family.Children.filter((child: Child) => child.ChildID !== childToDelete);
+            await setFamilyInfo({...family, Children: newChildren});
+            await handleRefreshFamily();
+        } catch (error) {
+            console.error('Error deleting child:', error);
         }
-        const newChildren = [...family.Children.filter((child: Child) => child.ChildID !== childId)];
-        console.log(newChildren);
-
-        await setFamilyInfo({...family, Children: newChildren});
-        await handleRefreshFamily();
-    }
+    };
 
     const BasicInfoForm: React.FC = () => {
         const [parent1Name, setParent1Name] = useState("");
@@ -197,12 +214,12 @@ const FamilyDashboard = () => {
         }, [user]);
     
         const handleSave = async () => {
-            setLoadingAccountInfo(true);
             if (parent1Name.length < 3) {
                 setSaveMessage("Please enter a name with at least 3 characters");
                 setTimeout(() => {
                     setSaveMessage("-");
                 }, 2000);
+
                 return;
             }
             if (parent2Name.length < 3) {
@@ -210,6 +227,7 @@ const FamilyDashboard = () => {
                 setTimeout(() => {
                     setSaveMessage("-");
                 }, 2000);
+
                 return;
             }
             if (!validatePhone(phoneNumber)) {
@@ -217,6 +235,7 @@ const FamilyDashboard = () => {
                 setTimeout(() => {
                     setSaveMessage("-");
                 }, 2000);
+
                 return;
             }
             if (address.length < 3) {
@@ -224,6 +243,7 @@ const FamilyDashboard = () => {
                 setTimeout(() => {
                     setSaveMessage("-");
                 }, 2000);
+
                 return;
             }
             if (!address.includes(" ")) {
@@ -231,6 +251,7 @@ const FamilyDashboard = () => {
                 setTimeout(() => {
                     setSaveMessage("-");
                 }, 2000);
+
                 return;
             }
             if (zipCode.length !== 5) {
@@ -238,6 +259,7 @@ const FamilyDashboard = () => {
                 setTimeout(() => {
                     setSaveMessage("-");
                 }, 2000);
+
                 return;
             }
             if (!parent1Name.includes(" ")) {
@@ -245,6 +267,7 @@ const FamilyDashboard = () => {
                 setTimeout(() => {
                     setSaveMessage("-");
                 }, 2000);
+
                 return;
             }
             if (!parent2Name.includes(" ")) {
@@ -252,10 +275,12 @@ const FamilyDashboard = () => {
                 setTimeout(() => {
                     setSaveMessage("-");
                 }, 2000);
+                
                 return;
             }
             
             setIsSaving(true);
+            setLoadingAccountInfo(true);
             try {
                 if (!user?.uid) return;
                 const userRef = doc(db, 'users', user.uid);
@@ -297,7 +322,7 @@ const FamilyDashboard = () => {
                 setSaveMessage("Error saving information");
             } finally {
                 setIsSaving(false);
-                
+                setLoadingAccountInfo(false);
             }
         };
     
@@ -402,7 +427,9 @@ const FamilyDashboard = () => {
     };
 
     const DashboardPage: React.FC = () => {
+       
         return (
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2vmin'}}>  
             <CartoonContainer style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -412,9 +439,16 @@ const FamilyDashboard = () => {
             }}>
                 <CartoonHeader title="Welcome to Your Dashboard" subtitle="Family Dashboard"/>
                 <CartoonButton color="#1EC9F2" onClick={() => setPage("basicForm")}>Update Basic Info</CartoonButton>
+                
                 <CartoonButton disabled={!hasAllInfo} color="#1EC9F2" onClick={() => setPage("childAdding")}>Add Children</CartoonButton>
+                
                 <CartoonButton disabled={!hasAllInfo || family?.Children.length === 0} color="#1EC9F2" onClick={() => setPage("giftCatalog")}>Gift Catalog</CartoonButton>
+
             </CartoonContainer>
+            {(!hasAllInfo || family?.Children.length === 0) && (<CartoonContainer style={{borderColor: 'black', backgroundColor: '#CA242B', color: 'white', height: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                <p style={{fontSize: '2vmin', fontFamily: 'TT Trick New, serif', textAlign: 'center', color: 'white'}}> {!hasAllInfo ? "Please update your basic information before adding children" : (family?.Children.length === 0) ? "Please add children before adding gifts" : ""} </p>
+            </CartoonContainer>)}
+            </div>
         );
     };
 
@@ -715,6 +749,38 @@ const FamilyDashboard = () => {
                                 </ModalInnerContent>
                             </ModalContent>
                         </div>
+                    </ModalOverlay>
+                )}
+                {showDeleteConfirmation && (
+                    <ModalOverlay>
+                        <ModalContent>
+                            <ModalInnerContent>
+                                <CartoonHeader 
+                                    title="Confirm Deletion" 
+                                    subtitle="Are you sure you want to delete this child?"
+                                />
+                                <p style={{ margin: '2vmin 0', fontSize: '2vmin', textAlign: 'center' }}>
+                                    This action cannot be undone. The child's information will be permanently removed.
+                                </p>
+                                <div style={{ display: 'flex', gap: '2vmin', justifyContent: 'center' }}>
+                                    <CartoonButton 
+                                        color="#CA242B" 
+                                        onClick={confirmDeleteChild}
+                                    >
+                                        Yes, Delete
+                                    </CartoonButton>
+                                    <CartoonButton 
+                                        color="#1EC9F2" 
+                                        onClick={() => {
+                                            setShowDeleteConfirmation(false);
+                                            setChildToDelete(null);
+                                        }}
+                                    >
+                                        Cancel
+                                    </CartoonButton>
+                                </div>
+                            </ModalInnerContent>
+                        </ModalContent>
                     </ModalOverlay>
                 )}
             </div>

@@ -266,6 +266,7 @@ export const SponsorDashboard: React.FC = () => {
 
     const DashboardPage: React.FC = () => {
         return (
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2vmin'}}>  
             <CartoonContainer style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -278,6 +279,11 @@ export const SponsorDashboard: React.FC = () => {
                 <CartoonButton color="#1EC9F2" onClick={() => setPage("basicForm")}>Update Basic Info</CartoonButton>
                 <CartoonButton disabled={!hasAllInfo} color="#1EC9F2" onClick={() => setPage("childSelection")}>Select Children to Sponsor</CartoonButton>
             </CartoonContainer>
+
+             {(!hasAllInfo) && (<CartoonContainer style={{borderColor: 'black', backgroundColor: '#CA242B', color: 'white', height: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                 <p style={{fontSize: '2vmin', fontFamily: 'TT Trick New, serif', textAlign: 'center', color: 'white'}}> {"Please update your basic information before adding children"} </p>
+             </CartoonContainer>)}
+             </div>
         );
     };
 
@@ -909,7 +915,7 @@ export const SponsorDashboard: React.FC = () => {
         }, []);
     
         const handleSave = async () => {
-            setLoadingAccountInfo(true);
+            
             setSaveMessage("-");
             
             if (!validateEmail(sponsorEmail)) {
@@ -933,6 +939,7 @@ export const SponsorDashboard: React.FC = () => {
             }
     
             setIsSaving(true);
+            setLoadingAccountInfo(true);
             try {
                 const sponsorDocId = await getSponsorDocId();
                 const sponsorRef = doc(db, 'sponsors', sponsorDocId);
