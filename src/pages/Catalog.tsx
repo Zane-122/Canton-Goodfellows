@@ -316,6 +316,7 @@ const Catalog: React.FC = () => {
                 'https://api.rainforestapi.com/request',
                 { params }
             );
+            
             setResults([]);
             setTimeout(() => {
                 const filteredResults = response.data.search_results

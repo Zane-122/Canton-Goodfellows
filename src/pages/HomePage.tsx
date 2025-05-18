@@ -23,62 +23,6 @@ import CartoonButton from '../components/buttons/CartoonButton';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { Tag } from '../components/headers/tag';
-const GlobalStyle = createGlobalStyle`
-  @font-face {
-    font-family: 'Coolvetica Rg';
-    src: url('/fonts/Coolvetica Rg.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: block;
-  }
-
-  @font-face {
-    font-family: 'TT Trick New';
-    src: url('/fonts/TT Tricks Trial DemiBold.otf') format('opentype');
-    font-weight: 600;
-    font-style: normal;
-    font-display: block;
-  }
-
-  @font-face {
-    font-family: 'TT Trick New';
-    src: url('/fonts/TT Tricks Trial DemiBold Italic.otf') format('opentype');
-    font-weight: 600;
-    font-style: italic;
-    font-display: block;
-  }
-
-  @font-face {
-    font-family: 'TT Trick New';
-    src: url('/fonts/TT Tricks Trial Bold.otf') format('opentype');
-    font-weight: 700;
-    font-style: normal;
-    font-display: block;
-  }
-
-  * {
-    font-family: 'Coolvetica Rg', 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif;
-  }
-
-  body {
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    background: radial-gradient(circle at 50% 200%, #87CEEB 50%, #4169E1 70%, #1E3A8A 100%);
-    background-attachment: fixed;
-  }
-
-  /* Hide scrollbar for Chrome, Safari and Opera */
-  ::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Hide scrollbar for IE, Edge and Firefox */
-  * {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
-`;
 
 interface BigNameProps {}
 interface StyledSubtitleProps {
@@ -310,7 +254,6 @@ export const HomePage: React.FC = () => {
 
     return (
         <div>
-            <GlobalStyle />
             <div
                 style={{
                     position: 'fixed',

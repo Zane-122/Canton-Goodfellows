@@ -1204,11 +1204,7 @@ const FamilyDashboard = () => {
         );
     };
 
-    setTimeout(() => {
-        if (!user || accountType !== 'family') {
-            return <Navigate to="/" replace />;
-        }
-    }, 1000);
+    
 
     return (
         <>

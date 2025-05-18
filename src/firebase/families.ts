@@ -56,6 +56,8 @@ export interface Family {
     Verified: boolean;
     timestamp: Date;
 }
+
+
 export const defaultFamily = (displayName: string = ''): Family => ({
     Parent1Name: displayName,
     Parent2Name: '',
