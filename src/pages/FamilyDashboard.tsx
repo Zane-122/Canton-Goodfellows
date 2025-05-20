@@ -503,7 +503,13 @@ const FamilyDashboard = () => {
         });
 
         const handleImageUpload = (file: File | null, type: 'address' | 'children' | 'income') => {
-            setDocuments(prev => ({ ...prev, [type]: file }));
+            console.log('handleImageUpload called with:', { file, type });
+            setDocuments(prev => {
+                console.log('Previous documents state:', prev);
+                const newState = { ...prev, [type]: file };
+                console.log('New documents state:', newState);
+                return newState;
+            });
             if (file) {
                 const url = URL.createObjectURL(file);
                 setSelectedImage(url);
@@ -517,22 +523,30 @@ const FamilyDashboard = () => {
             setIsUploading(true);
             
             try {
-                const uploadPromises = Object.entries(documents).map(async ([type, file]) => {
-                    if (!file) return;
+                console.log('Starting upload with documents:', documents);
+                const uploadPromises = (Object.entries(documents) as [keyof typeof documents, File | null][]).map(async ([type, file]) => {
+                    console.log('Processing upload for:', { type, file });
+                    if (!file) {
+                        console.log('No file for type:', type);
+                        return;
+                    }
                     
                     setDocumentStatus(prev => ({
                         ...prev,
-                        [type]: { ...prev[type as keyof typeof prev], status: 'uploading' }
+                        [type]: { ...prev[type], status: 'uploading' }
                     }));
 
                     try {
                         // Delete all existing files in the folder
                         const folderRef = ref(storage, `documents/${user.uid}/${type}`);
                         const result = await listAll(folderRef);
+                        
                         const deletePromises = result.items.map(fileRef => deleteObject(fileRef));
                         await Promise.all(deletePromises);
-                        
+                        console.log("Deleted all existing files in the folder");
+                        console.log(file);
                         const url = await uploadImage(file, `documents/${user.uid}/${type}`);
+                        console.log(url);
                         setDocumentStatus(prev => ({
                             ...prev,
                             [type]: { url, status: 'success' }
@@ -546,7 +560,7 @@ const FamilyDashboard = () => {
                         console.error(`Error uploading ${type} document:`, error);
                         setDocumentStatus(prev => ({
                             ...prev,
-                            [type]: { ...prev[type as keyof typeof prev], status: 'error' }
+                            [type]: { ...prev[type], status: 'error' }
                         }));
                         throw error;
                     }

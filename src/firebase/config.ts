@@ -2,6 +2,8 @@ import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
+import { getFunctions, connectFunctionsEmulator, Functions } from 'firebase/functions';
+
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -19,3 +21,4 @@ export const app: FirebaseApp = initializeApp(firebaseConfig);
 export const db: Firestore = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
+export const functions: Functions | undefined = getFunctions(app, 'us-central1');

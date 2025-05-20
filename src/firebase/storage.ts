@@ -3,24 +3,10 @@ import { getStorage, ref, uploadBytes, getDownloadURL, listAll, deleteObject } f
 import { v4 as uuidv4 } from 'uuid';
 import { auth } from './config';
 
-const storage = getStorage();
+import { functions } from './config';
+import { httpsCallable } from 'firebase/functions';
 
-/**
- * Generate a meaningful filename for uploaded files
- * @param file The original file
- * @param folderPath The folder path (used to determine file type)
- * @returns A sanitized filename with timestamp
- */
-const generateFilename = (file: File, folderPath: string): string => {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const user = auth.currentUser;
-    const userId = user?.uid || 'anonymous';
-    const fileType = folderPath.split('/').pop() || 'document';
-    const originalName = file.name.split('.')[0].replace(/[^a-zA-Z0-9]/g, '_');
-    const extension = file.name.split('.').pop();
-    
-    return `${originalName}_${userId}_${timestamp}.${extension}`;
-};
+const storage = getStorage();
 
 /**
  * Upload an image to a specific folder in Firebase Storage
@@ -29,24 +15,44 @@ const generateFilename = (file: File, folderPath: string): string => {
  * @returns The download URL of the uploaded image
  */
 export const uploadImage = async (file: File, folderPath: string): Promise<string> => {
-    try {
-        // Generate a meaningful filename
-        const fileName = generateFilename(file, folderPath);
-        
-        // Create a reference to the file location
-        const storageRef = ref(storage, `${folderPath}/${fileName}`);
-        
-        // Upload the file
-        const snapshot = await uploadBytes(storageRef, file);
-        
-        // Get the download URL
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        
-        return downloadURL;
-    } catch (error) {
-        console.error('Error uploading image:', error);
-        throw error;
+    if (!functions) {
+        throw new Error('Functions are not initialized');
     }
+
+    console.log("Uploading image to folder:", folderPath);
+
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onloadend = async () => {
+            try {
+                const base64String = reader.result?.toString().split(',')[1];
+                if (!base64String) {
+                    reject(new Error('Failed to read file'));
+                    return;
+                }
+
+                const uploadTask = httpsCallable(functions!, 'uploadImage');
+                const result = await uploadTask({ file: base64String, folderPath: folderPath });
+                const resultData = result.data;
+                console.log(`RESULT DATA: ${resultData}`);
+                resolve(resultData as string);
+            } catch (error) {
+                console.log("Error witht the function")
+                console.log({error});
+                console.log(`Error uploading image: ${error}`);
+                reject(error);
+            }
+        };
+
+        reader.onerror = () => {
+            console.error('Error reading file');
+            reject(new Error('Error reading file'));
+        };
+
+        // Start reading the file
+        reader.readAsDataURL(file);
+    });
 };
 
 /**
