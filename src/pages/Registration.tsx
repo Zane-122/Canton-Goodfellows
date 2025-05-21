@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Register, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../firebase/contexts/AuthContext';
 import Navbar from '../components/Navbar';
 import styled from 'styled-components';

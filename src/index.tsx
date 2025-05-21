@@ -14,7 +14,7 @@ import { Registration } from './pages/Registration';
 import { SponsorDashboard } from './pages/SponsorDashboard';
 import { NotFound } from './pages/NotFound';
 import Account from './pages/Account';
-import FamilyDashboard from './pages/FamilyDashboard';
+import FamilyDashboard from './pages/FamilyDashboard/FamilyDashboard';
 
 function AppRouter() {
     const [currentFamilyID, setCurrentFamilyID] = useState('Family 1');

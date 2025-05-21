@@ -21,7 +21,6 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import SelectionField from '../components/inputs/SelectionField';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../firebase/contexts/AuthContext';
 import { getFamilyDocId } from '../firebase/auth';
 import { Tag } from '../components/headers/tag';
 import StarButton from '../components/buttons/StarButton';

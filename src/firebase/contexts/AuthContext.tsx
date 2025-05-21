@@ -1,11 +1,19 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
 import { signInWithGoogle, logOut, onAuthStateChange } from '../auth';
+import { auth } from '../config';
+import {
+    GoogleAuthProvider,
+    signInWithPopup,
+    signOut,
+    signInWithEmailAndPassword as firebaseSignInWithEmail
+} from 'firebase/auth';
 
 interface AuthContextType {
     user: User | null;
     loading: boolean;
     signInWithGoogle: () => Promise<User>;
+    signInWithEmailAndPassword: (email: string, password: string) => Promise<User>;
     logout: () => Promise<void>;
 }
 
@@ -24,20 +32,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChange((user) => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
             setUser(user);
             setLoading(false);
         });
 
-        return () => unsubscribe();
+        return unsubscribe;
     }, []);
+
+    const signInWithGoogle = async () => {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        return result.user;
+    };
+
+    const signInWithEmailAndPassword = async (email: string, password: string) => {
+        const result = await firebaseSignInWithEmail(auth, email, password);
+        return result.user;
+    };
+
+    const logout = () => {
+        return signOut(auth);
+    };
 
     const value = {
         user,
         loading,
         signInWithGoogle,
-        logout: logOut,
+        signInWithEmailAndPassword,
+        logout,
     };
 
     return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
+
+export default AuthContext;
