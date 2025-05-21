@@ -12,7 +12,7 @@ import Snowfall from "../../components/effects/Snowfall";
 import Navbar from "../../components/Navbar";
 import { Family, setFamilyInfo, Child, getFamily, getChildren } from "../../firebase/families";
 import { Navigate, useNavigate } from "react-router-dom";
-import { getAccountType } from "../../firebase/auth";
+import { getAccountType, setAccountType } from "../../firebase/auth";
 import { Tag } from "../../components/headers/tag";
 import styled from "styled-components";
 import Catalog from "../Catalog";
@@ -27,191 +27,195 @@ import { IdentityVerification } from "./FamilyVerification";
 import { ChildAdding } from "./FamilyChildAdding";
 import { info } from "console";
 
+const Spinner = styled.div`
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #1EC9F2;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    will-change: transform;
+    transform: translateZ(0);
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+`;
+
+const LoadingPage = ({text}: {text: string}) => (
+    <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '60vh',
+        gap: '2vmin'
+    }}>
+        <CartoonContainer style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '4vmin',
+            gap: '2vmin'
+        }}>
+            <CartoonHeader title={text} subtitle="Please Wait" />
+            <Spinner />
+        </CartoonContainer>
+    </div>
+);
+
 const FamilyDashboard = () => {
     const [page, setPage] = useState<"dashboard" | "basicForm" | "childAdding" | "giftCatalog" | "identityVerification">("dashboard");
     const DashboardPage: React.FC = () => {
-        // States for the family
         const [family, setFamily] = useState<Family | null>(null);
-
-        // State for verification
         const [isVerified, setIsVerified] = useState(false);
+        const { user } = useAuth();
 
-        // Get the current user
-        const {user} = useAuth();
-
-        // Loading states
         const [loadingStatus, setLoadingStatus] = useState<{
-            basicInfo: boolean;
-            children: boolean;
-            documents: boolean;
-            verified: boolean;
+            basicInfo: boolean | null;
+            children: boolean | null;
+            documents: boolean | null;
+            verified: boolean | null;
+            family: boolean | null;
         }>({
-            basicInfo: true,
-            children: true,
-            documents: true,
-            verified: true
+            basicInfo: null,
+            children: null,
+            documents: null,
+            verified: null,
+            family: null
         });
 
-        // Has requirements states
         const [infoStatus, setInfoStatus] = useState<{
-            hasFamily: boolean;
-            hasBasicInfo: boolean;
-            hasChildren: boolean;
-            hasDocuments: boolean;
+            hasFamily: boolean | null;
+            hasBasicInfo: boolean | null;
+            hasChildren: boolean | null;
+            hasDocuments: boolean | null;
         }>({
-            hasFamily: false,
-            hasBasicInfo: false,
-            hasChildren: false,
-            hasDocuments: false,
+            hasFamily: null,
+            hasBasicInfo: null,
+            hasChildren: null,
+            hasDocuments: null,
         });
 
-        // Document status
         const [documentStatus, setDocumentStatus] = useState<{
-            address: boolean;
-            children: boolean;
-            income: boolean;
+            address: boolean | null;
+            children: boolean | null;
+            income: boolean | null;
         }>({
-            address: false,
-            children: false,
-            income: false,
+            address: null,
+            children: null,
+            income: null,
         });
 
         // Get the family
         useEffect(() => {
             if (!user) return;
-            if (family) return;
 
+            setLoadingStatus(prev => ({...prev, family: true}));
             const getHasFamily = async () => {
-                const family = await getFamily();
-                if (family) {
-                    console.log(family)
-                    setFamily(family);
-                    setInfoStatus({...infoStatus, hasFamily: true});
+                try {
+                    const family = await getFamily();
+                    if (family) {
+                        setFamily(family);
+                        setInfoStatus(prev => ({...prev, hasFamily: true}));
+                    } else {
+                        setInfoStatus(prev => ({...prev, hasFamily: false}));
+                    }
+                } catch (error) {
+                    console.error("Error fetching family:", error);
+                    setInfoStatus(prev => ({...prev, hasFamily: false}));
+                } finally {
+                    setLoadingStatus(prev => ({...prev, family: false}));
                 }
-            }
+            };
             getHasFamily();
-        }, [user, family]);
+        }, [user]);
 
         // Get the basic info
         useEffect(() => {
-            if (!family) return;
-            if (!user) return;
+            if (!family || !user) return;
 
             const check = ["Parent1Name", "Parent2Name", "PhoneNumber", "StreetAddress", "ZipCode"];
-            const getBasicInfo = async () => {
-                if (family) {                   
-                    setInfoStatus(prev => {
-                        const newStatus = {
-                            ...prev, 
-                            hasBasicInfo: check.every(field => family[field as keyof Family]?.toString().length !== 0)
-                        };
-                        console.log(newStatus);
-                        return newStatus;
-                    });
-                } else {
-                    console.log("No family, can't get basic info")
-                    setInfoStatus(prev => ({...prev, hasBasicInfo: false}));
-                }
-            }
-            try {
-                getBasicInfo();
-            } catch (error) {
-                console.log(error);
-            } finally {
-                setLoadingStatus(prev => ({...prev, basicInfo: false}));
-            }
-        }, [family, user, loadingStatus])
+            setLoadingStatus(prev => ({...prev, basicInfo: true}));
+            
+            const hasAllBasicInfo = check.every(field => 
+                (family?.[field as keyof Family]?.toString() || '').trim().length > 0
+            );
+            
+            setInfoStatus(prev => ({
+                ...prev,
+                hasBasicInfo: hasAllBasicInfo
+            }));
+            
+            setLoadingStatus(prev => ({...prev, basicInfo: false}));
+        }, [family, user]);
 
         // Get the children
         useEffect(() => {
-            if (!family) return;
-            if (!user) return;
-
-            const getFamilyChildren = async () => {
-                if (family) {
-                    if (family.Children.length === 0) {setInfoStatus({...infoStatus, hasChildren: false}); return;}
-                    setInfoStatus({...infoStatus, hasChildren: true});
-                } else {
-                    setInfoStatus({...infoStatus, hasChildren: false});
-                }
-            }
-            try {
-                getFamilyChildren();
-            } catch (error) {
-                console.log(error);
-            } finally {
-                setLoadingStatus(prev => ({...prev, children: false}));
-            }
-        }, [family, user, loadingStatus])
+            if (!family || !user) return;
+            
+            setLoadingStatus(prev => ({...prev, children: true}));
+            setInfoStatus(prev => ({
+                ...prev,
+                hasChildren: family.Children.length > 0
+            }));
+            setLoadingStatus(prev => ({...prev, children: false}));
+        }, [family, user]);
 
         // Getting the documents
         useEffect(() => {
-            if (!user) return;
-            if (!family) return;
+            if (!user || !family) return;
 
             const loadDocuments = async () => {
-                if (!family) return;
-                if (!user) return;
-
-                const types: ('address' | 'children' | 'income')[] = ['address', 'children', 'income'];
-                
-                for (const type of types) {
-                    const folderRef = ref(storage, `documents/${user.uid}/${type}`);
-                    const result = await listAll(folderRef);
-
-                    if (result.items.length > 0) {
-                        setDocumentStatus({...documentStatus, [type]: true});
-                    } else {
-                        setDocumentStatus({...documentStatus, [type]: false});
-                    }
-                }
-            }
-            try {
-                loadDocuments();
-            } catch (error) {
-                console.log(error);
-            } finally {
                 setLoadingStatus(prev => ({...prev, documents: true}));
-            }
-        }, [family, user, loadingStatus])
-
-        useEffect(() => {
-            if (!family) return;
-            if (!user) return;
-
-            const getHasAllDocuments = async () => {
-                if (Object.values(documentStatus).every(status => status === true)) {
-                    setInfoStatus({...infoStatus, hasDocuments: true});
-                } else {
-                    setInfoStatus({...infoStatus, hasDocuments: false});
+                try {
+                    const types: ('address' | 'children' | 'income')[] = ['address', 'children', 'income'];
+                    const newDocStatus = {...documentStatus};
+                    
+                    for (const type of types) {
+                        const folderRef = ref(storage, `documents/${user.uid}/${type}`);
+                        const result = await listAll(folderRef);
+                        newDocStatus[type] = result.items.length > 0;
+                    }
+                    
+                    setDocumentStatus(newDocStatus);
+                    setInfoStatus(prev => ({
+                        ...prev,
+                        hasDocuments: Object.values(newDocStatus).every(status => status === true)
+                    }));
+                } catch (error) {
+                    console.error("Error loading documents:", error);
+                    setInfoStatus(prev => ({...prev, hasDocuments: false}));
+                } finally {
+                    setLoadingStatus(prev => ({...prev, documents: false}));
                 }
-            }
-            try {
-                getHasAllDocuments();
-            } catch (error) {
-                console.log(error);
-            } finally {
-                setLoadingStatus(prev => ({...prev, documents: false}));
-            }
-        }, [family, user, documentStatus])
+            };
+
+            loadDocuments();
+        }, [family, user]);
+
+        // Check verification status
+        useEffect(() => {
+            if (!family || !user) return;
+            
+            setLoadingStatus(prev => ({...prev, verified: true}));
+            console.log("Family verification status:", family.Verified);
+            setIsVerified(!!family.Verified);
+            console.log("isVerified set to:", !!family.Verified);
+            setLoadingStatus(prev => ({...prev, verified: false}));
+        }, [family, user]);
+
+        const isLoading = Object.values(loadingStatus).some(status => status === null || status === true);
 
         useEffect(() => {
-            if (!user) return;
-            if (!family) return;
-
-            const getIsVerified = async () => {
-                const isVerified = family?.Verified;
-                setIsVerified(isVerified);
+            console.log("Status Update: ")
+            console.log(isLoading);
+            if (!isLoading) {
+                console.log(loadingStatus);
+                console.log(infoStatus);
             }
-            try {
-                getIsVerified();
-            } catch (error) {
-                console.log(error);
-            } finally {
-                setLoadingStatus(prev => ({...prev, verified: false}));
-            }
-            
-        }, [user, family])
+        }, [isLoading]);
 
         const dashboardContent = useMemo(() => (
             <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2vmin'}}>  
@@ -224,16 +228,14 @@ const FamilyDashboard = () => {
                 }}>
                     <CartoonHeader title="Welcome to Your Dashboard" subtitle="Family Dashboard"/>
                     <CartoonButton color="#1EC9F2" onClick={() => setPage("basicForm")}>Update Basic Info</CartoonButton>
-                    
-                    <CartoonButton disabled={!infoStatus.hasBasicInfo} color="#1EC9F2" onClick={() => setPage("childAdding")}>Add Children</CartoonButton>
-                    <CartoonButton disabled={!infoStatus.hasChildren || !infoStatus.hasBasicInfo} color="#1EC9F2" onClick={() => setPage("identityVerification")}>Verify Identity</CartoonButton>
-                    
-                    <CartoonButton disabled={!infoStatus.hasBasicInfo || !isVerified} color="#1EC9F2" onClick={() => setPage("giftCatalog")}>Gift Catalog</CartoonButton>
+                    <CartoonButton color="#1EC9F2" disabled={!infoStatus.hasBasicInfo} onClick={() => setPage("childAdding")}>Add Children</CartoonButton>
+                    <CartoonButton color="#1EC9F2" disabled={!infoStatus.hasChildren || !infoStatus.hasBasicInfo} onClick={() => setPage("identityVerification")}>Verify Identity</CartoonButton>
+                    <CartoonButton color="#1EC9F2" disabled={!infoStatus.hasBasicInfo || !isVerified} onClick={() => setPage("giftCatalog")}>Gift Catalog</CartoonButton>
                 </CartoonContainer>
                 {(!infoStatus.hasBasicInfo || !infoStatus.hasChildren || !infoStatus.hasDocuments) && (
                     <CartoonContainer style={{borderColor: 'black', backgroundColor: '#CA242B', color: 'white', height: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
                         <p style={{fontSize: '2vmin', fontFamily: 'TT Trick New, serif', textAlign: 'center', color: 'white'}}> 
-                            {!infoStatus.hasBasicInfo ?`${JSON.stringify(infoStatus)} "Please update your basic information before adding children"` : 
+                            {!infoStatus.hasBasicInfo ? "Please update your basic information before adding children" : 
                              !infoStatus.hasChildren ? "Please add children before verifying identity" : 
                              "Please upload all required documents: " + 
                              Object.entries(documentStatus)
@@ -244,15 +246,24 @@ const FamilyDashboard = () => {
                     </CartoonContainer>
                 )}
 
-                {(infoStatus.hasDocuments && !family?.Verified) && (
+                {(infoStatus.hasDocuments && !isVerified) && (
                     <CartoonContainer style={{borderColor: 'black', backgroundColor: '#FFD711', color: 'black', height: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
                         <p style={{fontSize: '2vmin', fontFamily: 'TT Trick New, serif', textAlign: 'center', color: 'black'}}> Please wait for your identity to be verified </p>
                     </CartoonContainer>
                 )}
-            </div>
-        ), [infoStatus, documentStatus, family, isVerified, setPage]);
 
-        return Object.values(loadingStatus).every(status => status === false) && dashboardContent
+                {(isVerified) && (
+                    <CartoonContainer style={{borderColor: 'black', backgroundColor: '#4CAF50', color: 'white', height: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                        <p style={{fontSize: '2vmin', fontFamily: 'TT Trick New, serif', textAlign: 'center', color: 'white'}}> You are verified! </p>
+                    </CartoonContainer>
+                )}
+            </div>
+        ), [infoStatus, documentStatus, isVerified, setPage]);
+
+        if (isLoading) {
+            return <LoadingPage text="Loading Your Dashboard" />;
+        }
+        return dashboardContent;
     };
 
     return (
@@ -267,7 +278,6 @@ const FamilyDashboard = () => {
                 gap: '2vmin',
                 minHeight: '100vh',
                 marginTop: '20vh',
-
             }}>
                 {page === "dashboard" && <DashboardPage />}
                 {page === "basicForm" && <BasicInfoForm />}
@@ -285,7 +295,6 @@ const FamilyDashboard = () => {
                 Back to Dashboard
             </DashboardButton>
         </>
-
     );
 };
 
