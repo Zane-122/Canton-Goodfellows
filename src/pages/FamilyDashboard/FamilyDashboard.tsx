@@ -27,6 +27,15 @@ import { IdentityVerification } from "./FamilyVerification";
 import { ChildAdding } from "./FamilyChildAdding";
 import { info } from "console";
 
+import { httpsCallable } from "firebase/functions";
+import { functions } from "../../firebase/config";
+
+interface DocumentStatus {
+    address: boolean | null;
+    children: boolean | null;
+    income: boolean | null;
+}
+
 const Spinner = styled.div`
     width: 50px;
     height: 50px;
@@ -98,20 +107,49 @@ const FamilyDashboard = () => {
             hasDocuments: null,
         });
 
-        const [documentStatus, setDocumentStatus] = useState<{
-            address: boolean | null;
-            children: boolean | null;
-            income: boolean | null;
-        }>({
+        const [documentStatus, setDocumentStatus] = useState<DocumentStatus>({
             address: null,
             children: null,
             income: null,
         });
 
+        const loadDocumentStatus = async () => {
+            if (!functions || !user) {
+                throw new Error("Error loading document status: No user or functions");
+            }
+
+            setLoadingStatus(prev => ({...prev, documents: true}));
+
+            const loadDocumentStatusFn = httpsCallable(functions!, 'getDocumentStatus');
+
+            try {
+                const result = await loadDocumentStatusFn({uid: user.uid});
+                const newDocStatus = result.data as DocumentStatus;
+  
+                setDocumentStatus({
+                    address: newDocStatus.address,
+                    children: newDocStatus.children,
+                    income: newDocStatus.income
+                });
+
+                setInfoStatus(prev => ({
+                    ...prev,
+                    hasDocuments: Object.values(newDocStatus).every(status => status === true)
+                }));
+
+                setLoadingStatus(prev => ({...prev, documents: false}));
+            } catch(error) {
+                console.error("Error loading document status:", error);
+                setInfoStatus(prev => ({...prev, hasDocuments: false}));
+                setLoadingStatus(prev => ({...prev, documents: false}));
+                throw error;
+            }
+        };
+
         // Get the family
         useEffect(() => {
             if (!user) return;
-
+            if (family) return;
             setLoadingStatus(prev => ({...prev, family: true}));
             const getHasFamily = async () => {
                 try {
@@ -165,57 +203,39 @@ const FamilyDashboard = () => {
 
         // Getting the documents
         useEffect(() => {
-            if (!user || !family) return;
-
-            const loadDocuments = async () => {
-                setLoadingStatus(prev => ({...prev, documents: true}));
-                try {
-                    const types: ('address' | 'children' | 'income')[] = ['address', 'children', 'income'];
-                    const newDocStatus = {...documentStatus};
-                    
-                    for (const type of types) {
-                        const folderRef = ref(storage, `documents/${user.uid}/${type}`);
-                        const result = await listAll(folderRef);
-                        newDocStatus[type] = result.items.length > 0;
-                    }
-                    
-                    setDocumentStatus(newDocStatus);
-                    setInfoStatus(prev => ({
-                        ...prev,
-                        hasDocuments: Object.values(newDocStatus).every(status => status === true)
-                    }));
-                } catch (error) {
-                    console.error("Error loading documents:", error);
-                    setInfoStatus(prev => ({...prev, hasDocuments: false}));
-                } finally {
-                    setLoadingStatus(prev => ({...prev, documents: false}));
-                }
+            if (!user || !family) {
+                return;
             };
 
-            loadDocuments();
+            loadDocumentStatus().catch(error => {
+                console.error("Error in document status effect:", error);
+            });
         }, [family, user]);
+
+        useEffect(() => {
+            if (documentStatus) {
+                setInfoStatus(prev => ({
+                    ...prev,
+                    hasDocuments: Object.values(documentStatus).every(status => status === true)
+                }));
+
+                console.log("Document status: ");
+                console.log(documentStatus.address);
+                console.log(documentStatus.children);
+                console.log(documentStatus.income);
+            }
+        }, [family, user, documentStatus]);
 
         // Check verification status
         useEffect(() => {
             if (!family || !user) return;
             
             setLoadingStatus(prev => ({...prev, verified: true}));
-            console.log("Family verification status:", family.Verified);
             setIsVerified(!!family.Verified);
-            console.log("isVerified set to:", !!family.Verified);
             setLoadingStatus(prev => ({...prev, verified: false}));
         }, [family, user]);
 
         const isLoading = Object.values(loadingStatus).some(status => status === null || status === true);
-
-        useEffect(() => {
-            console.log("Status Update: ")
-            console.log(isLoading);
-            if (!isLoading) {
-                console.log(loadingStatus);
-                console.log(infoStatus);
-            }
-        }, [isLoading]);
 
         const dashboardContent = useMemo(() => (
             <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2vmin'}}>  
