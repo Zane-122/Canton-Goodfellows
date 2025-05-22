@@ -15,7 +15,7 @@ import {
     deleteDoc,
 } from 'firebase/firestore';
 import { db } from './config';
-import { addFamily, setFamilyInfo, defaultFamily } from './families';
+import { addFamily, setFamily, defaultFamily } from './families';
 import { addSponsor, setSponsorInfo, defaultSponsor } from './sponsors';
 import { useNavigate } from 'react-router-dom';
 
@@ -515,7 +515,7 @@ export async function deleteAccount(): Promise<void> {
                 
                 if (userData.accountType === 'family') {
                     await addFamily();
-                    await setFamilyInfo(defaultFamily(user?.displayName || ''));
+                    await setFamily(defaultFamily(user?.displayName || ''));
                 } else if (userData.accountType === 'sponsor') {
                     await addSponsor();
                     await setSponsorInfo(defaultSponsor(user?.displayName || '', user?.email || ''));

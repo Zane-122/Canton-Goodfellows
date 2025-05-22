@@ -1,9 +1,9 @@
 import React, { useState, useEffect, memo } from 'react';
 import axios, { get } from 'axios';
 import styled from 'styled-components';
-import CartoonContainer from '../components/containers/CartoonContainer';
-import CartoonInput from '../components/inputs/CartoonInput';
-import Button from '../components/buttons/CartoonButton';
+import CartoonContainer from '../../components/containers/CartoonContainer';
+import CartoonInput from '../../components/inputs/CartoonInput';
+import Button from '../../components/buttons/CartoonButton';
 import {
     addChildToy,
     Toy,
@@ -12,18 +12,18 @@ import {
     getWishlist,
     removeChildToy,
     toggleToyStarred,
-} from '../firebase/families';
-import Snowfall from '../components/effects/Snowfall';
-import CartoonHeader from '../components/headers/CartoonHeader';
-import SnowyGround from '../components/effects/SnowyGround';
-import Navbar from '../components/Navbar';
+} from '../../firebase/families';
+import Snowfall from '../../components/effects/Snowfall';
+import CartoonHeader from '../../components/headers/CartoonHeader';
+import SnowyGround from '../../components/effects/SnowyGround';
+import Navbar from '../../components/Navbar';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebase/config';
-import SelectionField from '../components/inputs/SelectionField';
+import { db } from '../../firebase/config';
+import SelectionField from '../../components/inputs/SelectionField';
 import { useNavigate } from 'react-router-dom';
-import { getFamilyDocId } from '../firebase/auth';
-import { Tag } from '../components/headers/tag';
-import StarButton from '../components/buttons/StarButton';
+import { getFamilyDocId } from '../../firebase/auth';
+import { Tag } from '../../components/headers/tag';
+import StarButton from '../../components/buttons/StarButton';
 
 interface RainforestResponse {
     search_results?: Toy[];

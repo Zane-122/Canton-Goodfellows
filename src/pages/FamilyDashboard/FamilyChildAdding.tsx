@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../../firebase/contexts/AuthContext';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { setFamilyInfo, Family, Child } from '../../firebase/families';
+import { setFamily, Family, Child } from '../../firebase/families';
 import CartoonButton from '../../components/buttons/CartoonButton';
 import CartoonContainer from '../../components/containers/CartoonContainer';
 import CartoonInput from '../../components/inputs/CartoonInput';
@@ -82,7 +82,7 @@ export const ChildAdding: React.FC = () => {
             }
 
             const newChildren = family.Children.filter((child: Child) => child.ChildID !== childToDelete);
-            await setFamilyInfo({...family, Children: newChildren});
+            await setFamily({...family, Children: newChildren});
             await handleRefreshFamily();
         } catch (error) {
             console.error('Error deleting child:', error);
@@ -154,7 +154,7 @@ export const ChildAdding: React.FC = () => {
                 ? family.Children.map(child => child.ChildID === editingChild.ChildID ? newChild : child)
                 : [...(family.Children || []), newChild];
 
-            await setFamilyInfo({
+            await setFamily({
                 ...family,
                 Children: updatedChildren,
                 timestamp: new Date()

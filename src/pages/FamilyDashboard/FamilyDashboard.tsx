@@ -1,56 +1,28 @@
 import { useEffect, useState, useMemo } from "react";
 import CartoonButton from "../../components/buttons/CartoonButton";
 import CartoonContainer from "../../components/containers/CartoonContainer";
-import CartoonInput from "../../components/inputs/CartoonInput";
-import { ContentContainer, InputGroup, Label, PageContainer, FormContainer, DashboardButton, ChildCard, ChildInfo, ButtonContainer, ModalOverlay, ModalContent, ModalInnerContent } from "../SponsorDashboard";
+import { DashboardButton} from "../SponsorDashboard";
 import CartoonHeader from "../../components/headers/CartoonHeader";
 import { useAuth } from "../../firebase/contexts/AuthContext";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from "../../firebase/config";
 import SnowyGround from "../../components/effects/SnowyGround";
 import Snowfall from "../../components/effects/Snowfall";
 import Navbar from "../../components/Navbar";
-import { Family, setFamilyInfo, Child, getFamily, getChildren } from "../../firebase/families";
-import { Navigate, useNavigate } from "react-router-dom";
-import { getAccountType, setAccountType } from "../../firebase/auth";
-import { Tag } from "../../components/headers/tag";
-import styled from "styled-components";
-import Catalog from "../Catalog";
-import { setSponsorInfo } from "../../firebase/sponsors";
-import CartoonImageInput from "../../components/inputs/CartoonImageInput";
-import CartoonImageContainer from "../../components/containers/CartoonImageContainer";
-import { uploadImage, uploadMultipleImages, getFileDownloadURL, deleteFile } from "../../firebase/storage";
-import { ref, listAll, getDownloadURL, deleteObject } from "firebase/storage";
-import { storage } from "../../firebase/config";
+import { Family, getFamily } from "../../firebase/families";
+
+import Catalog from "./Catalog";
 import { BasicInfoForm } from "./FamilyInfoForm";
 import { IdentityVerification } from "./FamilyVerification";
 import { ChildAdding } from "./FamilyChildAdding";
-import { info } from "console";
 
 import { httpsCallable } from "firebase/functions";
 import { functions } from "../../firebase/config";
+import { Spinner } from "../../components/effects/Spinner";
 
 interface DocumentStatus {
     address: boolean | null;
     children: boolean | null;
     income: boolean | null;
 }
-
-const Spinner = styled.div`
-    width: 50px;
-    height: 50px;
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #1EC9F2;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    will-change: transform;
-    transform: translateZ(0);
-
-    @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-`;
 
 const LoadingPage = ({text}: {text: string}) => (
     <div style={{
@@ -69,7 +41,7 @@ const LoadingPage = ({text}: {text: string}) => (
             gap: '2vmin'
         }}>
             <CartoonHeader title={text} subtitle="Please Wait" />
-            <Spinner />
+            <Spinner size={5} />
         </CartoonContainer>
     </div>
 );
@@ -267,7 +239,7 @@ const FamilyDashboard = () => {
                 )}
 
                 {(infoStatus.hasDocuments && !isVerified) && (
-                    <CartoonContainer style={{borderColor: 'black', backgroundColor: '#FFD711', color: 'black', height: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                    <CartoonContainer style={{backgroundColor: '#FFD711', color: 'black', height: '2vmin', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
                         <p style={{fontSize: '2vmin', fontFamily: 'TT Trick New, serif', textAlign: 'center', color: 'black'}}> Please wait for your identity to be verified </p>
                     </CartoonContainer>
                 )}

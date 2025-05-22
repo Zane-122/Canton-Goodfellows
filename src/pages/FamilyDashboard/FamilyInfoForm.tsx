@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../firebase/contexts/AuthContext';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../firebase/config';
-import { setFamilyInfo } from '../../firebase/families';
+import { functions } from '../../firebase/config';
 import CartoonButton from '../../components/buttons/CartoonButton';
 import CartoonContainer from '../../components/containers/CartoonContainer';
 import CartoonInput from '../../components/inputs/CartoonInput';
 import CartoonHeader from '../../components/headers/CartoonHeader';
 import { ContentContainer, InputGroup, Label, FormContainer } from '../SponsorDashboard';
+import { httpsCallable } from 'firebase/functions';
 
 export const BasicInfoForm: React.FC = () => {
     const [parent1Name, setParent1Name] = useState("");
@@ -15,15 +14,53 @@ export const BasicInfoForm: React.FC = () => {
     const [phoneNumber, setPhoneNumber] = useState("");
     const [address, setAddress] = useState("");
     const [zipCode, setZipCode] = useState("");
-    const [isSaving, setIsSaving] = useState(false);
+    
+    const [isLoading, setIsLoading] = useState(true);
     const [saveMessage, setSaveMessage] = useState("-");
 
-    const [loadingAccountInfo, setLoadingAccountInfo] = useState(true);
     const {user} = useAuth();
-    const validateEmail = (email: string) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
+
+    interface FamilyInfo {
+        Parent1Name: string;
+        Parent2Name: string;
+        PhoneNumber: string;
+        StreetAddress: string;
+        ZipCode: string;
+    }
+    const getFamilyInfo = async () => {
+        if (!functions) return;
+        setIsLoading(true);
+        try {
+            const getFamilyInfo = httpsCallable(functions, 'getFamilyInfo');
+            const result = await getFamilyInfo({uid: user?.uid});
+            const familyInfo: FamilyInfo = result.data as FamilyInfo;
+            
+            setParent1Name(familyInfo.Parent1Name as string);
+            setParent2Name(familyInfo.Parent2Name as string);
+            setPhoneNumber(familyInfo.PhoneNumber as string);
+            setAddress(familyInfo.StreetAddress as string);
+            setZipCode(familyInfo.ZipCode as string);
+
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
     };
+
+    useEffect(() => {
+        console.log("Updated state values:", {
+            parent1Name,
+            parent2Name,
+            phoneNumber,
+            address,
+            zipCode
+        });
+    }, [parent1Name, parent2Name, phoneNumber, address, zipCode]);
+
+    useEffect(() => {
+        getFamilyInfo();
+    }, [user]);
 
     const formatPhoneNumber = (value: string) => {
         const phoneNumber = value.replace(/\D/g, '');
@@ -42,46 +79,6 @@ export const BasicInfoForm: React.FC = () => {
         const phoneNumber = phone.replace(/\D/g, '');
         return phoneNumber.length === 10;
     };
-    const getFamilyInfo = async () => {
-        setLoadingAccountInfo(true);
-        if (!user?.uid) return;
-        const userRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userRef);
-        console.log(userDoc.data());
-        if (userDoc !== null) {
-            const userData = userDoc.data();
-            if (userData?.accountType !== 'family') return;
-
-            const familyId = userData?.family.familyDocId;
-            console.log(familyId);
-            const familyRef = doc(db, 'families', familyId);
-            const familyDoc = await getDoc(familyRef);
-            console.log(familyDoc.data());
-            if (familyDoc !== null) {
-                const familyData = familyDoc.data();
-                setParent1Name(familyData?.family.Parent1Name);
-                console.log(familyData);
-                console.log(familyData?.family.Parent1Name);
-                setParent2Name(familyData?.family.Parent2Name);
-                setPhoneNumber(familyData?.family.PhoneNumber);
-                setAddress(familyData?.family.StreetAddress);
-                setZipCode(familyData?.family.ZipCode);
-                console.log("It works");
-            }
-        }
-        setLoadingAccountInfo(false);
-    };
-    useEffect(() => {
-        
-        try {
-            getFamilyInfo();
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoadingAccountInfo(false);
-            console.log("Loading account info is false");
-        }
-    }, [user]);
 
     const handleSave = async () => {
         if (parent1Name.length < 3) {
@@ -149,51 +146,37 @@ export const BasicInfoForm: React.FC = () => {
             return;
         }
         
-        setIsSaving(true);
-        setLoadingAccountInfo(true);
-        try {
-            if (!user?.uid) return;
-            const userRef = doc(db, 'users', user.uid);
-            const userDoc = await getDoc(userRef);
-            console.log(userDoc.data());
-            if (userDoc !== null) {
-                const userData = userDoc.data();
-                if (userData?.accountType !== 'family') return;
+        if (!user) return;
+        if (!functions) return;
 
-                const familyId = userData?.family.familyDocId;
-                console.log(familyId);
-                const familyRef = doc(db, 'families', familyId);
-                const familyDoc = await getDoc(familyRef);
-                console.log(familyDoc.data());
-                if (familyDoc !== null) {
-                    const familyData = familyDoc.data();
-                    setParent1Name(familyData?.family.Parent1Name);
-                    console.log(familyData);
-                    console.log(familyData?.family.Parent1Name);
-                    await setFamilyInfo({
-                        Children: familyData?.family.Children,
-                        Parent1Name: parent1Name,
-                        Parent2Name: parent2Name,
-                        PhoneNumber: phoneNumber,
-                        StreetAddress: address,
-                        ZipCode: zipCode,
-                        timestamp: new Date(),
-                        Verified: false,
-                    });
-                    setSaveMessage("Information saved successfully!");
-                    setTimeout(() => {
-                        setSaveMessage("-");
-                    }, 2000);
-                    console.log("It works");
-                    getFamilyInfo();
-                }
-            }
+        setIsLoading(true);
+
+        try {
+            const setFamilyInfo = httpsCallable(functions, 'setFamilyInfo');
+            const familyInfo: FamilyInfo = {
+                Parent1Name: parent1Name,
+                Parent2Name: parent2Name,
+                PhoneNumber: phoneNumber,
+                StreetAddress: address,
+                ZipCode: zipCode,
+            };
+
+            const result = await setFamilyInfo({
+                familyInfo: familyInfo,
+                uid: user.uid,
+            });
+
+            console.log(result.data);
+            setSaveMessage("Information was saved successfully!");
+            setTimeout(() => {
+                setSaveMessage("-");
+            }, 2000);
+            getFamilyInfo();
         } catch (error) {
             console.error(error);
             setSaveMessage("Error saving information");
         } finally {
-            setIsSaving(false);
-            setLoadingAccountInfo(false);
+            setIsLoading(false);
         }
     };
 
@@ -216,58 +199,63 @@ export const BasicInfoForm: React.FC = () => {
                         <InputGroup>
                             <Label>Parent 1 Name</Label>
                             <CartoonInput
-                                color={loadingAccountInfo ? "gray" : "white"}
-                                placeholder="What is Parent 1's name?"
+                                color={"white"}
+                                placeholder={isLoading ? "Loading..." : "What is Parent 1's name?"}
                                 onChange={(e) => {
                                     setParent1Name(e);
                                 }}
-                                value={loadingAccountInfo ? "Loading..." : parent1Name}
+                                value={parent1Name}
+                                loading={isLoading}
                             />
                         </InputGroup>
                         <InputGroup>
                             <Label>Parent 2 Name</Label>
                             <CartoonInput
-                                color={loadingAccountInfo ? "gray" : "white"}
-                                placeholder="What is Parent 2's name?"
+                                color={"white"}
+                                placeholder={isLoading ? "Loading..." : "What is Parent 2's name?"}
                                 onChange={(e) => {
                                     setParent2Name(e);
                                 }}
-                                value={loadingAccountInfo ? "Loading..." : parent2Name}
+                                value={parent2Name}
+                                loading={isLoading}
                             />
                         </InputGroup>
                         <InputGroup>
                             <Label>Input a contact number</Label>
                             <CartoonInput
-                                color={loadingAccountInfo ? "gray" : "white"}
-                                placeholder="What is your phone number?"
+                                color={"white"}
+                                placeholder={isLoading ? "Loading..." : "What is your phone number?"}
                                 onChange={(e) => {
                                    handlePhoneChange(e);
                                 }}
-                                value={loadingAccountInfo ? "Loading..." : phoneNumber}
+                                value={phoneNumber}
+                                loading={isLoading}
                             />
                         </InputGroup>
 
                         <InputGroup>
                             <Label>Input a street address</Label>
                             <CartoonInput
-                                color={loadingAccountInfo ? "gray" : "white"}
-                                placeholder="What is your street address?"
+                                color={"white"}
+                                placeholder={isLoading ? "Loading..." : "What is your street address?"}
                                 onChange={(e) => {
                                     setAddress(e);
                                 }}
-                                value={loadingAccountInfo ? "Loading..." : address}
+                                value={address}
+                                loading={isLoading}
                             />
                         </InputGroup>
 
                         <InputGroup>
                             <Label>Input a zip code</Label>
                             <CartoonInput
-                                color={loadingAccountInfo ? "gray" : "white"}
-                                placeholder="What is your zip code?"
+                                color={"white"}
+                                placeholder={isLoading ? "Loading..." : "What is your zip code?"}
                                 onChange={(e) => {
                                     setZipCode(e);
                                 }}
-                                value={loadingAccountInfo ? "Loading..." : zipCode}
+                                value={zipCode}
+                                loading={isLoading}
                             />
                         </InputGroup>
                                 
@@ -286,9 +274,9 @@ export const BasicInfoForm: React.FC = () => {
                         <CartoonButton
                             color="#1EC9F2"
                             onClick={handleSave}
-                            disabled={isSaving}
+                            disabled={isLoading}
                         >
-                            {isSaving ? "Saving..." : "Save Information"}
+                            {isLoading ? "Saving..." : "Save Information"}
                         </CartoonButton>
                     </CartoonContainer>
                 </FormContainer>

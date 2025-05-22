@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../firebase/contexts/AuthContext';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { setFamilyInfo, Family } from '../../firebase/families';
+import { Family } from '../../firebase/families';
 import CartoonButton from '../../components/buttons/CartoonButton';
 import CartoonContainer from '../../components/containers/CartoonContainer';
 import CartoonInput from '../../components/inputs/CartoonInput';

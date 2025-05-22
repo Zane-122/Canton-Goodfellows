@@ -9,7 +9,7 @@ import { getAccountType, getFamilyDocId, setAccountType } from '../firebase/auth
 import CartoonHeader from '../components/headers/CartoonHeader';
 import SnowyGround from '../components/effects/SnowyGround';
 import Snowfall from '../components/effects/Snowfall';
-import { defaultFamily, Family, setFamilyInfo } from '../firebase/families';
+import { defaultFamily, Family, setFamily } from '../firebase/families';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { getDoc } from 'firebase/firestore';
@@ -238,7 +238,7 @@ export const Registration: React.FC = () => {
                 await setAccountType(newAccountType);
                 setAccountTypeState(newAccountType);
                 if (newAccountType === 'family') {
-                    await setFamilyInfo(defaultFamily(user?.displayName || ''));
+                    await setFamily(defaultFamily(user?.displayName || ''));
                 } else if (newAccountType === 'sponsor') {
                     await setSponsorInfo(defaultSponsor(user?.displayName || '', user?.email || ''));
                 }
@@ -265,7 +265,7 @@ export const Registration: React.FC = () => {
             setIsConfirmed(false);
             setPendingAccountType(null);
             if (pendingAccountType === 'family') {
-                await setFamilyInfo(defaultFamily(user?.displayName || ''));
+                await setFamily(defaultFamily(user?.displayName || ''));
             } else if (pendingAccountType === 'sponsor') {
                 await setSponsorInfo(defaultSponsor(user?.displayName || '', user?.email || ''));
             }

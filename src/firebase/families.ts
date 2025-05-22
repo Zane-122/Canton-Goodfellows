@@ -108,7 +108,7 @@ export async function getFamily(): Promise<Family> {
     return familyDoc.data()?.family as Family;
 }
 
-export async function setFamilyInfo(family: Family): Promise<void> {
+export async function setFamily(family: Family): Promise<void> {
     try {
         const id = await getFamilyDocId();
         console.log(id);
